@@ -51,12 +51,13 @@ interface StartCommon {
   query: string;
   language?: string | null;
   conversationId?: string | null;
+  depth?: "lite" | "medium" | "max";
 }
 
 /** Plan-only: returns jobId once plan is being drafted; subscribe for the plan. */
 export async function planResearchJob(opts: StartCommon): Promise<string> {
   const { data, error } = await supabase.functions.invoke("deep-research-job", {
-    body: { action: "plan", query: opts.query, language: opts.language ?? null, conversationId: opts.conversationId ?? null },
+    body: { action: "plan", query: opts.query, language: opts.language ?? null, conversationId: opts.conversationId ?? null, depth: opts.depth ?? "medium" },
   });
   if (error) throw error;
   const jobId = (data as { jobId?: string })?.jobId;
@@ -67,7 +68,7 @@ export async function planResearchJob(opts: StartCommon): Promise<string> {
 /** Legacy: plan + auto-run pipeline. */
 export async function startResearchJob(opts: StartCommon): Promise<string> {
   const { data, error } = await supabase.functions.invoke("deep-research-job", {
-    body: { action: "start", query: opts.query, language: opts.language ?? null, conversationId: opts.conversationId ?? null },
+    body: { action: "start", query: opts.query, language: opts.language ?? null, conversationId: opts.conversationId ?? null, depth: opts.depth ?? "medium" },
   });
   if (error) throw error;
   const jobId = (data as { jobId?: string })?.jobId;
