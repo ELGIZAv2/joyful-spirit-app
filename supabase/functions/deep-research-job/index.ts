@@ -432,7 +432,12 @@ Rules:
     stage: `Writing section ${done}/${outlineLen}`,
   });
 
-  await maybeFinalize(jobId);
+  if (done >= outlineLen) {
+    await maybeFinalize(jobId);
+  } else {
+    const next = latest.findIndex((t, i) => i !== sectionIndex && (!t || t.trim().length < 50));
+    if (next >= 0) await selfInvoke("write_section", { jobId, sectionIndex: next });
+  }
 }
 
 async function maybeFinalize(jobId: string) {
@@ -677,12 +682,9 @@ async function runFullPipeline(jobId: string) {
     });
     await appendStep(jobId, { type: "outline", sections: outline.length });
 
-    // Dispatch one fire-and-forget self invocation per section, with a small
-    // stagger to avoid bursting the LLM gateway.
-    for (let i = 0; i < outline.length; i++) {
-      selfInvoke("write_section", { jobId, sectionIndex: i });
-      if (i % 4 === 3) await new Promise((r) => setTimeout(r, 300));
-    }
+    // Start one writer; each section dispatches the next one. This avoids
+    // flooding the LLM gateway and prevents long reports from getting stuck.
+    await selfInvoke("write_section", { jobId, sectionIndex: 0 });
 
     // Watchdog: in ~90s, re-dispatch any still-empty sections; after 3 rounds force-finalize.
     selfInvoke("watchdog", { jobId, round: 0, delayMs: 90_000 });
