@@ -373,8 +373,8 @@ const ResearchPreviewPage = () => {
       <ScrollProgress />
       <ResearchToc markdown={cleanReport} isRtl={isRtl} />
 
-      <header className="sticky top-0 z-30 border-b border-foreground/10 bg-background/70 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-30 bg-transparent pointer-events-none">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6 pointer-events-none">
           <button
             onClick={() => {
               const uuidRe = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -385,20 +385,20 @@ const ResearchPreviewPage = () => {
                 goBackOr(navigate, "/chat");
               }
             }}
-            className="-ms-1 flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+            className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 text-foreground shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/30 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/20"
             aria-label="Back to conversation"
           >
-            <ArrowLeft className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
+            <ArrowLeft className={`h-[18px] w-[18px] ${isRtl ? "rotate-180" : ""}`} />
           </button>
           <div className="flex-1" />
           {tocItems.length >= 2 && (
             <Sheet open={tocOpen} onOpenChange={setTocOpen}>
               <SheetTrigger asChild>
                 <button
-                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+                  className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 text-foreground shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/30 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/20"
                   aria-label={isRtl ? "المحتويات" : "Contents"}
                 >
-                  <List className="h-4 w-4" />
+                  <List className="h-[18px] w-[18px]" />
                 </button>
               </SheetTrigger>
               <SheetContent
@@ -410,7 +410,7 @@ const ResearchPreviewPage = () => {
                 <SheetHeader className={isRtl ? "text-right" : "text-left"}>
                   <SheetTitle className="text-base font-medium">{isRtl ? "المحتوى" : "Content"}</SheetTitle>
                 </SheetHeader>
-                <ul className="mt-6 min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pb-8 text-center text-base leading-relaxed [-webkit-overflow-scrolling:touch]">
+                <ul className="mt-4 min-h-0 flex-1 divide-y divide-border/60 overflow-y-auto overscroll-contain pb-8 [-webkit-overflow-scrolling:touch]">
                   {tocItems.map((it) => (
                     <li key={it.id}>
                       <a
@@ -419,12 +419,16 @@ const ResearchPreviewPage = () => {
                           e.preventDefault();
                           setTocOpen(false);
                           setTimeout(() => {
-                            document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }, 150);
+                            const el = document.getElementById(it.id);
+                            if (el) {
+                              const y = el.getBoundingClientRect().top + window.scrollY - 72;
+                              window.scrollTo({ top: y, behavior: "smooth" });
+                            }
+                          }, 200);
                         }}
-                        className={`block rounded px-2 text-muted-foreground transition hover:text-foreground ${
-                          it.level === 3 ? "text-sm" : "text-base"
-                        }`}
+                        className={`block py-3.5 text-foreground transition hover:text-primary ${
+                          it.level === 3 ? "ps-5 text-sm text-muted-foreground" : "text-[15px] font-medium"
+                        } ${isRtl ? "text-right" : "text-left"}`}
                       >
                         {it.text}
                       </a>
@@ -437,10 +441,10 @@ const ResearchPreviewPage = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+                className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/20 text-foreground shadow-[0_4px_16px_rgba(0,0,0,0.08)] backdrop-blur-xl transition hover:bg-white/30 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/20"
                 aria-label={isRtl ? "خيارات" : "Options"}
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="h-[18px] w-[18px]" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align={isRtl ? "start" : "end"} className="w-56">
