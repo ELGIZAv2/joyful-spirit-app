@@ -37,7 +37,7 @@ import { friendlyUserMessage, reportError } from "@/lib/errors";
 
 
 import DeepResearchToggle from "@/components/research/DeepResearchToggle";
-import { planResearchJob } from "@/lib/deepResearchJob";
+import { planResearchJob, cancelResearchJob, subscribeToResearchJob } from "@/lib/deepResearchJob";
 import ResearchJobBubble from "@/components/research/ResearchJobBubble";
 import SlidesToggle from "@/components/chat/SlidesToggle";
 import { SLIDES_TEMPLATES, isStandardSlides } from "@/lib/slidesTemplates";
