@@ -612,22 +612,10 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get("Authorization") || "";
-    const token = authHeader.replace(/^Bearer\s+/i, "");
-    if (!token) return json({ error: "auth_required" }, 401);
-
-    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-    const { data: userData } = await userClient.auth.getUser();
-    const user = userData?.user;
-    if (!user) return json({ error: "invalid_token" }, 401);
-
     const body = await req.json().catch(() => ({}));
     const action = body?.action || "start";
 
-    // ── Internal self-invocations (service-role authenticated). ─────────────
+    // ── Internal self-invocations (service-role authenticated). Bypass user auth.
     if (
       (action === "write_section" || action === "finalize") &&
       body?.__internal === SERVICE_ROLE &&
@@ -643,8 +631,18 @@ Deno.serve(async (req) => {
       return json({ accepted: true });
     }
 
-    const authHeaderOk = (req.headers.get("Authorization") || "").length > 0;
-    if (!authHeaderOk) return json({ error: "auth_required" }, 401);
+    // Public actions require user JWT.
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token) return json({ error: "auth_required" }, 401);
+
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: userData } = await userClient.auth.getUser();
+    const user = userData?.user;
+    if (!user) return json({ error: "invalid_token" }, 401);
 
     if (action === "cancel" && body?.jobId) {
       await admin.from("research_jobs")
