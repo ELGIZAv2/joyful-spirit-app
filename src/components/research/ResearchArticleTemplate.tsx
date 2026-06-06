@@ -162,16 +162,16 @@ const ResearchArticleTemplate = ({
     <div className="bg-background text-foreground">
       <article className="mx-auto max-w-[1200px] px-3 sm:px-8 lg:px-12">
         {/* Header */}
-        <header className="mx-auto max-w-[760px] pt-6 pb-6 sm:pt-20 sm:pb-14">
-          <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground sm:text-xs">
-            {isRtl ? "Deep research" : "Deep Research"}
-          </div>
+        <header
+          dir={isRtl ? "rtl" : "ltr"}
+          className="mx-auto max-w-[760px] pt-6 pb-4 sm:pt-20 sm:pb-10"
+        >
           <motion.h1
             dir="auto"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-3 break-words font-display text-[26px] leading-[1.2] font-semibold tracking-tight text-foreground sm:mt-4 sm:text-5xl sm:leading-tight md:text-6xl"
+            className="break-words font-display text-[28px] leading-[1.25] font-bold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15] md:text-6xl"
           >
             {data.query}
           </motion.h1>
@@ -222,20 +222,12 @@ const ResearchArticleTemplate = ({
                       dir={isRtl ? "rtl" : "ltr"}
                       className="scroll-mt-24"
                     >
-                      <div className="mt-10 mb-4 sm:mt-20 sm:mb-6">
-                        <div className="flex items-center gap-3">
-                          <span className="font-mono text-xs font-medium tabular-nums text-primary">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="h-px flex-1 bg-border" />
-                        </div>
-                        <h2
-                          dir="auto"
-                          className="mt-3 break-words font-display text-[22px] leading-[1.25] font-semibold tracking-tight text-foreground sm:text-[40px] sm:leading-[1.15]"
-                        >
-                          {s.heading}
-                        </h2>
-                      </div>
+                      <h2
+                        dir="auto"
+                        className="mt-10 mb-4 break-words font-display text-[22px] leading-[1.3] font-bold tracking-tight text-foreground sm:mt-16 sm:mb-6 sm:text-[34px] sm:leading-[1.2]"
+                      >
+                        {s.heading}
+                      </h2>
                       <ReactMarkdown remarkPlugins={[remarkGfm]} components={md}>
                         {s.body}
                       </ReactMarkdown>
