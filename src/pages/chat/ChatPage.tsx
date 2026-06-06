@@ -388,6 +388,12 @@ const ChatPage = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [activeResearchJobId, setActiveResearchJobId] = useState<string | null>(null);
+  const handleResearchRunningChange = useCallback((jobId: string, running: boolean) => {
+    setActiveResearchJobId((current) => {
+      if (running) return jobId;
+      return current === jobId ? null : current;
+    });
+  }, []);
   // Auto-clear the active research-job tracker when the job reaches a terminal state.
   useEffect(() => {
     if (!activeResearchJobId) return;
@@ -4321,6 +4327,7 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                           jobId={msg.researchJobId}
                           conversationId={conversationId}
                           turnIndex={i}
+                          onRunningChange={handleResearchRunningChange}
                         />
                       </div>
                     )}

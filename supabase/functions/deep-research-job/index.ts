@@ -63,6 +63,10 @@ async function selfInvoke(action: string, payload: Record<string, unknown>) {
   }
 }
 
+async function queueTick(jobId: string, delayMs = 500) {
+  await selfInvoke("tick", { jobId, delayMs });
+}
+
 type JobPatch = Record<string, unknown>;
 
 async function patchJob(jobId: string, patch: JobPatch) {
@@ -84,14 +88,14 @@ async function appendStep(jobId: string, step: Record<string, unknown>) {
 async function llmJSON<T = unknown>(systemPrompt: string, userPrompt: string): Promise<T | null> {
   const router = await getLLM();
   if (!router) return null;
-  // Retry up to 3 times with exponential backoff to absorb transient LLM
-  // timeouts (the gateway occasionally takes >45s on outline calls).
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // Keep JSON calls short; if they time out we fall back to safe defaults so
+  // the edge runtime never burns its whole budget waiting on one model call.
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const res = await fetch(router.url, {
         method: "POST",
         headers: { Authorization: `Bearer ${router.key}`, "Content-Type": "application/json" },
-        signal: AbortSignal.timeout(90_000),
+        signal: AbortSignal.timeout(25_000),
         body: JSON.stringify({
           model: router.mapModel(ROUTER_MODELS.deepResearch),
           messages: [
@@ -109,7 +113,7 @@ async function llmJSON<T = unknown>(systemPrompt: string, userPrompt: string): P
       return JSON.parse(cleaned) as T;
     } catch (e) {
       console.warn(`[llmJSON] attempt ${attempt + 1} failed`, e);
-      if (attempt < 2) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      if (attempt < 1) await new Promise((r) => setTimeout(r, 1000));
     }
   }
   return null;
@@ -122,6 +126,7 @@ async function llmText(systemPrompt: string, userPrompt: string, temperature = 0
     const res = await fetch(router.url, {
       method: "POST",
       headers: { Authorization: `Bearer ${router.key}`, "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(45_000),
       body: JSON.stringify({
         model: router.mapModel(ROUTER_MODELS.deepResearch),
         messages: [
@@ -368,6 +373,7 @@ Requirements:
 async function writeSectionAndSave(jobId: string, sectionIndex: number) {
   const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
   if (!job) return;
+  if (["succeeded", "failed", "cancelled"].includes(String((job as any).status))) return;
   const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
   const sec = outline[sectionIndex];
   if (!sec) return;
@@ -572,6 +578,11 @@ async function tickJob(jobId: string) {
   }
   if ((job as any).awaiting_approval) return { ok: true, status: "awaiting_approval" };
 
+  if ((job as any).status === "queued" || (job as any).status === "searching") {
+    await runFullPipeline(jobId);
+    return { ok: true, status: "searching" };
+  }
+
   const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
   const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
   if ((job as any).status === "synthesizing" && outline.length > 0) {
@@ -699,9 +710,9 @@ async function runFullPipeline(jobId: string) {
     });
     await appendStep(jobId, { type: "outline", sections: outline.length });
 
-    // Start one writer; each section dispatches the next one. This avoids
-    // flooding the LLM gateway and prevents long reports from getting stuck.
-    await selfInvoke("write_section", { jobId, sectionIndex: 0 });
+    // Start one writer via a follow-up invocation. The public request returns
+    // immediately; if the browser/edge runtime dies, ticks can resume it.
+    await queueTick(jobId);
 
     // Watchdog: in ~90s, re-dispatch any still-empty sections; after 3 rounds force-finalize.
     selfInvoke("watchdog", { jobId, round: 0, delayMs: 90_000 });

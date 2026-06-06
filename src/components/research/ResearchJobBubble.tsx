@@ -12,9 +12,10 @@ interface Props {
   conversationId?: string | null;
   /** Index of this card in the conversation (for sessionKey). */
   turnIndex?: number;
+  onRunningChange?: (jobId: string, running: boolean) => void;
 }
 
-const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0 }: Props) => {
+const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0, onRunningChange }: Props) => {
   const [job, setJob] = useState<ResearchJob | null>(null);
   const [editing, setEditing] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -27,21 +28,24 @@ const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0 }: Props) => {
   }, [jobId]);
 
   useEffect(() => {
-    if (!job || job.status !== "synthesizing") return;
+    if (!job) return;
+    const running = job.awaiting_approval || ["queued", "planning", "awaiting_approval", "searching", "synthesizing"].includes(job.status);
+    onRunningChange?.(jobId, running);
+    if (!running || job.awaiting_approval || job.status === "awaiting_approval") return;
     let stopped = false;
     const runTick = () => {
       const lastUpdate = new Date(job.updated_at).getTime();
-      if (!stopped && !Number.isNaN(lastUpdate) && Date.now() - lastUpdate >= 45_000) {
+      if (!stopped && !Number.isNaN(lastUpdate) && Date.now() - lastUpdate >= 20_000) {
         tickResearchJob(jobId).catch(() => {});
       }
     };
     runTick();
-    const id = window.setInterval(runTick, 30_000);
+    const id = window.setInterval(runTick, 20_000);
     return () => {
       stopped = true;
       window.clearInterval(id);
     };
-  }, [job, jobId]);
+  }, [job, jobId, onRunningChange]);
 
   // Persist final report to research_reports so the preview page can open it via sessionKey.
   useEffect(() => {
