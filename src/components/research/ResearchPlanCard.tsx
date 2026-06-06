@@ -83,24 +83,27 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
                   <span className="flex-1 text-[15px] font-semibold text-foreground">{phase.title}</span>
                 </button>
                 {open && phase.items.length > 0 && (
-                  <ol className={`mt-3 space-y-2 ${isRtl ? "pr-7" : "pl-7"} text-[13px] leading-[1.85] text-foreground/80`}>
+                  <ul className={`mt-3 space-y-2.5 ${isRtl ? "pr-7" : "pl-7"} text-[13px] leading-[1.8] text-foreground/80`}>
                     {visibleItems.map((step, i) => (
-                      <li key={i}>
-                        <span className="text-foreground/60">({i + 1})</span> {step}
+                      <li key={i} className="flex gap-2.5">
+                        <span className="shrink-0 tabular-nums text-foreground/45 font-medium min-w-[1.25rem]">
+                          {i + 1}.
+                        </span>
+                        <span className="flex-1">{step}</span>
                       </li>
                     ))}
                     {hidden > 0 && (
-                      <li>
+                      <li className={isRtl ? "pr-[1.75rem]" : "pl-[1.75rem]"}>
                         <button
                           type="button"
                           onClick={() => setShowMore(true)}
-                          className="text-foreground/60 hover:text-foreground transition-colors"
+                          className="text-foreground/55 hover:text-foreground transition-colors text-[13px]"
                         >
-                          {isRtl ? "المزيد" : "More"}
+                          {isRtl ? `عرض المزيد (${hidden})` : `Show more (${hidden})`}
                         </button>
                       </li>
                     )}
-                  </ol>
+                  </ul>
                 )}
               </li>
             );
