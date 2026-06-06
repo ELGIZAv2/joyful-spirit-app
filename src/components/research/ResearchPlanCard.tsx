@@ -29,30 +29,25 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
   const sample = goal || steps[0] || "";
   const isRtl = /[\u0600-\u06FF\u0750-\u077F]/.test(sample);
 
-  // Split the steps into 3 phases: research topics, analysis, report drafting.
-  const phases: { title: string; icon: typeof Search; items: string[] }[] = (() => {
-    if (steps.length === 0) return [];
-    const n = steps.length;
-    const a = Math.max(1, Math.ceil(n / 3));
-    const b = Math.max(a + 1, Math.ceil((2 * n) / 3));
-    return [
-      {
-        title: isRtl ? "المواضيع التي سيبحث عنها" : "Topics to research",
-        icon: Search,
-        items: steps.slice(0, a),
-      },
-      {
-        title: isRtl ? "تحليل النتائج" : "Analyze results",
-        icon: BarChart3,
-        items: steps.slice(a, b),
-      },
-      {
-        title: isRtl ? "إعداد التقرير" : "Prepare the report",
-        icon: FileText,
-        items: steps.slice(b),
-      },
-    ].filter((p) => p.items.length > 0);
-  })();
+  // All user-provided steps are the research topics. The other two phases
+  // are descriptive labels for what happens after topics are gathered.
+  const phases: { title: string; icon: typeof Search; items: string[] }[] = [
+    {
+      title: isRtl ? "المواضيع التي سيبحث عنها" : "Topics to research",
+      icon: Search,
+      items: steps,
+    },
+    {
+      title: isRtl ? "تحليل النتائج" : "Analyze results",
+      icon: BarChart3,
+      items: [],
+    },
+    {
+      title: isRtl ? "إعداد التقرير" : "Prepare the report",
+      icon: FileText,
+      items: [],
+    },
+  ];
 
   return (
     <motion.div
