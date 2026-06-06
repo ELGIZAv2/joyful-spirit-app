@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, FileText, BarChart3, Clock, Loader2 } from "lucide-react";
+import { Search, FileText, BarChart3, Clock, Loader2, ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export interface ResearchPlan {
@@ -17,17 +17,41 @@ interface Props {
   loading?: boolean;
 }
 
-const stepIcons = [Search, BarChart3, FileText];
-
 const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdit, loading }: Props) => {
   const [starting, setStarting] = useState(false);
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
   const steps = (plan.steps || []).map((s) => s.trim()).filter(Boolean);
   const goal = (plan.goal || "").trim();
   if (!goal && steps.length === 0) return null;
 
-  // Show only first 3 steps + collapsed summary like Gemini
-  const visibleSteps = steps.slice(0, 3);
-  const remaining = steps.length - visibleSteps.length;
+  // Detect RTL from goal/steps content
+  const sample = goal || steps[0] || "";
+  const isRtl = /[\u0600-\u06FF\u0750-\u077F]/.test(sample);
+
+  // Split the steps into 3 phases: research topics, analysis, report drafting.
+  const phases: { title: string; icon: typeof Search; items: string[] }[] = (() => {
+    if (steps.length === 0) return [];
+    const n = steps.length;
+    const a = Math.max(1, Math.ceil(n / 3));
+    const b = Math.max(a + 1, Math.ceil((2 * n) / 3));
+    return [
+      {
+        title: isRtl ? "المواضيع التي سيبحث عنها" : "Topics to research",
+        icon: Search,
+        items: steps.slice(0, a),
+      },
+      {
+        title: isRtl ? "تحليل النتائج" : "Analyze results",
+        icon: BarChart3,
+        items: steps.slice(a, b),
+      },
+      {
+        title: isRtl ? "إعداد التقرير" : "Prepare the report",
+        icon: FileText,
+        items: steps.slice(b),
+      },
+    ].filter((p) => p.items.length > 0);
+  })();
 
   return (
     <motion.div
@@ -46,23 +70,36 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
           </h3>
         )}
 
-        <ol className="space-y-3.5">
-          {visibleSteps.map((step, i) => {
-            const Icon = stepIcons[i] || Search;
+        <ul className="space-y-2" dir={isRtl ? "rtl" : "ltr"}>
+          {phases.map((phase, idx) => {
+            const Icon = phase.icon;
+            const open = openIdx === idx;
             return (
-              <li key={i} className="flex items-start gap-3">
-                <Icon className="w-4 h-4 mt-0.5 text-foreground/70 shrink-0" />
-                <span className="text-sm text-foreground/90 leading-relaxed">{step}</span>
+              <li key={idx} className="rounded-2xl border border-border/40 bg-background/40">
+                <button
+                  type="button"
+                  onClick={() => setOpenIdx(open ? null : idx)}
+                  className="flex w-full items-center gap-3 px-3.5 py-3 text-start"
+                >
+                  <Icon className="h-4 w-4 shrink-0 text-foreground/70" />
+                  <span className="flex-1 text-sm font-medium text-foreground">{phase.title}</span>
+                  <span className="text-[11px] text-muted-foreground">{phase.items.length}</span>
+                  <ChevronDown className={`h-4 w-4 text-foreground/50 transition-transform ${open ? "rotate-180" : ""}`} />
+                </button>
+                {open && (
+                  <ol className="space-y-2.5 px-3.5 pb-3.5 pt-1">
+                    {phase.items.map((step, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-foreground/85">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/40" />
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </li>
             );
           })}
-          {remaining > 0 && (
-            <li className="flex items-start gap-3 text-foreground/60">
-              <span className="w-4" />
-              <span className="text-xs">+{remaining} more</span>
-            </li>
-          )}
-        </ol>
+        </ul>
 
         {awaitingApproval && (
           <div className="mt-5 pt-4 border-t border-border/40 flex items-center gap-2 text-xs text-muted-foreground">
