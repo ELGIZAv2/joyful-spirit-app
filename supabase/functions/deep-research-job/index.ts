@@ -91,6 +91,7 @@ async function llmText(systemPrompt: string, userPrompt: string, temperature = 0
           { role: "user", content: userPrompt },
         ],
         temperature,
+        max_tokens: 8000,
       }),
     });
     const json = await res.json();
@@ -267,19 +268,56 @@ async function analystAgent(
     .filter((e) => e.text)
     .map((e, i) => `### Source ${i + 1}: ${e.url}\n${e.text}`)
     .join("\n\n---\n\n")
-    .slice(0, 60_000);
+    .slice(0, 120_000);
   const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
 
-  return await llmText(
-    `You are a meticulous research analyst. Write a comprehensive, well-structured research report in Markdown.
-- Clean H2/H3 hierarchy, short paragraphs, tight bullet lists, real tables where useful (use markdown table syntax).
-- Inline numeric citations like [1], [2] mapping to the source list.
-- End with a "## Sources" section listing each cited source.
-- LANGUAGE: mirror the user's exact language AND dialect (Arabic: Egyptian, Khaleeji, Levantine, Maghrebi, MSA — preserve what they used). Language hint: ${language || "auto-detect"}.
-- Be balanced, specific, deep. NO generic filler. NO fake numbers. If you don't have a fact, omit it.`,
-    `Research topic: ${query}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
-    0.3,
+  // Phase 1: build a long outline (10-16 H2 sections, each with sub-bullets).
+  type Outline = { sections: { heading: string; bullets: string[] }[] };
+  const outline = await llmJSON<Outline>(
+    `You are the lead editor of a long-form research report. Produce an EXHAUSTIVE outline.
+Return JSON: { "sections": [{ "heading": "...", "bullets": ["...","..."] }, ...] }.
+Requirements:
+- 10 to 16 H2 sections covering background, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, controversies, future outlook, practical takeaways.
+- Each section has 4-7 specific bullets describing exactly what to cover.
+- Avoid generic headings. Tailor every heading to the topic.
+- Match the user's exact language AND dialect. Language hint: ${language || "auto-detect"}.`,
+    `Topic: ${query}\n\nSource list:\n${sourceList}\n\nContext (truncated):\n${context.slice(0, 40_000)}`,
   );
+  const sectionPlan = (outline?.sections || []).slice(0, 16).filter((s) => s?.heading);
+  if (sectionPlan.length === 0) {
+    return await llmText(
+      `You are a meticulous research analyst. Write a VERY LONG, deeply detailed research report in Markdown (target 6000+ words).
+- 10-14 H2 sections with sub-headings (###), bullet lists, and at least 2 real markdown tables.
+- Inline numeric citations like [1], [2] mapping to the source list. Do NOT add a Sources section at the end.
+- LANGUAGE: mirror the user's exact language AND dialect. Language hint: ${language || "auto-detect"}.
+- Be specific and deep. No filler. No fabricated numbers.`,
+      `Topic: ${query}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
+      0.35,
+    );
+  }
+
+  // Phase 2: write each section as a long, standalone deep-dive.
+  const parts: string[] = [];
+  for (let i = 0; i < sectionPlan.length; i++) {
+    const sec = sectionPlan[i];
+    const prior = parts.slice(-2).join("\n\n").slice(0, 4000);
+    const body = await llmText(
+      `You are writing ONE section of a very long-form research report.
+Write 700-1100 words of dense, specific Markdown for the section heading provided.
+Rules:
+- Start the section with: ## ${sec.heading}
+- Use ### sub-headings, tight bullets, and a markdown table if it helps comparison/numbers.
+- Inline numeric citations like [1], [2] mapping to the provided source list (only cite when the fact comes from the context).
+- Do NOT repeat content already written in prior sections.
+- Do NOT write an intro/outro for the whole report — just the section.
+- Do NOT write a Sources section. Do NOT invent numbers.
+- Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
+      `Overall topic: ${query}\nSection ${i + 1} of ${sectionPlan.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}\n\nRecently written (avoid repeating):\n${prior}`,
+      0.35,
+    );
+    if (body && body.trim()) parts.push(body.trim());
+  }
+  return parts.join("\n\n");
 }
 
 // ---- Critic agent: writes the AI's internal thinking summary ----

@@ -106,6 +106,12 @@ export const normalizeResearchReport = (raw: string): string => {
   // 11) Trim leading/trailing blank lines and stray horizontal rules at top
   s = s.replace(/^\s*(?:-{3,}\s*\n+)+/, "").trim();
 
+  // 12) Strip any trailing "Sources / المصادر / المراجع" section emitted by the model.
+  s = s.replace(
+    /\n+#{1,6}\s*(sources|references|المصادر|المراجع|مصادر)\b[\s\S]*$/i,
+    "",
+  ).trim();
+
   return s;
 };
 
