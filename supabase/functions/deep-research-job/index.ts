@@ -310,78 +310,163 @@ async function extractPage(url: string): Promise<string> {
   }
 }
 
-// ---- Analyst agent: writes the report ----
-async function analystAgent(
+// ---- Outline builder (replaces inline analyst) ----
+type OutlineSection = { heading: string; bullets: string[] };
+
+async function buildOutline(
   query: string,
   language: string | null,
   sources: Source[],
   excerpts: { url: string; text: string }[],
-): Promise<string> {
+): Promise<OutlineSection[]> {
   const context = excerpts
     .filter((e) => e.text)
     .map((e, i) => `### Source ${i + 1}: ${e.url}\n${e.text}`)
     .join("\n\n---\n\n")
-    .slice(0, 120_000);
+    .slice(0, 60_000);
   const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
-
-  // Phase 1: build a long outline (10-16 H2 sections, each with sub-bullets).
-  type Outline = { sections: { heading: string; bullets: string[] }[] };
+  type Outline = { sections: OutlineSection[] };
   const outline = await llmJSON<Outline>(
-    `You are the lead editor of a long-form research report. Produce an EXHAUSTIVE outline.
+    `You are the lead editor of a MASSIVE long-form research report (target 20,000+ words total).
 Return JSON: { "sections": [{ "heading": "...", "bullets": ["...","..."] }, ...] }.
 Requirements:
-- 10 to 16 H2 sections covering background, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, controversies, future outlook, practical takeaways.
-- Each section has 4-7 specific bullets describing exactly what to cover.
+- 14 to 20 H2 sections covering background, history, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, real-world examples, controversies, future outlook, practical takeaways, FAQs.
+- Each section has 5-9 specific bullets describing exactly what that section must cover (very concrete, not generic).
 - Avoid generic headings. Tailor every heading to the topic.
 - Match the user's exact language AND dialect. Language hint: ${language || "auto-detect"}.`,
-    `Topic: ${query}\n\nSource list:\n${sourceList}\n\nContext (truncated):\n${context.slice(0, 40_000)}`,
+    `Topic: ${query}\n\nSource list:\n${sourceList}\n\nContext (truncated):\n${context.slice(0, 30_000)}`,
   );
-  const sectionPlan = (outline?.sections || []).slice(0, 16).filter((s) => s?.heading);
-  if (sectionPlan.length === 0) {
-    return await llmText(
-      `You are a meticulous research analyst. Write a VERY LONG, deeply detailed research report in Markdown (target 6000+ words).
-- 10-14 H2 sections with sub-headings (###), bullet lists, and at least 2 real markdown tables.
-- Inline numeric citations like [1], [2] mapping to the source list. Do NOT add a Sources section at the end.
-- LANGUAGE: mirror the user's exact language AND dialect. Language hint: ${language || "auto-detect"}.
-- Be specific and deep. No filler. No fabricated numbers.`,
-      `Topic: ${query}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
-      0.35,
-    );
+  const plan = (outline?.sections || []).slice(0, 20).filter((s) => s?.heading);
+  return plan;
+}
+
+/**
+ * Write a single section. Runs in its own edge function invocation so it has
+ * its own ~150s CPU budget — plenty for 1500-2500 words.
+ */
+async function writeSectionAndSave(jobId: string, sectionIndex: number) {
+  const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
+  if (!job) return;
+  const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
+  const sec = outline[sectionIndex];
+  if (!sec) return;
+
+  const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+  if (sections[sectionIndex] && sections[sectionIndex].length > 200) {
+    // already written — skip
+    return await maybeFinalize(jobId);
   }
 
-  // Phase 2: write all sections in parallel (with bounded concurrency) so we
-  // don't exceed the edge function wall-time budget on long reports.
-  const plan = sectionPlan.slice(0, 12);
-  const writeOne = async (sec: { heading: string; bullets: string[] }, i: number) => {
-    const body = await llmText(
-      `You are writing ONE section of a very long-form research report.
-Write 600-900 words of dense, specific Markdown for the section heading provided.
+  const excerpts: { url: string; text: string }[] =
+    Array.isArray((job as any).context_excerpts) ? (job as any).context_excerpts : [];
+  const sources: Source[] = Array.isArray(job.sources) ? job.sources : [];
+  const language: string | null = job.language;
+  const query: string = job.plan_goal || job.query;
+
+  const context = excerpts
+    .filter((e) => e.text)
+    .map((e, i) => `### Source ${i + 1}: ${e.url}\n${e.text}`)
+    .join("\n\n---\n\n")
+    .slice(0, 80_000);
+  const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
+
+  const body = await llmText(
+    `You are writing ONE section of a MASSIVE long-form research report.
+Write 1500-2500 words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
 Rules:
 - Start the section with: ## ${sec.heading}
-- Use ### sub-headings, tight bullets, and a markdown table if it helps comparison/numbers.
-- Inline numeric citations like [1], [2] mapping to the provided source list (only cite when the fact comes from the context).
-- Do NOT write an intro/outro for the whole report — just the section.
-- Do NOT write a Sources section. Do NOT invent numbers.
+- Use multiple ### sub-headings, tight bullet lists, and at least one markdown table if it helps comparisons or numbers.
+- Inline numeric citations like [1], [2] mapping to the provided source list (only cite when the fact comes from the context). Do NOT invent numbers.
+- Do NOT write an intro/outro for the whole report — just this section. Do NOT add "## Sources".
+- Be specific, concrete, example-rich. No filler. No restating the heading in a bland topic sentence.
 - Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
-      `Overall topic: ${query}\nSection ${i + 1} of ${plan.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
-      0.35,
-    );
-    return (body || "").trim();
-  };
-  // Bounded concurrency of 4 to avoid rate-limit spikes while staying fast.
-  const parts: string[] = new Array(plan.length).fill("");
-  const concurrency = 4;
-  let cursor = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, plan.length) }, async () => {
-      while (true) {
-        const i = cursor++;
-        if (i >= plan.length) break;
-        try { parts[i] = await writeOne(plan[i], i); } catch { parts[i] = ""; }
-      }
-    }),
+    `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
+    0.4,
   );
-  return parts.filter(Boolean).join("\n\n");
+
+  // Re-fetch latest sections array (other concurrent writers may have updated it) and merge.
+  const { data: cur } = await admin.from("research_jobs").select("report_sections, outline").eq("id", jobId).maybeSingle();
+  const latest: string[] = Array.isArray((cur as any)?.report_sections) ? (cur as any).report_sections : [];
+  const outlineLen = Array.isArray((cur as any)?.outline) ? (cur as any).outline.length : outline.length;
+  while (latest.length < outlineLen) latest.push("");
+  latest[sectionIndex] = (body || "").trim();
+  const done = latest.filter((t) => t && t.length > 100).length;
+
+  await patchJob(jobId, {
+    report_sections: latest,
+    progress: 50 + Math.min(45, Math.round((done / outlineLen) * 45)),
+    stage: `Writing section ${done}/${outlineLen}`,
+  });
+
+  await maybeFinalize(jobId);
+}
+
+async function maybeFinalize(jobId: string) {
+  const { data: job } = await admin
+    .from("research_jobs")
+    .select("status, outline, report_sections")
+    .eq("id", jobId)
+    .maybeSingle();
+  if (!job) return;
+  if ((job as any).status === "succeeded" || (job as any).status === "failed") return;
+  const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
+  const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+  const completed = sections.filter((t) => t && t.length > 100).length;
+  if (outline.length === 0 || completed < outline.length) return;
+  // Atomically claim finalize: only continue if status is still synthesizing.
+  const { data: claimed } = await admin
+    .from("research_jobs")
+    .update({ status: "synthesizing", stage: "Assembling report" })
+    .eq("id", jobId)
+    .in("status", ["searching", "synthesizing"])
+    .select("id")
+    .maybeSingle();
+  if (!claimed) return; // someone else is finalizing
+  selfInvoke("finalize", { jobId });
+}
+
+async function finalizeReport(jobId: string) {
+  const startedAt = Date.now();
+  try {
+    const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
+    if (!job) return;
+    if (job.status === "succeeded") return;
+    const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+    const language: string | null = job.language;
+    const query: string = job.plan_goal || job.query;
+    const sources: Source[] = Array.isArray(job.sources) ? job.sources : [];
+    const excerpts: { url: string; text: string }[] =
+      Array.isArray((job as any).context_excerpts) ? (job as any).context_excerpts : [];
+
+    const report = sections.filter(Boolean).join("\n\n");
+    await patchJob(jobId, { progress: 95, stage: "Reflecting", report });
+
+    const used = excerpts.filter((e) => e.text).length;
+    const usedUrls = new Set(excerpts.filter((e) => e.text).map((e) => e.url));
+    const unused = sources.filter((s) => !usedUrls.has(s.url));
+    const thinking = await criticAgent(query, language, report, used, unused.length);
+
+    const finishedAt = Date.now();
+    const dur = finishedAt - new Date(job.started_at || finishedAt).getTime();
+    await patchJob(jobId, {
+      status: "succeeded",
+      progress: 100,
+      stage: "Done",
+      report,
+      thinking,
+      unused_sources: unused,
+      finished_at: new Date(finishedAt).toISOString(),
+      duration_ms: dur,
+    });
+    await appendStep(jobId, { type: "done", length: report.length, sections: sections.length });
+  } catch (e) {
+    await patchJob(jobId, {
+      status: "failed",
+      stage: "Failed",
+      error: (e as Error)?.message || String(e),
+      finished_at: new Date().toISOString(),
+    });
+  }
 }
 
 // ---- Critic agent: writes the AI's internal thinking summary ----
