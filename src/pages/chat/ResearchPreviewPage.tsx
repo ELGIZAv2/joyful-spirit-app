@@ -411,7 +411,7 @@ const ResearchPreviewPage = () => {
                 <MoreHorizontal className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align={isRtl ? "start" : "end"} dir={isRtl ? "rtl" : "ltr"} className="w-56">
+            <DropdownMenuContent align={isRtl ? "start" : "end"} className="w-56">
               <DropdownMenuItem onClick={handleCopy}>
                 <Copy className="h-4 w-4" />
                 <span>{isRtl ? "نسخ المحتوى" : "Copy"}</span>
