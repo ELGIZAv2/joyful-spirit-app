@@ -371,8 +371,8 @@ const ResearchPreviewPage = () => {
       <ScrollProgress />
       <ResearchToc markdown={cleanReport} isRtl={isRtl} />
 
-      <header className="sticky top-0 z-30 bg-transparent pointer-events-none">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6 pointer-events-none">
+      <header className="fixed inset-x-0 top-0 z-50 bg-transparent pointer-events-none">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-3 sm:px-6 pointer-events-none">
           <button
             onClick={() => {
               const uuidRe = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
