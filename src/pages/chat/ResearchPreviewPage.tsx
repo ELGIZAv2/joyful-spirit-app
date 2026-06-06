@@ -447,17 +447,30 @@ const ResearchPreviewPage = () => {
                 <MoreHorizontal className="h-[18px] w-[18px]" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align={isRtl ? "start" : "end"} className="w-56">
-              <DropdownMenuItem onClick={handleCopy}>
-                <Copy className="h-4 w-4" />
+            <DropdownMenuContent
+              align={isRtl ? "start" : "end"}
+              sideOffset={10}
+              className="w-60 overflow-hidden rounded-2xl border border-white/40 bg-white/30 p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-white/10 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]"
+            >
+              <DropdownMenuItem
+                onClick={handleCopy}
+                className="gap-3 rounded-xl px-3 py-2.5 text-[14px] text-foreground focus:bg-white/40 dark:focus:bg-white/15"
+              >
+                <Copy className="h-[18px] w-[18px]" />
                 <span>{isRtl ? "نسخ المحتوى" : "Copy"}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleNativeShare}>
-                <Share2 className="h-4 w-4" />
+              <DropdownMenuItem
+                onClick={handleNativeShare}
+                className="gap-3 rounded-xl px-3 py-2.5 text-[14px] text-foreground focus:bg-white/40 dark:focus:bg-white/15"
+              >
+                <Share2 className="h-[18px] w-[18px]" />
                 <span>{isRtl ? "مشاركة" : "Share"}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDriveUpload}>
-                <CloudUpload className="h-4 w-4" />
+              <DropdownMenuItem
+                onClick={handleDriveUpload}
+                className="gap-3 rounded-xl px-3 py-2.5 text-[14px] text-foreground focus:bg-white/40 dark:focus:bg-white/15"
+              >
+                <CloudUpload className="h-[18px] w-[18px]" />
                 <span>{isRtl ? "حفظ في Google Drive" : "Save to Google Drive"}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
