@@ -84,29 +84,35 @@ async function appendStep(jobId: string, step: Record<string, unknown>) {
 async function llmJSON<T = unknown>(systemPrompt: string, userPrompt: string): Promise<T | null> {
   const router = await getLLM();
   if (!router) return null;
-  try {
-    const res = await fetch(router.url, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${router.key}`, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(45_000),
-      body: JSON.stringify({
-        model: router.mapModel(ROUTER_MODELS.deepResearch),
-        messages: [
-          { role: "system", content: systemPrompt + "\n\nRespond ONLY with valid JSON. No markdown, no code fences." },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.5,
-        response_format: { type: "json_object" },
-      }),
-    });
-    const json = await res.json();
-    const text: string = json?.choices?.[0]?.message?.content || "";
-    const cleaned = text.replace(/^```json\s*|\s*```$/g, "").trim();
-    return JSON.parse(cleaned) as T;
-  } catch (e) {
-    console.warn("[llmJSON] parse failed", e);
-    return null;
+  // Retry up to 3 times with exponential backoff to absorb transient LLM
+  // timeouts (the gateway occasionally takes >45s on outline calls).
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(router.url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${router.key}`, "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(90_000),
+        body: JSON.stringify({
+          model: router.mapModel(ROUTER_MODELS.deepResearch),
+          messages: [
+            { role: "system", content: systemPrompt + "\n\nRespond ONLY with valid JSON. No markdown, no code fences." },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.5,
+          response_format: { type: "json_object" },
+        }),
+      });
+      const json = await res.json();
+      const text: string = json?.choices?.[0]?.message?.content || "";
+      const cleaned = text.replace(/^```json\s*|\s*```$/g, "").trim();
+      if (!cleaned) throw new Error("empty_llm_response");
+      return JSON.parse(cleaned) as T;
+    } catch (e) {
+      console.warn(`[llmJSON] attempt ${attempt + 1} failed`, e);
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+    }
   }
+  return null;
 }
 
 async function llmText(systemPrompt: string, userPrompt: string, temperature = 0.4, maxTokens = 3000): Promise<string> {
