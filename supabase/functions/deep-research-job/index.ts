@@ -807,6 +807,13 @@ Deno.serve(async (req) => {
       return json({ success: true, jobId: body.jobId });
     }
 
+    // Only "start" and "plan" can create a new job. Any other action without
+    // a matching jobId branch above is a bad request — do NOT fall through to
+    // job creation (which would fail with query_required).
+    if (action !== "start" && action !== "plan") {
+      return json({ error: "bad_request", action, hint: "missing or invalid jobId for this action" }, 400);
+    }
+
     // start / plan: create job
     const query: string = (body?.query || "").toString().trim();
     if (!query) return json({ error: "query_required" }, 400);
