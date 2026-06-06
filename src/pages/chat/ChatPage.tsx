@@ -4905,9 +4905,6 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                             aria-label="Report depth"
                             aria-expanded={researchDepthOpen}
                           >
-                            <svg viewBox="0 0 24 24" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M3 12h4l3-8 4 16 3-8h4" />
-                            </svg>
                             <span>{researchDepth === "lite" ? "Lite" : researchDepth === "medium" ? "Medium" : "Max"}</span>
                             <ChevronDown className={`w-3 h-3 opacity-70 transition-transform ${researchDepthOpen ? "rotate-180" : ""}`} />
                           </button>
@@ -4920,12 +4917,12 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                                   animate={{ opacity: 1, y: 0, scale: 1 }}
                                   exit={{ opacity: 0, y: 6, scale: 0.97 }}
                                   transition={{ duration: 0.15, ease: "easeOut" }}
-                                  className="absolute bottom-full mb-2 left-0 z-[61] w-[260px] rounded-2xl border border-border/60 bg-popover/95 backdrop-blur-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.45)] p-1.5"
+                                  className="absolute bottom-full mb-2 right-0 z-[61] w-[200px] max-w-[calc(100vw-2rem)] rounded-2xl border border-border/60 bg-popover/95 backdrop-blur-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.45)] p-1.5"
                                 >
                                   {([
-                                    { id: "lite" as const, label: "Lite", desc: "~6 sections · ~3k words · ~30s" },
-                                    { id: "medium" as const, label: "Medium", desc: "~12 sections · ~12k words · ~2min" },
-                                    { id: "max" as const, label: "Max", desc: "~20 sections · ~30k+ words · ~4min" },
+                                    { id: "lite" as const, label: "Lite", desc: "تقرير قصير" },
+                                    { id: "medium" as const, label: "Medium", desc: "تقرير متوسط" },
+                                    { id: "max" as const, label: "Max", desc: "تقرير ضخم" },
                                   ]).map(d => {
                                     const active = researchDepth === d.id;
                                     return (
