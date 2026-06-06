@@ -709,9 +709,9 @@ async function runFullPipeline(jobId: string) {
     });
     await appendStep(jobId, { type: "outline", sections: outline.length });
 
-    // Start one writer; each section dispatches the next one. This avoids
-    // flooding the LLM gateway and prevents long reports from getting stuck.
-    await selfInvoke("write_section", { jobId, sectionIndex: 0 });
+    // Start one writer via a follow-up invocation. The public request returns
+    // immediately; if the browser/edge runtime dies, ticks can resume it.
+    await queueTick(jobId);
 
     // Watchdog: in ~90s, re-dispatch any still-empty sections; after 3 rounds force-finalize.
     selfInvoke("watchdog", { jobId, round: 0, delayMs: 90_000 });
