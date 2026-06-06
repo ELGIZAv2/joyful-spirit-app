@@ -4896,6 +4896,59 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                           <span className="truncate max-w-[140px]">{findSlidesTemplate(slidesTemplate).name}</span>
                         </button>
                       ) : null}
+                      {chatMode === "deep-research" ? (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setResearchDepthOpen(v => !v)}
+                            className="inline-flex items-center gap-1.5 h-8 pl-2.5 pr-2.5 rounded-full border border-border/60 text-foreground/85 hover:text-foreground hover:bg-foreground/10 hover:border-foreground/30 transition-colors text-[12px] font-medium capitalize"
+                            aria-label="Report depth"
+                            aria-expanded={researchDepthOpen}
+                          >
+                            <svg viewBox="0 0 24 24" className="w-[14px] h-[14px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 12h4l3-8 4 16 3-8h4" />
+                            </svg>
+                            <span>{researchDepth === "lite" ? "Lite" : researchDepth === "medium" ? "Medium" : "Max"}</span>
+                            <ChevronDown className={`w-3 h-3 opacity-70 transition-transform ${researchDepthOpen ? "rotate-180" : ""}`} />
+                          </button>
+                          <AnimatePresence>
+                            {researchDepthOpen && (
+                              <>
+                                <div className="fixed inset-0 z-[60]" onClick={() => setResearchDepthOpen(false)} />
+                                <motion.div
+                                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                                  transition={{ duration: 0.15, ease: "easeOut" }}
+                                  className="absolute bottom-full mb-2 left-0 z-[61] w-[260px] rounded-2xl border border-border/60 bg-popover/95 backdrop-blur-xl shadow-[0_24px_48px_-12px_rgba(0,0,0,0.45)] p-1.5"
+                                >
+                                  {([
+                                    { id: "lite" as const, label: "Lite", desc: "~6 sections · ~3k words · ~30s" },
+                                    { id: "medium" as const, label: "Medium", desc: "~12 sections · ~12k words · ~2min" },
+                                    { id: "max" as const, label: "Max", desc: "~20 sections · ~30k+ words · ~4min" },
+                                  ]).map(d => {
+                                    const active = researchDepth === d.id;
+                                    return (
+                                      <button
+                                        key={d.id}
+                                        type="button"
+                                        onClick={() => { setResearchDepth(d.id); setResearchDepthOpen(false); }}
+                                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-colors ${active ? "bg-foreground/10" : "hover:bg-foreground/5"}`}
+                                      >
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-[13px] font-semibold text-foreground/90">{d.label}</div>
+                                          <div className="text-[11px] text-muted-foreground leading-tight mt-0.5">{d.desc}</div>
+                                        </div>
+                                        {active && <Check className="w-4 h-4 text-foreground/80 shrink-0" strokeWidth={2.5} />}
+                                      </button>
+                                    );
+                                  })}
+                                </motion.div>
+                              </>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ) : null}
                     </>
                   }
 
