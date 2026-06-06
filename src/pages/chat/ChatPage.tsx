@@ -1150,6 +1150,11 @@ const ChatPage = () => {
 
   const handleCancel = () => {
     if (abortControllerRef.current) {abortControllerRef.current.abort();abortControllerRef.current = null;}
+    if (activeResearchJobId) {
+      const rid = activeResearchJobId;
+      setActiveResearchJobId(null);
+      cancelResearchJob(rid).catch(() => {});
+    }
     const wasSlidesMode = chatMode === "slides" || chatMode === "slides-images";
     const runningSlideJobIds = messages.map((m) => m.slidesJobId).filter(Boolean) as string[];
     if (wasSlidesMode) {
