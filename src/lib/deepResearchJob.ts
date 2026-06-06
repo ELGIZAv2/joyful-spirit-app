@@ -96,6 +96,10 @@ export async function cancelResearchJob(jobId: string): Promise<void> {
   await supabase.functions.invoke("deep-research-job", { body: { action: "cancel", jobId } });
 }
 
+export async function tickResearchJob(jobId: string): Promise<void> {
+  await supabase.functions.invoke("deep-research-job", { body: { action: "tick", jobId } });
+}
+
 export async function getResearchJob(jobId: string): Promise<ResearchJob | null> {
   const { data, error } = await supabase.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
   if (error) throw error;

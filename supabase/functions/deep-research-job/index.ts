@@ -88,6 +88,7 @@ async function llmJSON<T = unknown>(systemPrompt: string, userPrompt: string): P
     const res = await fetch(router.url, {
       method: "POST",
       headers: { Authorization: `Bearer ${router.key}`, "Content-Type": "application/json" },
+      signal: AbortSignal.timeout(45_000),
       body: JSON.stringify({
         model: router.mapModel(ROUTER_MODELS.deepResearch),
         messages: [
@@ -108,7 +109,7 @@ async function llmJSON<T = unknown>(systemPrompt: string, userPrompt: string): P
   }
 }
 
-async function llmText(systemPrompt: string, userPrompt: string, temperature = 0.4): Promise<string> {
+async function llmText(systemPrompt: string, userPrompt: string, temperature = 0.4, maxTokens = 3000): Promise<string> {
   const router = await getLLM();
   if (!router) return "";
   try {
@@ -122,7 +123,7 @@ async function llmText(systemPrompt: string, userPrompt: string, temperature = 0
           { role: "user", content: userPrompt },
         ],
         temperature,
-        max_tokens: 8000,
+        max_tokens: maxTokens,
       }),
     });
     const json = await res.json();
@@ -377,7 +378,8 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
   const language: string | null = job.language;
   const query: string = job.plan_goal || job.query;
   const depth: "lite" | "medium" | "max" = ((job as any).depth || "medium");
-  const wordTarget = depth === "lite" ? "600-900" : depth === "max" ? "2000-3000" : "1500-2500";
+  const wordTarget = depth === "lite" ? "350-600" : depth === "max" ? "900-1300" : "650-900";
+  const maxTokens = depth === "lite" ? 1800 : depth === "max" ? 4200 : 2800;
 
   const context = excerpts
     .filter((e) => e.text)
@@ -402,6 +404,7 @@ Rules:
 - Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
         `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
         0.4,
+        maxTokens,
       );
     } catch (e) {
       lastErr = e;
@@ -429,7 +432,12 @@ Rules:
     stage: `Writing section ${done}/${outlineLen}`,
   });
 
-  await maybeFinalize(jobId);
+  if (done >= outlineLen) {
+    await maybeFinalize(jobId);
+  } else {
+    const next = latest.findIndex((t, i) => i !== sectionIndex && (!t || t.trim().length < 50));
+    if (next >= 0) await selfInvoke("write_section", { jobId, sectionIndex: next });
+  }
 }
 
 async function maybeFinalize(jobId: string) {
@@ -550,6 +558,35 @@ async function finalizeReport(jobId: string) {
   }
 }
 
+async function tickJob(jobId: string) {
+  const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
+  if (!job) return { ok: false, reason: "not_found" };
+  if (["succeeded", "failed", "cancelled"].includes(String(job.status))) {
+    return { ok: true, status: job.status };
+  }
+  if ((job as any).awaiting_approval) return { ok: true, status: "awaiting_approval" };
+
+  const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
+  const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+  if ((job as any).status === "synthesizing" && outline.length > 0) {
+    const missing = outline.findIndex((_, i) => !sections[i] || String(sections[i]).trim().length < 50);
+    if (missing >= 0) {
+      await writeSectionAndSave(jobId, missing);
+    }
+
+    const { data: after } = await admin.from("research_jobs").select("outline, report_sections, status").eq("id", jobId).maybeSingle();
+    const nextOutline: OutlineSection[] = Array.isArray((after as any)?.outline) ? (after as any).outline : outline;
+    const nextSections: string[] = Array.isArray((after as any)?.report_sections) ? (after as any).report_sections : [];
+    const completed = nextSections.filter((t) => t && String(t).trim().length > 50).length;
+    if ((after as any)?.status !== "succeeded" && nextOutline.length > 0 && completed >= nextOutline.length) {
+      await finalizeReport(jobId);
+    }
+    return { ok: true, status: "synthesizing", completed, total: nextOutline.length };
+  }
+
+  return { ok: true, status: job.status };
+}
+
 // ---- Critic agent: writes the AI's internal thinking summary ----
 async function criticAgent(
   query: string,
@@ -645,12 +682,9 @@ async function runFullPipeline(jobId: string) {
     });
     await appendStep(jobId, { type: "outline", sections: outline.length });
 
-    // Dispatch one fire-and-forget self invocation per section, with a small
-    // stagger to avoid bursting the LLM gateway.
-    for (let i = 0; i < outline.length; i++) {
-      selfInvoke("write_section", { jobId, sectionIndex: i });
-      if (i % 4 === 3) await new Promise((r) => setTimeout(r, 300));
-    }
+    // Start one writer; each section dispatches the next one. This avoids
+    // flooding the LLM gateway and prevents long reports from getting stuck.
+    await selfInvoke("write_section", { jobId, sectionIndex: 0 });
 
     // Watchdog: in ~90s, re-dispatch any still-empty sections; after 3 rounds force-finalize.
     selfInvoke("watchdog", { jobId, round: 0, delayMs: 90_000 });
@@ -702,7 +736,7 @@ Deno.serve(async (req) => {
 
     // ── Internal self-invocations (service-role authenticated). Bypass user auth.
     if (
-      (action === "write_section" || action === "finalize" || action === "watchdog") &&
+      (action === "write_section" || action === "finalize" || action === "watchdog" || action === "tick") &&
       body?.__internal === SERVICE_ROLE &&
       body?.jobId
     ) {
@@ -712,6 +746,8 @@ Deno.serve(async (req) => {
         wait(writeSectionAndSave(String(body.jobId), idx));
       } else if (action === "finalize") {
         wait(finalizeReport(String(body.jobId)));
+      } else if (action === "tick") {
+        wait(tickJob(String(body.jobId)));
       } else {
         wait(watchdog(String(body.jobId), Number(body?.round ?? 0)));
       }
@@ -736,6 +772,13 @@ Deno.serve(async (req) => {
         .update({ status: "cancelled", stage: "Cancelled", finished_at: new Date().toISOString() })
         .eq("id", body.jobId).eq("user_id", user.id);
       return json({ success: true });
+    }
+
+    if (action === "tick" && body?.jobId) {
+      const { data: job } = await admin.from("research_jobs").select("id").eq("id", body.jobId).eq("user_id", user.id).maybeSingle();
+      if (!job) return json({ error: "not_found" }, 404);
+      wait(tickJob(String(body.jobId)));
+      return json({ success: true, jobId: body.jobId });
     }
 
     // approve: continue an awaiting_approval job (optionally with edited plan)
