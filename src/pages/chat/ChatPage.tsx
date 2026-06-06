@@ -388,6 +388,17 @@ const ChatPage = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [activeResearchJobId, setActiveResearchJobId] = useState<string | null>(null);
+  // Auto-clear the active research-job tracker when the job reaches a terminal state.
+  useEffect(() => {
+    if (!activeResearchJobId) return;
+    const rid = activeResearchJobId;
+    const unsub = subscribeToResearchJob(rid, (j) => {
+      if (j.status === "succeeded" || j.status === "failed" || j.status === "cancelled") {
+        setActiveResearchJobId((cur) => (cur === rid ? null : cur));
+      }
+    });
+    return () => { unsub(); };
+  }, [activeResearchJobId]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [directoryOpen, setDirectoryOpen] = useState(false);
