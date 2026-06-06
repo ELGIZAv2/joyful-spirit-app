@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Share2, MoreHorizontal, List, Copy, CloudUpload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { detectResearchReportDirection, normalizeResearchReport } from "@/lib/normalizeResearchReport";
 import { toast } from "sonner";
@@ -13,7 +13,20 @@ import {
 import ResearchArticleTemplate from "@/components/research/ResearchArticleTemplate";
 import ShareDialog from "@/components/research/ShareDialog";
 import ResearchReportTabs from "@/components/research/ResearchReportTabs";
-import ResearchToc from "@/components/research/ResearchToc";
+import ResearchToc, { extractToc } from "@/components/research/ResearchToc";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const ResearchPreviewPage = () => {
   const navigate = useNavigate();
