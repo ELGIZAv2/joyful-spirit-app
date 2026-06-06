@@ -37,7 +37,7 @@ import { friendlyUserMessage, reportError } from "@/lib/errors";
 
 
 import DeepResearchToggle from "@/components/research/DeepResearchToggle";
-import { planResearchJob } from "@/lib/deepResearchJob";
+import { planResearchJob, cancelResearchJob, subscribeToResearchJob } from "@/lib/deepResearchJob";
 import ResearchJobBubble from "@/components/research/ResearchJobBubble";
 import SlidesToggle from "@/components/chat/SlidesToggle";
 import { SLIDES_TEMPLATES, isStandardSlides } from "@/lib/slidesTemplates";
@@ -387,6 +387,18 @@ const ChatPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [activeResearchJobId, setActiveResearchJobId] = useState<string | null>(null);
+  // Auto-clear the active research-job tracker when the job reaches a terminal state.
+  useEffect(() => {
+    if (!activeResearchJobId) return;
+    const rid = activeResearchJobId;
+    const unsub = subscribeToResearchJob(rid, (j) => {
+      if (j.status === "succeeded" || j.status === "failed" || j.status === "cancelled") {
+        setActiveResearchJobId((cur) => (cur === rid ? null : cur));
+      }
+    });
+    return () => { unsub(); };
+  }, [activeResearchJobId]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [directoryOpen, setDirectoryOpen] = useState(false);
@@ -1149,6 +1161,11 @@ const ChatPage = () => {
 
   const handleCancel = () => {
     if (abortControllerRef.current) {abortControllerRef.current.abort();abortControllerRef.current = null;}
+    if (activeResearchJobId) {
+      const rid = activeResearchJobId;
+      setActiveResearchJobId(null);
+      cancelResearchJob(rid).catch(() => {});
+    }
     const wasSlidesMode = chatMode === "slides" || chatMode === "slides-images";
     const runningSlideJobIds = messages.map((m) => m.slidesJobId).filter(Boolean) as string[];
     if (wasSlidesMode) {
@@ -2084,6 +2101,7 @@ const ChatPage = () => {
       background: false,
       onJobStart: isDeepResearch ? (jobId) => {
         deepResearchJobId = jobId;
+        setActiveResearchJobId(jobId);
         const cid = backgroundCid || conversationId;
         if (!cid) {
           console.warn("[research] job started without conversationId — resume will not work");
@@ -4777,8 +4795,8 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                   onSend={handleSend}
                   onCancel={handleCancel}
                   onPlusClick={() => { if (!plusMenuOpen) setPlusView("main"); setPlusMenuOpen(!plusMenuOpen); }}
-                  disabled={isLoading || !!remoteAiBusy}
-                  isLoading={isLoading}
+                  disabled={isLoading || !!remoteAiBusy || !!activeResearchJobId}
+                  isLoading={isLoading || !!activeResearchJobId}
                   pendingQuestions={pendingQuestions}
                   onQuestionAnswer={handleQuestionAnswer}
                   onQuestionSkip={handleQuestionSkip}
