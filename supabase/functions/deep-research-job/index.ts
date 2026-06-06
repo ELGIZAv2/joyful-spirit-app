@@ -550,6 +550,35 @@ async function finalizeReport(jobId: string) {
   }
 }
 
+async function tickJob(jobId: string) {
+  const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
+  if (!job) return { ok: false, reason: "not_found" };
+  if (["succeeded", "failed", "cancelled"].includes(String(job.status))) {
+    return { ok: true, status: job.status };
+  }
+  if ((job as any).awaiting_approval) return { ok: true, status: "awaiting_approval" };
+
+  const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
+  const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+  if ((job as any).status === "synthesizing" && outline.length > 0) {
+    const missing = outline.findIndex((_, i) => !sections[i] || String(sections[i]).trim().length < 50);
+    if (missing >= 0) {
+      await writeSectionAndSave(jobId, missing);
+    }
+
+    const { data: after } = await admin.from("research_jobs").select("outline, report_sections, status").eq("id", jobId).maybeSingle();
+    const nextOutline: OutlineSection[] = Array.isArray((after as any)?.outline) ? (after as any).outline : outline;
+    const nextSections: string[] = Array.isArray((after as any)?.report_sections) ? (after as any).report_sections : [];
+    const completed = nextSections.filter((t) => t && String(t).trim().length > 50).length;
+    if ((after as any)?.status !== "succeeded" && nextOutline.length > 0 && completed >= nextOutline.length) {
+      await finalizeReport(jobId);
+    }
+    return { ok: true, status: "synthesizing", completed, total: nextOutline.length };
+  }
+
+  return { ok: true, status: job.status };
+}
+
 // ---- Critic agent: writes the AI's internal thinking summary ----
 async function criticAgent(
   query: string,
