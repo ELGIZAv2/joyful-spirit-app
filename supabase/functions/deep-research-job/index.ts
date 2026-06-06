@@ -318,7 +318,13 @@ async function buildOutline(
   language: string | null,
   sources: Source[],
   excerpts: { url: string; text: string }[],
+  depth: "lite" | "medium" | "max" = "medium",
 ): Promise<OutlineSection[]> {
+  const cfg = depth === "lite"
+    ? { min: 5, max: 7, words: "3,000+", bullets: "3-5" }
+    : depth === "max"
+    ? { min: 18, max: 24, words: "30,000+", bullets: "6-10" }
+    : { min: 10, max: 14, words: "12,000+", bullets: "5-8" };
   const context = excerpts
     .filter((e) => e.text)
     .map((e, i) => `### Source ${i + 1}: ${e.url}\n${e.text}`)
@@ -327,16 +333,16 @@ async function buildOutline(
   const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
   type Outline = { sections: OutlineSection[] };
   const outline = await llmJSON<Outline>(
-    `You are the lead editor of a MASSIVE long-form research report (target 20,000+ words total).
+    `You are the lead editor of a long-form research report (target ${cfg.words} words total).
 Return JSON: { "sections": [{ "heading": "...", "bullets": ["...","..."] }, ...] }.
 Requirements:
-- 14 to 20 H2 sections covering background, history, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, real-world examples, controversies, future outlook, practical takeaways, FAQs.
-- Each section has 5-9 specific bullets describing exactly what that section must cover (very concrete, not generic).
+- ${cfg.min} to ${cfg.max} H2 sections covering background, history, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, real-world examples, controversies, future outlook, practical takeaways, FAQs.
+- Each section has ${cfg.bullets} specific bullets describing exactly what that section must cover (very concrete, not generic).
 - Avoid generic headings. Tailor every heading to the topic.
 - Match the user's exact language AND dialect. Language hint: ${language || "auto-detect"}.`,
     `Topic: ${query}\n\nSource list:\n${sourceList}\n\nContext (truncated):\n${context.slice(0, 30_000)}`,
   );
-  const plan = (outline?.sections || []).slice(0, 20).filter((s) => s?.heading);
+  const plan = (outline?.sections || []).slice(0, cfg.max).filter((s) => s?.heading);
   return plan;
 }
 
@@ -362,6 +368,8 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
   const sources: Source[] = Array.isArray(job.sources) ? job.sources : [];
   const language: string | null = job.language;
   const query: string = job.plan_goal || job.query;
+  const depth: "lite" | "medium" | "max" = ((job as any).depth || "medium");
+  const wordTarget = depth === "lite" ? "600-900" : depth === "max" ? "2000-3000" : "1500-2500";
 
   const context = excerpts
     .filter((e) => e.text)
@@ -372,7 +380,7 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
 
   const body = await llmText(
     `You are writing ONE section of a MASSIVE long-form research report.
-Write 1500-2500 words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
+Write ${wordTarget} words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
 Rules:
 - Start the section with: ## ${sec.heading}
 - Use multiple ### sub-headings, tight bullet lists, and at least one markdown table if it helps comparisons or numbers.
@@ -546,7 +554,8 @@ async function runFullPipeline(jobId: string) {
     await patchJob(jobId, { status: "synthesizing", progress: 50, stage: "Building outline" });
 
     // Build the section outline (one LLM call, fast).
-    const outline = await buildOutline(query, language, allSources, excerpts);
+    const jobDepth: "lite" | "medium" | "max" = ((job as any)?.depth || "medium");
+    const outline = await buildOutline(query, language, allSources, excerpts, jobDepth);
     if (outline.length === 0) {
       throw new Error("outline_failed");
     }
@@ -683,11 +692,13 @@ Deno.serve(async (req) => {
 
     const language: string | null = body?.language || null;
     const conversationId: string | null = body?.conversationId || null;
+    const depthRaw: string = (body?.depth || "medium").toString().toLowerCase();
+    const depth: "lite" | "medium" | "max" = (["lite","medium","max"].includes(depthRaw) ? depthRaw : "medium") as any;
     const planOnly = action === "plan"; // if true, stop after planning
 
     const { data: inserted, error: insErr } = await admin.from("research_jobs").insert({
       user_id: user.id, conversation_id: conversationId, query, language,
-      status: "queued", progress: 0, stage: "Queued",
+      status: "queued", progress: 0, stage: "Queued", depth,
     }).select("id").single();
 
     if (insErr || !inserted) return json({ error: insErr?.message || "insert_failed" }, 500);
