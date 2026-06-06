@@ -163,23 +163,47 @@ const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0 }: Props) => {
   }
 
   // Running (searching / synthesizing)
-  const progress = Math.max(5, Math.min(99, job.progress || 5));
+  const title = (job.plan_goal || job.query || "").trim();
+  const isRtl = /[\u0600-\u06FF\u0750-\u077F]/.test(title);
+  const sourcesCount = Array.isArray(job.sources) ? job.sources.length : 0;
+
+  // Determine current phase from stage text
+  const stageText = (job.stage || "").toLowerCase();
+  let phase: 0 | 1 | 2 = 0;
+  if (/(writ|report|compos|synthes|تقرير|إنشاء|كتاب)/i.test(stageText)) phase = 2;
+  else if (/(analy|reason|think|تحليل|نتائج)/i.test(stageText)) phase = 1;
+  else phase = 0;
+
+  const lines = [
+    isRtl ? `جارٍ البحث في ${sourcesCount} مصدر…` : `Searching ${sourcesCount} sources…`,
+    isRtl ? "جارٍ تحليل النتائج…" : "Analyzing results…",
+    isRtl ? "جارٍ إنشاء تقرير كامل…" : "Writing the full report…",
+  ];
+
   return (
-    <div className="max-w-[420px] space-y-3 rounded-2xl border border-border/40 bg-card/60 p-4">
-      <div className="flex items-center gap-2 text-sm text-foreground/85">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span>{job.stage || job.status}</span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
-        <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-      </div>
-      {Array.isArray(job.steps) && job.steps.length > 0 && (
-        <ul className="space-y-1 text-xs text-foreground/60">
-          {job.steps.slice(-4).map((s: any, i) => (
-            <li key={i} className="truncate">• {s.stage || s.type || JSON.stringify(s).slice(0, 80)}</li>
-          ))}
-        </ul>
+    <div className="w-full max-w-[420px] rounded-3xl border border-border/40 bg-card/60 backdrop-blur-sm p-5" dir={isRtl ? "rtl" : "ltr"}>
+      {title && (
+        <h3 className="text-base font-semibold text-foreground leading-snug mb-3">
+          {title}
+        </h3>
       )}
+      <ul className="space-y-2">
+        {lines.map((line, i) => {
+          const active = i === phase;
+          const done = i < phase;
+          return (
+            <li
+              key={i}
+              className={`flex items-center gap-2.5 text-[13px] leading-relaxed transition-colors ${
+                active ? "text-foreground" : done ? "text-foreground/45" : "text-foreground/35"
+              }`}
+            >
+              <span className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${active ? "bg-foreground/80" : "bg-foreground/30"}`} />
+              <span className="flex-1">{line}</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 };
