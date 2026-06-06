@@ -434,7 +434,7 @@ async function maybeFinalize(jobId: string) {
   if ((job as any).status === "succeeded" || (job as any).status === "failed") return;
   const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
   const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
-  const completed = sections.filter((t) => t && t.length > 100).length;
+  const completed = sections.filter((t) => t && t.length > 50).length;
   if (outline.length === 0 || completed < outline.length) return;
   // Atomically claim finalize: only continue if status is still synthesizing.
   const { data: claimed } = await admin
@@ -446,6 +446,56 @@ async function maybeFinalize(jobId: string) {
     .maybeSingle();
   if (!claimed) return; // someone else is finalizing
   selfInvoke("finalize", { jobId });
+}
+
+/**
+ * Watchdog: re-dispatches any still-empty sections, then schedules itself again.
+ * After `maxRounds` rounds, force-finalizes with whatever sections exist (stubbing the rest).
+ */
+async function watchdog(jobId: string, round: number) {
+  const { data: job } = await admin
+    .from("research_jobs")
+    .select("status, outline, report_sections")
+    .eq("id", jobId)
+    .maybeSingle();
+  if (!job) return;
+  if ((job as any).status === "succeeded" || (job as any).status === "failed" || (job as any).status === "cancelled") return;
+
+  const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
+  const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+  const missing: number[] = [];
+  for (let i = 0; i < outline.length; i++) {
+    if (!sections[i] || sections[i].trim().length < 50) missing.push(i);
+  }
+
+  if (missing.length === 0) {
+    await maybeFinalize(jobId);
+    return;
+  }
+
+  const MAX_ROUNDS = 3;
+  if (round >= MAX_ROUNDS) {
+    // Force-stub remaining sections and finalize.
+    const latest = [...sections];
+    while (latest.length < outline.length) latest.push("");
+    for (const i of missing) {
+      const sec = outline[i];
+      latest[i] = `## ${sec.heading}\n\n_(تعذّر توليد هذا القسم بعد عدة محاولات.)_\n\n` +
+        (sec.bullets || []).map((b) => `- ${b}`).join("\n");
+    }
+    await patchJob(jobId, { report_sections: latest, stage: "Force-finalizing" });
+    await maybeFinalize(jobId);
+    return;
+  }
+
+  // Re-dispatch missing sections.
+  for (const i of missing) {
+    selfInvoke("write_section", { jobId, sectionIndex: i });
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  await patchJob(jobId, { stage: `Retrying ${missing.length} section(s) (round ${round + 1})` });
+  // Schedule next watchdog round in ~90s.
+  selfInvoke("watchdog", { jobId, round: round + 1, delayMs: 90_000 });
 }
 
 async function finalizeReport(jobId: string) {
