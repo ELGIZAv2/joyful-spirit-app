@@ -130,7 +130,7 @@ Output JSON with these fields:
 Make every sentence sound human, varied, and tailored to THIS specific topic — never reuse generic phrasing.`;
 
   const usr = feedback && previousPlan
-    ? `Original topic: ${query}\n\nPrevious plan:\n${JSON.stringify(previousPlan, null, 2)}\n\nUser feedback to incorporate:\n"""${feedback}"""\n\nReturn an UPDATED plan reflecting the feedback.`
+    ? `Original topic: ${query}\n\nPrevious plan:\n${JSON.stringify(previousPlan, null, 2)}\n\nUser's latest edit/request:\n"""${feedback}"""\n\nRegenerate the plan using the user's latest edit as the authoritative instruction. If the latest edit changes the topic completely, discard the old topic and make the new plan about the latest edit only. If it is a small adjustment, apply it to the old topic. The returned goal and steps must match the latest edit.`
     : `Research topic: ${query}\n\nDraft the plan now.`;
 
   const parsed = await llmJSON<PlanShape>(sys, usr);
@@ -262,7 +262,7 @@ async function runFullPipeline(jobId: string) {
   try {
     const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
     if (!job) return;
-    const query: string = job.query;
+    const query: string = job.plan_goal || job.query;
     const language: string | null = job.language;
     const plan: string[] = Array.isArray(job.plan) ? job.plan : [];
     const needsImages: boolean = job.needs_images !== false;
