@@ -368,6 +368,8 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
   const sources: Source[] = Array.isArray(job.sources) ? job.sources : [];
   const language: string | null = job.language;
   const query: string = job.plan_goal || job.query;
+  const depth: "lite" | "medium" | "max" = ((job as any).depth || "medium");
+  const wordTarget = depth === "lite" ? "600-900" : depth === "max" ? "2000-3000" : "1500-2500";
 
   const context = excerpts
     .filter((e) => e.text)
@@ -378,7 +380,7 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
 
   const body = await llmText(
     `You are writing ONE section of a MASSIVE long-form research report.
-Write 1500-2500 words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
+Write ${wordTarget} words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
 Rules:
 - Start the section with: ## ${sec.heading}
 - Use multiple ### sub-headings, tight bullet lists, and at least one markdown table if it helps comparisons or numbers.
