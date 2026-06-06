@@ -29,8 +29,8 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
   const isRtl = /[\u0600-\u06FF\u0750-\u077F]/.test(sample);
 
   // Split the steps into 3 phases: research topics, analysis, report drafting.
-  const phases = (() => {
-    if (steps.length === 0) return [] as { title: string; items: string[] }[];
+  const phases: { title: string; icon: typeof Search; items: string[] }[] = (() => {
+    if (steps.length === 0) return [];
     const n = steps.length;
     const a = Math.max(1, Math.ceil(n / 3));
     const b = Math.max(a + 1, Math.ceil((2 * n) / 3));
