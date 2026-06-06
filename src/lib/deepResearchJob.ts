@@ -97,7 +97,12 @@ export async function cancelResearchJob(jobId: string): Promise<void> {
 }
 
 export async function tickResearchJob(jobId: string): Promise<void> {
-  await supabase.functions.invoke("deep-research-job", { body: { action: "tick", jobId } });
+  if (!jobId) return;
+  try {
+    await supabase.functions.invoke("deep-research-job", { body: { action: "tick", jobId } });
+  } catch {
+    /* best-effort watchdog ping */
+  }
 }
 
 export async function getResearchJob(jobId: string): Promise<ResearchJob | null> {
