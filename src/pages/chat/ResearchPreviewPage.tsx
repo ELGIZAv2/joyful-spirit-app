@@ -375,13 +375,18 @@ const ResearchPreviewPage = () => {
                   <List className="h-4 w-4" />
                 </button>
               </SheetTrigger>
-              <SheetContent side={isRtl ? "right" : "left"} className="w-80" dir={isRtl ? "rtl" : "ltr"}>
-                <SheetHeader>
-                  <SheetTitle>{isRtl ? "المحتويات" : "Contents"}</SheetTitle>
+              <SheetContent
+                side="bottom"
+                className="mx-auto flex max-h-[62dvh] w-full max-w-[39rem] flex-col overflow-hidden rounded-t-[2rem] border-border bg-card/95 px-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3 shadow-2xl backdrop-blur-xl sm:max-w-lg"
+                dir={isRtl ? "rtl" : "ltr"}
+              >
+                <div className="mx-auto mb-6 h-1 w-11 shrink-0 rounded-full bg-muted-foreground/40" />
+                <SheetHeader className={isRtl ? "text-right" : "text-left"}>
+                  <SheetTitle className="text-base font-medium">{isRtl ? "المحتوى" : "Content"}</SheetTitle>
                 </SheetHeader>
-                <ul className="mt-4 space-y-1 overflow-y-auto pb-8 text-sm">
+                <ul className="mt-6 min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pb-8 text-center text-base leading-relaxed [-webkit-overflow-scrolling:touch]">
                   {tocItems.map((it) => (
-                    <li key={it.id} className={it.level === 3 ? (isRtl ? "pr-3" : "pl-3") : ""}>
+                    <li key={it.id}>
                       <a
                         href={`#${it.id}`}
                         onClick={(e) => {
@@ -391,7 +396,9 @@ const ResearchPreviewPage = () => {
                             document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
                           }, 150);
                         }}
-                        className="block truncate rounded px-2 py-1.5 text-foreground/70 hover:bg-foreground/5 hover:text-foreground transition"
+                        className={`block rounded px-2 text-muted-foreground transition hover:text-foreground ${
+                          it.level === 3 ? "text-sm" : "text-base"
+                        }`}
                       >
                         {it.text}
                       </a>
