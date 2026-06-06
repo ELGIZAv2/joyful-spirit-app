@@ -4664,6 +4664,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           awaiting_approval: boolean
+          context_excerpts: Json | null
           conversation_id: string | null
           created_at: string
           duration_ms: number | null
@@ -4673,6 +4674,7 @@ export type Database = {
           images: Json
           language: string | null
           needs_images: boolean
+          outline: Json | null
           plan: Json
           plan_goal: string | null
           plan_intro: string | null
@@ -4680,6 +4682,7 @@ export type Database = {
           progress: number
           query: string
           report: string | null
+          report_sections: Json | null
           sources: Json
           stage: string | null
           started_at: string | null
@@ -4693,6 +4696,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           awaiting_approval?: boolean
+          context_excerpts?: Json | null
           conversation_id?: string | null
           created_at?: string
           duration_ms?: number | null
@@ -4702,6 +4706,7 @@ export type Database = {
           images?: Json
           language?: string | null
           needs_images?: boolean
+          outline?: Json | null
           plan?: Json
           plan_goal?: string | null
           plan_intro?: string | null
@@ -4709,6 +4714,7 @@ export type Database = {
           progress?: number
           query: string
           report?: string | null
+          report_sections?: Json | null
           sources?: Json
           stage?: string | null
           started_at?: string | null
@@ -4722,6 +4728,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           awaiting_approval?: boolean
+          context_excerpts?: Json | null
           conversation_id?: string | null
           created_at?: string
           duration_ms?: number | null
@@ -4731,6 +4738,7 @@ export type Database = {
           images?: Json
           language?: string | null
           needs_images?: boolean
+          outline?: Json | null
           plan?: Json
           plan_goal?: string | null
           plan_intro?: string | null
@@ -4738,6 +4746,7 @@ export type Database = {
           progress?: number
           query?: string
           report?: string | null
+          report_sections?: Json | null
           sources?: Json
           stage?: string | null
           started_at?: string | null
