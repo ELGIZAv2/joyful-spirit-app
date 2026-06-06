@@ -4667,6 +4667,7 @@ export type Database = {
           context_excerpts: Json | null
           conversation_id: string | null
           created_at: string
+          depth: string
           duration_ms: number | null
           error: string | null
           finished_at: string | null
@@ -4699,6 +4700,7 @@ export type Database = {
           context_excerpts?: Json | null
           conversation_id?: string | null
           created_at?: string
+          depth?: string
           duration_ms?: number | null
           error?: string | null
           finished_at?: string | null
@@ -4731,6 +4733,7 @@ export type Database = {
           context_excerpts?: Json | null
           conversation_id?: string | null
           created_at?: string
+          depth?: string
           duration_ms?: number | null
           error?: string | null
           finished_at?: string | null
