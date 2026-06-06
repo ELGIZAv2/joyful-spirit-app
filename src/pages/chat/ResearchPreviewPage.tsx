@@ -182,6 +182,8 @@ const ResearchPreviewPage = () => {
   const wordCount = cleanReport.split(/\s+/).filter(Boolean).length;
   const readMins = Math.max(1, Math.round(wordCount / 220));
   const reportEmpty = cleanReport.trim().length < 10;
+  const tocItems = useMemo(() => extractToc(cleanReport), [cleanReport]);
+  const [tocOpen, setTocOpen] = useState(false);
 
   // Auto-trigger PDF download when navigated with autoDownload flag.
   useEffect(() => {
@@ -294,9 +296,6 @@ const ResearchPreviewPage = () => {
   handleDownloadRef.current = handleDownload;
 
   const handleShare = () => setShareOpen(true);
-
-  const tocItems = useMemo(() => extractToc(cleanReport), [cleanReport]);
-  const [tocOpen, setTocOpen] = useState(false);
 
   const handleCopy = async () => {
     try {
