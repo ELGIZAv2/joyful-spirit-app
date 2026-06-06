@@ -543,25 +543,32 @@ async function runFullPipeline(jobId: string) {
     const usedUrls = new Set(excerpts.filter((e) => e.text).map((e) => e.url));
     const unused = allSources.filter((s) => !usedUrls.has(s.url));
 
-    await patchJob(jobId, { status: "synthesizing", progress: 80, stage: "Writing report" });
+    await patchJob(jobId, { status: "synthesizing", progress: 50, stage: "Building outline" });
 
-    const report = await analystAgent(query, language, allSources, excerpts);
+    // Build the section outline (one LLM call, fast).
+    const outline = await buildOutline(query, language, allSources, excerpts);
+    if (outline.length === 0) {
+      throw new Error("outline_failed");
+    }
 
-    await patchJob(jobId, { progress: 92, stage: "Reflecting" });
-    const thinking = await criticAgent(query, language, report, excerpts.filter((e) => e.text).length, unused.length);
-
-    const finishedAt = Date.now();
+    // Persist outline + excerpts + empty sections slots. Each section will be
+    // written in its own self-invocation so we never hit a single 150s budget.
     await patchJob(jobId, {
-      status: "succeeded",
-      progress: 100,
-      stage: "Done",
-      report,
-      thinking,
+      outline,
+      report_sections: new Array(outline.length).fill(""),
+      context_excerpts: excerpts,
       unused_sources: unused,
-      finished_at: new Date(finishedAt).toISOString(),
-      duration_ms: finishedAt - startedAt,
+      progress: 55,
+      stage: `Writing 0/${outline.length} sections`,
     });
-    await appendStep(jobId, { type: "done", length: report.length });
+    await appendStep(jobId, { type: "outline", sections: outline.length });
+
+    // Dispatch one fire-and-forget self invocation per section, with a small
+    // stagger to avoid bursting the LLM gateway.
+    for (let i = 0; i < outline.length; i++) {
+      selfInvoke("write_section", { jobId, sectionIndex: i });
+      if (i % 4 === 3) await new Promise((r) => setTimeout(r, 300));
+    }
   } catch (e) {
     const finishedAt = Date.now();
     await patchJob(jobId, {
