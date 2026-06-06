@@ -159,20 +159,7 @@ const ResearchArticleTemplate = ({
     <div className="bg-background text-foreground">
       <article className="mx-auto max-w-[1200px] px-3 sm:px-8 lg:px-12">
         {/* Header */}
-        <header
-          dir={isRtl ? "rtl" : "ltr"}
-          className="mx-auto max-w-[760px] pt-12 pb-4 sm:pt-24 sm:pb-10"
-        >
-          <motion.h1
-            dir="auto"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="break-words font-display text-[28px] leading-[1.25] font-bold tracking-tight text-foreground sm:text-5xl sm:leading-[1.15] md:text-6xl"
-          >
-            {data.query}
-          </motion.h1>
-        </header>
+        {/* Title removed */}
 
         {/* Cover image */}
         {cover && (
