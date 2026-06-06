@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Share2, MoreHorizontal, List, Copy, CloudUpload } from "lucide-react";
+import { ArrowLeft, Download, Loader2, MoreHorizontal, List, ClipboardCheck, Send } from "lucide-react";
+import { SiGoogledrive } from "react-icons/si";
 import { supabase } from "@/integrations/supabase/client";
 import { detectResearchReportDirection, normalizeResearchReport } from "@/lib/normalizeResearchReport";
 import { toast } from "sonner";
@@ -454,22 +455,22 @@ const ResearchPreviewPage = () => {
                 onClick={handleCopy}
                 className="gap-3 rounded-xl px-3 py-2.5 text-[14px] text-foreground focus:bg-white/40 dark:focus:bg-white/15"
               >
-                <Copy className="h-[18px] w-[18px]" />
-                <span>{isRtl ? "نسخ المحتوى" : "Copy"}</span>
+                <ClipboardCheck className="h-[18px] w-[18px]" />
+                <span>{isRtl ? "نسخ النص" : "Copy text"}</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleNativeShare}
                 className="gap-3 rounded-xl px-3 py-2.5 text-[14px] text-foreground focus:bg-white/40 dark:focus:bg-white/15"
               >
-                <Share2 className="h-[18px] w-[18px]" />
-                <span>{isRtl ? "مشاركة" : "Share"}</span>
+                <Send className="h-[18px] w-[18px]" />
+                <span>{isRtl ? "إرسال للأصدقاء" : "Send to friends"}</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleDriveUpload}
                 className="gap-3 rounded-xl px-3 py-2.5 text-[14px] text-foreground focus:bg-white/40 dark:focus:bg-white/15"
               >
-                <CloudUpload className="h-[18px] w-[18px]" />
-                <span>{isRtl ? "حفظ في Google Drive" : "Save to Google Drive"}</span>
+                <SiGoogledrive className="h-[18px] w-[18px]" style={{ color: "#FBBC04" }} />
+                <span>{isRtl ? "رفع إلى Google Drive" : "Upload to Google Drive"}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
