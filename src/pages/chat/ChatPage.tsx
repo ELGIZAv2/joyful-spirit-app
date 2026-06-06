@@ -2018,6 +2018,7 @@ const ChatPage = () => {
           query: userInput,
           conversationId: cid,
           language: detectedLang,
+          depth: researchDepth,
         });
         const assistantClientId = `assistant-${localTurnId}`;
         // Optimistic message
