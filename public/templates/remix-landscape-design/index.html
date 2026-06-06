@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landscape Design — Napa Valley</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --paper: #F5F0E8;
+      --ink: #1a1714;
+      --ink-light: #3a3530;
+      --ink-faint: #8a8478;
+      --ink-ghost: #c5bfb4;
+      --serif: 'EB Garamond', Georgia, serif;
+      --display: 'Playfair Display', Georgia, serif;
+      --mono: 'Space Mono', monospace;
+    }
+
+    html, body {
+      overflow-x: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--serif);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      height: 100%;
+    }
+
+    /* THREE.JS CANVAS */
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    /* PAPER TEXTURE OVERLAY */
+    #paper-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: multiply;
+      opacity: 0.3;
+      background-image:
+        url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    }
+
+    /* SCROLL CONTENT (invisible spacer) */
+    #scroll-spacer {
+      position: relative;
+      z-index: -1;
+      height: 500vh;
+      pointer-events: none;
+    }
+
+    /* CONTENT OVERLAY */
+    #content-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .station {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+    }
+
+    .station.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* STATION 1: INTRO */
+    .station-intro {
+      flex-direction: column;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    .station-intro h1 {
+      font-family: var(--display);
+      font-size: clamp(36px, 7vw, 90px);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      color: var(--ink);
+    }
+
+    .station-intro h1 em {
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .station-intro .subtitle {
+      font-family: var(--serif);
+      font-size: clamp(14px, 2vw, 20px);
+      color: var(--ink-faint);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-style: italic;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .scroll-hint .line {
+      width: 1px;
+      height: 32px;
+      background: var(--ink-ghost);
+      animation: grow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    @keyframes grow {
+      0%, 100% { transform: scaleY(0.5); transform-origin: top; }
+      50% { transform: scaleY(1); }
+    }
+
+    /* STATION 2: PHILOSOPHY */
+    .station-philosophy {
+      padding: 0 48px;
+    }
+
+    .philosophy-content {
+      max-width: 620px;
+      margin-left: 10%;
+    }
+
+    .philosophy-content .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 24px;
+      display: block;
+    }
+
+    .philosophy-content h2 {
+      font-family: var(--display);
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 400;
+      line-height: 1.25;
+      margin-bottom: 32px;
+      letter-spacing: -0.02em;
+    }
+
+    .philosophy-content p {
+      font-family: var(--serif);
+      font-size: clamp(16px, 1.8vw, 20px);
+      line-height: 1.75;
+      color: var(--ink-light);
+      margin-bottom: 20px;
+    }
+
+    .philosophy-content .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .philosophy-content .tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink-ghost);
+      padding: 6px 14px;
+      border-radius: 0;
+      color: var(--ink-faint);
+    }
+
+    /* STATION 3: PROCESS */
+    .station-process {
+      padding: 0 48px;
+    }
+
+    .process-content {
+      max-width: 640px;
+      margin-right: 10%;
+      margin-left: auto;
+    }
+
+    .process-content .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 24px;
+      display: block;
+    }
+
+    .process-content h2 {
+      font-family: var(--display);
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 400;
+      line-height: 1.25;
+      margin-bottom: 32px;
+      letter-spacing: -0.02em;
+    }
+
+    .process-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+
+    .process-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--ink-ghost);
+    }
+
+    .process-step:first-child {
+      border-top: 1px solid var(--ink-ghost);
+    }
+
+    .step-num {
+      font-family: var(--display);
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--ink-ghost);
+      line-height: 1;
+      min-width: 36px;
+      font-style: italic;
+    }
+
+    .step-text h3 {
+      font-family: var(--display);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .step-text p {
+      font-family: var(--serif);
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink-faint);
+    }
+
+    .partner-note {
+      font-family: var(--serif);
+      font-size: 14px;
+      font-style: italic;
+      color: var(--ink-faint);
+      line-height: 1.7;
+      border-left: 2px solid var(--ink-ghost);
+      padding-left: 16px;
+    }
+
+    /* STATION 4: CONTACT */
+    .station-contact {
+      flex-direction: column;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    .station-contact .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-bottom: 20px;
+    }
+
+    .station-contact h2 {
+      font-family: var(--display);
+      font-size: clamp(28px, 5vw, 56px);
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .station-contact h2 em {
+      font-style: italic;
+    }
+
+    .station-contact .areas {
+      font-family: var(--serif);
+      font-size: clamp(14px, 1.8vw, 18px);
+      color: var(--ink-faint);
+      margin-bottom: 36px;
+      font-style: italic;
+    }
+
+    .phone-link {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: clamp(18px, 3vw, 32px);
+      color: var(--ink);
+      letter-spacing: 0.04em;
+      padding: 16px 40px;
+      border: 1.5px solid var(--ink);
+      text-decoration: none;
+      transition: background 0.3s, color 0.3s;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .phone-link:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .station-contact .footnote {
+      font-family: var(--serif);
+      font-size: 13px;
+      color: var(--ink-ghost);
+      margin-top: 28px;
+      max-width: 360px;
+      line-height: 1.65;
+      font-style: italic;
+    }
+
+    /* NAVIGATION DOTS */
+    #nav-dots {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      border: 1.5px solid var(--ink-faint);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: transparent;
+      position: relative;
+    }
+
+    .nav-dot::after {
+      content: attr(data-label);
+      position: absolute;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-ghost);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .nav-dot:hover::after {
+      opacity: 1;
+    }
+
+    .nav-dot.active {
+      background: var(--ink);
+      border-color: var(--ink);
+      transform: scale(1.3);
+    }
+
+    /* LOADING SCREEN */
+    #loader {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 100;
+      background: var(--paper);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      transition: opacity 1s ease;
+    }
+
+    #loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-circle {
+      width: 40px;
+      height: 40px;
+      border: 1.5px solid var(--ink-ghost);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loader-text {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-top: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .philosophy-content,
+      .process-content {
+        margin-left: 0;
+        margin-right: 0;
+        max-width: 100%;
+      }
+
+      .station-philosophy,
+      .station-process {
+        padding: 0 24px;
+      }
+
+      #nav-dots {
+        right: 14px;
+        gap: 12px;
+      }
+
+      .nav-dot::after {
+        display: none;
+      }
+
+      .phone-link {
+        padding: 14px 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOADER -->
+  <div id="loader">
+    <div class="loader-circle"></div>
+    <div class="loader-text">Preparing the garden</div>
+  </div>
+
+  <!-- PAPER TEXTURE -->
+  <div id="paper-overlay"></div>
+
+  <!-- THREE.JS CANVAS -->
+  <div id="canvas-container"></div>
+
+  <!-- NAVIGATION DOTS -->
+  <div id="nav-dots">
+    <div class="nav-dot active" data-station="0" data-label="Intro"></div>
+    <div class="nav-dot" data-station="1" data-label="Philosophy"></div>
+    <div class="nav-dot" data-station="2" data-label="Process"></div>
+    <div class="nav-dot" data-station="3" data-label="Contact"></div>
+  </div>
+
+  <!-- CONTENT OVERLAY -->
+  <div id="content-layer">
+
+    <!-- STATION 0: INTRO -->
+    <div class="station station-intro active" data-index="0">
+      <div>
+        <h1>Landscape<br>as <em>Language</em></h1>
+        <div class="subtitle">Napa Valley Garden Design</div>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <div class="line"></div>
+      </div>
+    </div>
+
+    <!-- STATION 1: PHILOSOPHY -->
+    <div class="station station-philosophy" data-index="1">
+      <div class="philosophy-content">
+        <span class="label">Philosophy</span>
+        <h2>Gardens that belong<br>to the land</h2>
+        <p>I design landscapes that speak the dialect of their place — drought-tolerant plantings that honor California's rhythms, butterfly gardens that hum with life, and fire-resilient zones that protect what matters most.</p>
+        <p>Every line I draw begins with listening. To the soil, the light, the way water wants to move. The Napa Valley has its own vocabulary, and the best gardens are the ones that already feel like they've been here.</p>
+        <div class="tags">
+          <span class="tag">Drought Tolerant</span>
+          <span class="tag">Butterfly Gardens</span>
+          <span class="tag">Fire Zone Design</span>
+          <span class="tag">Napa Tradition</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATION 2: PROCESS -->
+    <div class="station station-process" data-index="2">
+      <div class="process-content">
+        <span class="label">How It Works</span>
+        <h2>From sketch<br>to soil</h2>
+        <div class="process-steps">
+          <div class="process-step">
+            <span class="step-num">1</span>
+            <div class="step-text">
+              <h3>Consultation</h3>
+              <p>We walk your land together. I listen to what you see, and I look at what the land is already trying to tell us.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <span class="step-num">2</span>
+            <div class="step-text">
+              <h3>Concept</h3>
+              <p>I develop a design concept — a drawn vision of your garden — that balances beauty, resilience, and the particularities of your site.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <span class="step-num">3</span>
+            <div class="step-text">
+              <h3>Installation</h3>
+              <p>If you approve, my partner at Allgood Irrigation handles the build. Expert installation, faithful to the concept.</p>
+            </div>
+          </div>
+        </div>
+        <p class="partner-note">I focus on the vision. Allgood makes it real. You get a garden that's both considered and expertly built.</p>
+      </div>
+    </div>
+
+    <!-- STATION 3: CONTACT -->
+    <div class="station station-contact" data-index="3">
+      <div class="label">Get In Touch</div>
+      <h2>Let's draw<br>your <em>garden</em></h2>
+      <div class="areas">Serving Napa · Yountville · St. Helena</div>
+      <a href="tel:7078156530" class="phone-link">707 · 815 · 6530</a>
+      <p class="footnote">Consultations available for residential gardens, fire zone planning, and habitat restoration throughout the Napa Valley.</p>
+    </div>
+
+  </div>
+
+  <!-- SCROLL SPACER -->
+  <div id="scroll-spacer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // ═══════════════════════════════════════
+    // INK & PAPER WORLD — THREE.JS ENGINE
+    // ═══════════════════════════════════════
+
+    const PAPER_COLOR = 0xF5F0E8;
+    const INK_COLOR = 0x1A1714;
+    const INK_LIGHT = 0x3A3530;
+    const INK_GHOST = 0xC5BFB4;
+    const STATIONS = 4;
+    const SCROLL_HEIGHT = 5; // 500vh
+
+    let scene, camera, renderer;
+    let scrollProgress = 0;
+    let currentStation = 0;
+    let targetStation = 0;
+    let animFrame;
+    let inkGroups = [];
+    let particles = [];
+    let time = 0;
+
+    // ─── INIT ─────────────────────────────
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(PAPER_COLOR);
+      scene.fog = new THREE.FogExp2(PAPER_COLOR, 0.012);
+
+      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.set(0, 2, 12);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.NoToneMapping;
+      document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+      createInkWorld();
+      createFloatingParticles();
+
+      window.addEventListener('resize', onResize);
+      window.addEventListener('scroll', onScroll);
+
+      // Nav dots
+      document.querySelectorAll('.nav-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const station = parseInt(dot.dataset.station);
+          const scrollTo = (station / (STATIONS - 1)) * (document.getElementById('scroll-spacer').offsetHeight - window.innerHeight);
+          window.scrollTo({ top: scrollTo, behavior: 'smooth' });
+        });
+      });
+
+      // Hide loader
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+      }, 1200);
+
+      animate();
+    }
+
+    // ─── INK MATERIALS ────────────────────
+    function inkLineMaterial(opacity = 1) {
+      return new THREE.LineBasicMaterial({
+        color: INK_COLOR,
+        transparent: true,
+        opacity: opacity
+      });
+    }
+
+    function inkMeshMaterial(opacity = 0.08) {
+      return new THREE.MeshBasicMaterial({
+        color: INK_COLOR,
+        transparent: true,
+        opacity: opacity,
+        side: THREE.DoubleSide
+      });
+    }
+
+    // ─── PROCEDURAL INK PLANTS ────────────
+    function createBranch(startPoint, direction, length, depth, group) {
+      if (depth <= 0 || length < 0.1) return;
+
+      const segments = 12;
+      const points = [];
+      let current = startPoint.clone();
+      let dir = direction.clone().normalize();
+
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        // Add organic wobble
+        const wobble = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.15 * length,
+          (Math.random() - 0.5) * 0.08 * length,
+          (Math.random() - 0.5) * 0.15 * length
+        );
+        const pt = current.clone().add(dir.clone().multiplyScalar(length * t / segments * (segments))).add(wobble.multiplyScalar(t));
+        // Gravity droop for longer branches
+        pt.y -= t * t * length * 0.05;
+        points.push(pt);
+        current = pt.clone();
+      }
+
+      const curve = new THREE.CatmullRomCurve3(points);
+      const geom = new THREE.BufferGeometry().setFromPoints(curve.getPoints(20));
+      const line = new THREE.Line(geom, inkLineMaterial(0.3 + depth * 0.15));
+      group.add(line);
+
+      // Branch out
+      if (depth > 1) {
+        const endPt = points[points.length - 1];
+        const numBranches = Math.floor(Math.random() * 3) + 1;
+        for (let b = 0; b < numBranches; b++) {
+          const newDir = dir.clone();
+          newDir.x += (Math.random() - 0.5) * 1.2;
+          newDir.y += Math.random() * 0.4 - 0.1;
+          newDir.z += (Math.random() - 0.5) * 1.2;
+          createBranch(endPt, newDir, length * 0.6, depth - 1, group);
+        }
+      }
+
+      // Leaves at tips
+      if (depth <= 2) {
+        const tip = points[points.length - 1];
+        createInkLeaf(tip, direction, group);
+      }
+    }
+
+    function createInkLeaf(position, direction, group) {
+      const leafSize = 0.2 + Math.random() * 0.3;
+      const shape = new THREE.Shape();
+
+      // Organic leaf shape
+      shape.moveTo(0, 0);
+      shape.quadraticCurveTo(leafSize * 0.4, leafSize * 0.6, 0, leafSize);
+      shape.quadraticCurveTo(-leafSize * 0.4, leafSize * 0.6, 0, 0);
+
+      const geom = new THREE.ShapeGeometry(shape);
+      const mesh = new THREE.Mesh(geom, inkMeshMaterial(0.06 + Math.random() * 0.06));
+      mesh.position.copy(position);
+      mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+      group.add(mesh);
+
+      // Leaf outline
+      const outlinePoints = [];
+      const steps = 16;
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const angle = t * Math.PI * 2;
+        const r = leafSize * (0.5 + 0.5 * Math.sin(angle * 2)) * 0.5;
+        outlinePoints.push(new THREE.Vector3(
+          Math.cos(angle) * r,
+          Math.sin(angle) * r * 1.5,
+          0
+        ));
+      }
+      const outlineGeom = new THREE.BufferGeometry().setFromPoints(outlinePoints);
+      const outlineLine = new THREE.Line(outlineGeom, inkLineMaterial(0.25));
+      outlineLine.position.copy(position);
+      outlineLine.rotation.copy(mesh.rotation);
+      group.add(outlineLine);
+    }
+
+    function createPlantCluster(x, y, z, scale, complexity) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+      group.scale.setScalar(scale);
+
+      const numStems = complexity;
+      for (let i = 0; i < numStems; i++) {
+        const angle = (i / numStems) * Math.PI * 2 + Math.random() * 0.5;
+        const dir = new THREE.Vector3(
+          Math.sin(angle) * 0.3,
+          0.8 + Math.random() * 0.3,
+          Math.cos(angle) * 0.3
+        );
+        const startJitter = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.3,
+          0,
+          (Math.random() - 0.5) * 0.3
+        );
+        createBranch(startJitter, dir, 1.2 + Math.random() * 0.8, 3 + Math.floor(Math.random() * 2), group);
+      }
+
+      scene.add(group);
+      return group;
+    }
+
+    // ─── CROSSHATCH GROUND ────────────────
+    function createCrosshatchGround() {
+      const group = new THREE.Group();
+      const size = 60;
+      const density = 80;
+
+      for (let i = 0; i < density; i++) {
+        const x1 = (Math.random() - 0.5) * size;
+        const z1 = (Math.random() - 0.5) * size;
+        const len = 0.5 + Math.random() * 2;
+        const angle = Math.random() * Math.PI;
+
+        const points = [
+          new THREE.Vector3(x1, -0.01, z1),
+          new THREE.Vector3(x1 + Math.cos(angle) * len, -0.01, z1 + Math.sin(angle) * len)
+        ];
+        const geom = new THREE.BufferGeometry().setFromPoints(points);
+        const mat = inkLineMaterial(0.04 + Math.random() * 0.08);
+        const line = new THREE.Line(geom, mat);
+        group.add(line);
+      }
+
+      scene.add(group);
+      return group;
+    }
+
+    // ─── INK SPLASH PARTICLES ─────────────
+    function createInkSplash(x, y, z, count) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+
+      for (let i = 0; i < count; i++) {
+        const size = 0.02 + Math.random() * 0.06;
+        const geom = new THREE.CircleGeometry(size, 6);
+        const mat = inkMeshMaterial(0.1 + Math.random() * 0.15);
+        const dot = new THREE.Mesh(geom, mat);
+        dot.position.set(
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 2,
+          (Math.random() - 0.5) * 0.5
+        );
+        dot.rotation.z = Math.random() * Math.PI;
+        group.add(dot);
+      }
+
+      scene.add(group);
+      return group;
+    }
+
+    // ─── BUTTERFLY ────────────────────────
+    function createButterfly(x, y, z) {
+      const group = new THREE.Group();
+      group.position.set(x, y, z);
+
+      // Wing shape
+      function wingShape(mirror) {
+        const pts = [];
+        const steps = 20;
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const angle = t * Math.PI;
+          const r = 0.3 * Math.sin(angle) * (1 + 0.3 * Math.sin(angle * 3));
+          pts.push(new THREE.Vector3(
+            mirror * r * Math.cos(angle) * 0.8,
+            r * Math.sin(angle),
+            0
+          ));
+        }
+        return pts;
+      }
+
+      [-1, 1].forEach(side => {
+        const pts = wingShape(side);
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        const wing = new THREE.Line(geom, inkLineMaterial(0.4));
+        group.add(wing);
+      });
+
+      group.userData = {
+        baseY: y,
+        baseX: x,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.5 + Math.random() * 0.5
+      };
+
+      scene.add(group);
+      return group;
+    }
+
+    // ─── INK CIRCLE FRAME ─────────────────
+    function createInkCircle(x, y, z, radius, wobble) {
+      const points = [];
+      const segments = 80;
+      for (let i = 0; i <= segments; i++) {
+        const angle = (i / segments) * Math.PI * 2;
+        const r = radius + (Math.random() - 0.5) * wobble;
+        points.push(new THREE.Vector3(
+          x + Math.cos(angle) * r,
+          y + Math.sin(angle) * r,
+          z
+        ));
+      }
+      const geom = new THREE.BufferGeometry().setFromPoints(points);
+      const circle = new THREE.Line(geom, inkLineMaterial(0.2));
+      scene.add(circle);
+      return circle;
+    }
+
+    // ─── FLOATING INK PARTICLES ───────────
+    function createFloatingParticles() {
+      for (let i = 0; i < 60; i++) {
+        const size = 0.01 + Math.random() * 0.03;
+        const geom = new THREE.CircleGeometry(size, 5);
+        const mat = inkMeshMaterial(0.05 + Math.random() * 0.1);
+        const p = new THREE.Mesh(geom, mat);
+        p.position.set(
+          (Math.random() - 0.5) * 30,
+          Math.random() * 8,
+          (Math.random() - 0.5) * 20 - 5
+        );
+        p.userData = {
+          baseX: p.position.x,
+          baseY: p.position.y,
+          speed: 0.2 + Math.random() * 0.4,
+          phase: Math.random() * Math.PI * 2,
+          drift: 0.3 + Math.random() * 0.5
+        };
+        scene.add(p);
+        particles.push(p);
+      }
+    }
+
+    // ─── BUILD THE INK WORLD ──────────────
+    function createInkWorld() {
+      // Ground hatching
+      createCrosshatchGround();
+
+      // Main plant clusters — arranged along a path
+      // Station 0 area (center)
+      inkGroups.push(createPlantCluster(-5, 0, -3, 1.2, 5));
+      inkGroups.push(createPlantCluster(6, 0, -2, 0.8, 4));
+      inkGroups.push(createPlantCluster(-3, 0, 2, 0.6, 3));
+      inkGroups.push(createPlantCluster(4, 0, 3, 0.5, 3));
+
+      // Station 1 area (left)
+      inkGroups.push(createPlantCluster(-15, 0, -5, 1.4, 6));
+      inkGroups.push(createPlantCluster(-12, 0, 0, 1.0, 5));
+      inkGroups.push(createPlantCluster(-18, 0, 2, 0.7, 3));
+      inkGroups.push(createPlantCluster(-10, 0, -8, 0.9, 4));
+
+      // Station 2 area (right)
+      inkGroups.push(createPlantCluster(15, 0, -4, 1.3, 5));
+      inkGroups.push(createPlantCluster(12, 0, 1, 1.1, 6));
+      inkGroups.push(createPlantCluster(18, 0, -1, 0.6, 3));
+
+      // Station 3 area (far)
+      inkGroups.push(createPlantCluster(0, 0, -18, 1.5, 7));
+      inkGroups.push(createPlantCluster(-4, 0, -22, 0.9, 4));
+      inkGroups.push(createPlantCluster(5, 0, -20, 1.0, 5));
+
+      // Ink splashes
+      createInkSplash(-2, 0.5, -1, 20);
+      createInkSplash(3, 1, -4, 15);
+      createInkSplash(-8, 0.3, -3, 25);
+      createInkSplash(10, 0.8, -2, 18);
+      createInkSplash(-1, 0.2, -15, 30);
+
+      // Decorative circles
+      createInkCircle(0, 3, -5, 2.5, 0.15);
+      createInkCircle(-14, 2.5, -3, 1.8, 0.1);
+      createInkCircle(14, 3.2, -2, 2.0, 0.12);
+      createInkCircle(0, 2.8, -20, 3.0, 0.2);
+
+      // Butterflies
+      for (let i = 0; i < 6; i++) {
+        const bfly = createButterfly(
+          (Math.random() - 0.5) * 20,
+          1.5 + Math.random() * 3,
+          (Math.random() - 0.5) * 15 - 5
+        );
+        inkGroups.push(bfly);
+      }
+    }
+
+    // ─── CAMERA POSITIONS FOR STATIONS ────
+    const cameraStations = [
+      { pos: new THREE.Vector3(0, 2.5, 12), look: new THREE.Vector3(0, 1, 0) },
+      { pos: new THREE.Vector3(-10, 3, 6), look: new THREE.Vector3(-14, 1.5, -3) },
+      { pos: new THREE.Vector3(10, 2.5, 8), look: new THREE.Vector3(14, 1.5, -2) },
+      { pos: new THREE.Vector3(0, 4, -8), look: new THREE.Vector3(0, 1.5, -19) }
+    ];
+
+    // ─── SCROLL HANDLER ───────────────────
+    function onScroll() {
+      const maxScroll = document.getElementById('scroll-spacer').offsetHeight - window.innerHeight;
+      scrollProgress = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+      targetStation = Math.round(scrollProgress * (STATIONS - 1));
+    }
+
+    // ─── RESIZE ───────────────────────────
+    function onResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // ─── LERP UTILITIES ───────────────────
+    function lerpVec3(a, b, t) {
+      return new THREE.Vector3(
+        a.x + (b.x - a.x) * t,
+        a.y + (b.y - a.y) * t,
+        a.z + (b.z - a.z) * t
+      );
+    }
+
+    function smoothstep(t) {
+      return t * t * (3 - 2 * t);
+    }
+
+    // ─── ANIMATE ──────────────────────────
+    function animate() {
+      animFrame = requestAnimationFrame(animate);
+      time += 0.01;
+
+      // Camera interpolation
+      const exactStation = scrollProgress * (STATIONS - 1);
+      const fromIdx = Math.floor(exactStation);
+      const toIdx = Math.min(fromIdx + 1, STATIONS - 1);
+      const localT = smoothstep(exactStation - fromIdx);
+
+      const camPos = lerpVec3(cameraStations[fromIdx].pos, cameraStations[toIdx].pos, localT);
+      const camLook = lerpVec3(cameraStations[fromIdx].look, cameraStations[toIdx].look, localT);
+
+      // Subtle breathing
+      camPos.y += Math.sin(time * 0.5) * 0.08;
+      camPos.x += Math.sin(time * 0.3) * 0.04;
+
+      camera.position.lerp(camPos, 0.08);
+      const currentLook = new THREE.Vector3();
+      camera.getWorldDirection(currentLook);
+      const targetLook = camLook.clone().sub(camera.position).normalize();
+      currentLook.lerp(targetLook, 0.06);
+      camera.lookAt(camera.position.clone().add(currentLook.multiplyScalar(10)));
+
+      // Update station visibility
+      const newStation = Math.round(scrollProgress * (STATIONS - 1));
+      if (newStation !== currentStation) {
+        currentStation = newStation;
+        updateStationVisibility();
+        updateNavDots();
+      }
+
+      // Animate floating particles
+      particles.forEach(p => {
+        const d = p.userData;
+        p.position.x = d.baseX + Math.sin(time * d.speed + d.phase) * d.drift;
+        p.position.y = d.baseY + Math.cos(time * d.speed * 0.7 + d.phase) * 0.3;
+        p.rotation.z = time * d.speed * 0.2;
+      });
+
+      // Animate butterflies
+      inkGroups.forEach(g => {
+        if (g.userData && g.userData.baseY !== undefined) {
+          const d = g.userData;
+          g.position.y = d.baseY + Math.sin(time * d.speed + d.phase) * 0.5;
+          g.position.x = d.baseX + Math.sin(time * d.speed * 0.5 + d.phase) * 0.8;
+          g.rotation.y = Math.sin(time * d.speed * 2) * 0.3;
+          // Wing flap
+          g.children.forEach((child, i) => {
+            child.rotation.y = Math.sin(time * 6 + d.phase) * 0.5 * (i === 0 ? 1 : -1);
+          });
+        }
+      });
+
+      // Gentle plant sway
+      inkGroups.forEach((g, i) => {
+        if (!g.userData.baseY) {
+          g.rotation.z = Math.sin(time * 0.4 + i * 0.7) * 0.015;
+          g.rotation.x = Math.cos(time * 0.3 + i * 0.5) * 0.01;
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    // ─── UI UPDATES ───────────────────────
+    function updateStationVisibility() {
+      document.querySelectorAll('.station').forEach((el, i) => {
+        el.classList.toggle('active', i === currentStation);
+      });
+    }
+
+    function updateNavDots() {
+      document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentStation);
+      });
+    }
+
+    // ─── KICK IT OFF ──────────────────────
+    init();
+  </script>
+</body>
+</html>

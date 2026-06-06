@@ -1,0 +1,2 @@
+UPDATE public.fal_video_models SET endpoint_image_to_video = 'VEO3FAST' WHERE slug = 'veo-3-fast';
+UPDATE public.fal_video_models SET endpoint_image_to_video = 'VEO3_1FAST' WHERE slug = 'veo-3-1-fast';

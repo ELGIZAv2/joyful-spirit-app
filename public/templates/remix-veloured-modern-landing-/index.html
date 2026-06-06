@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloured</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #8a9aab;
+      --bg-dark: #1a1a1a;
+      --text-light: #ffffff;
+      --text-muted: rgba(255,255,255,0.7);
+      --accent: #c5cdd6;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg-dark);
+      color: var(--text-light);
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* Custom Cursor */
+    .cursor {
+      width: 20px;
+      height: 20px;
+      border: 1.5px solid rgba(255,255,255,0.6);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      mix-blend-mode: difference;
+    }
+
+    .cursor.hover {
+      transform: scale(2.5);
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 28px 48px;
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      transition: background 0.4s ease, padding 0.4s ease;
+    }
+
+    nav.scrolled {
+      background: rgba(26,26,26,0.85);
+      backdrop-filter: blur(20px);
+      padding: 18px 48px;
+    }
+
+    nav a {
+      color: var(--text-light);
+      text-decoration: none;
+      position: relative;
+      padding: 4px 0;
+      transition: opacity 0.3s;
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--text-light);
+      transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    nav a:hover::after {
+      width: 100%;
+    }
+
+    nav a:hover {
+      opacity: 0.9;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 700px;
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(138,154,171,0) 0%, rgba(138,154,171,0.3) 50%, rgba(26,26,26,0.15) 100%);
+      z-index: 1;
+    }
+
+    .hero-grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      z-index: 2;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    .hero-title {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-style: italic;
+      font-size: clamp(4.5rem, 13vw, 14rem);
+      line-height: 0.9;
+      letter-spacing: -3px;
+      color: var(--text-light);
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(60px);
+      animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+    }
+
+    .hero-subtitle {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 3px;
+      text-transform: lowercase;
+      color: var(--text-muted);
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+    }
+
+    .hero-scroll span {
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: rgba(255,255,255,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      animation: scrollDown 2s ease-in-out infinite;
+    }
+
+    /* Floating elements in hero */
+    .hero-float {
+      position: absolute;
+      z-index: 2;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(2px);
+    }
+
+    .hero-float:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      top: 10%;
+      left: -5%;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .hero-float:nth-child(2) {
+      width: 200px;
+      height: 200px;
+      bottom: 15%;
+      right: -3%;
+      animation: float 6s ease-in-out infinite reverse;
+    }
+
+    .hero-float:nth-child(3) {
+      width: 120px;
+      height: 120px;
+      top: 25%;
+      right: 15%;
+      animation: float 10s ease-in-out infinite 2s;
+    }
+
+    /* Sections Common */
+    section {
+      padding: 140px 48px;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 48px;
+    }
+
+    /* About Section */
+    .about {
+      background: var(--bg-dark);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-left .section-label {
+      margin-bottom: 32px;
+    }
+
+    .about-heading {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 4vw, 4rem);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 32px;
+    }
+
+    .about-heading em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .about-text {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 480px;
+    }
+
+    .about-right {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .stat {
+      padding: 32px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .stat-number {
+      font-family: var(--serif);
+      font-size: 3rem;
+      font-weight: 400;
+      margin-bottom: 8px;
+      color: var(--text-light);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      font-weight: 400;
+    }
+
+    /* Work Section */
+    .work {
+      background: #f4f0ec;
+      color: #1a1a1a;
+      padding: 140px 48px;
+    }
+
+    .work .section-label {
+      color: rgba(0,0,0,0.35);
+    }
+
+    .work-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 80px;
+    }
+
+    .work-heading {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 4vw, 4rem);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      color: #1a1a1a;
+    }
+
+    .work-heading em {
+      font-style: italic;
+    }
+
+    .view-all {
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #1a1a1a;
+      text-decoration: none;
+      border-bottom: 1px solid #1a1a1a;
+      padding-bottom: 4px;
+      transition: opacity 0.3s;
+    }
+
+    .view-all:hover {
+      opacity: 0.5;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    .work-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+      aspect-ratio: 4/3;
+      background: var(--bg-primary);
+      cursor: pointer;
+    }
+
+    .work-card:first-child {
+      grid-row: span 2;
+      aspect-ratio: auto;
+    }
+
+    .work-card-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .work-card:hover .work-card-bg {
+      transform: scale(1.05);
+    }
+
+    .work-card:nth-child(1) .work-card-bg {
+      background: linear-gradient(135deg, #6b7d8e 0%, #8a9aab 50%, #a3b1be 100%);
+    }
+
+    .work-card:nth-child(2) .work-card-bg {
+      background: linear-gradient(135deg, #2c3e50 0%, #3a506b 50%, #4a6274 100%);
+    }
+
+    .work-card:nth-child(3) .work-card-bg {
+      background: linear-gradient(135deg, #5a6e7f 0%, #708494 50%, #8697a5 100%);
+    }
+
+    .work-card-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 32px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.4));
+      color: white;
+      z-index: 2;
+    }
+
+    .work-card-tag {
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .work-card-title {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-weight: 400;
+    }
+
+    .work-card:first-child .work-card-title {
+      font-size: 2rem;
+    }
+
+    /* Services Section */
+    .services {
+      background: var(--bg-dark);
+    }
+
+    .services-heading {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 4vw, 4rem);
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 80px;
+      max-width: 600px;
+    }
+
+    .services-heading em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .service-list {
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .service-item {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 40px;
+      align-items: center;
+      padding: 36px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: padding-left 0.4s ease;
+    }
+
+    .service-item:hover {
+      padding-left: 16px;
+    }
+
+    .service-num {
+      font-family: var(--serif);
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .service-name {
+      font-family: var(--serif);
+      font-size: 1.8rem;
+      font-weight: 400;
+      transition: color 0.3s;
+    }
+
+    .service-item:hover .service-name {
+      color: var(--accent);
+    }
+
+    .service-arrow {
+      font-size: 1.2rem;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .service-item:hover .service-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Marquee */
+    .marquee-section {
+      background: var(--bg-primary);
+      padding: 48px 0;
+      overflow: hidden;
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 25s linear infinite;
+    }
+
+    .marquee-item {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      font-weight: 400;
+      font-style: italic;
+      white-space: nowrap;
+      padding: 0 48px;
+      color: var(--text-light);
+    }
+
+    .marquee-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--text-light);
+      border-radius: 50%;
+      align-self: center;
+      flex-shrink: 0;
+    }
+
+    /* Contact Section */
+    .contact {
+      background: var(--bg-dark);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .contact-heading {
+      font-family: var(--serif);
+      font-size: clamp(3rem, 8vw, 8rem);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 0.95;
+      margin-bottom: 40px;
+      letter-spacing: -2px;
+    }
+
+    .contact-text {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-weight: 300;
+      line-height: 1.7;
+      max-width: 420px;
+      margin-bottom: 48px;
+    }
+
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 48px;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 50px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: all 0.4s ease;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .contact-btn:hover {
+      background: var(--text-light);
+      color: var(--bg-dark);
+      border-color: var(--text-light);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-dark);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 40px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-brand {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.2rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .footer-links a {
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-light);
+    }
+
+    .footer-copy {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scrollDown {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-30px) scale(1.03); }
+    }
+
+    @keyframes marquee {
+      to { transform: translateX(-50%); }
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      section { padding: 100px 32px; }
+      .about { grid-template-columns: 1fr; gap: 60px; }
+      .work-grid { grid-template-columns: 1fr; }
+      .work-card:first-child { aspect-ratio: 4/3; grid-row: auto; }
+      nav { padding: 20px 24px; gap: 24px; }
+    }
+
+    @media (max-width: 768px) {
+      section { padding: 80px 20px; }
+      nav { gap: 16px; font-size: 0.65rem; padding: 16px 20px; }
+      .about-right { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .service-item { grid-template-columns: 40px 1fr auto; gap: 20px; }
+      .service-name { font-size: 1.3rem; }
+      footer { flex-direction: column; gap: 24px; text-align: center; }
+      .footer-links { gap: 20px; }
+      .contact-heading { letter-spacing: -1px; }
+      .cursor { display: none; }
+      .work-header { flex-direction: column; align-items: flex-start; gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+
+  <nav id="nav">
+    <a href="#">Work</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+    <a href="#">Journal</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-float"></div>
+    <div class="hero-float"></div>
+    <div class="hero-float"></div>
+    <div class="hero-bg"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Veloured</h1>
+      <p class="hero-subtitle">strategy, design & development</p>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about">
+    <div class="about-left reveal">
+      <div class="section-label">001 — About</div>
+      <h2 class="about-heading">We shape brands that move people <em>forward</em></h2>
+      <p class="about-text">
+        Veloured is an independent creative studio partnering with ambitious brands worldwide. We blend strategic thinking with meticulous craft to build identities, experiences, and platforms that resonate deeply and endure.
+      </p>
+    </div>
+    <div class="about-right">
+      <div class="stat reveal">
+        <div class="stat-number">126</div>
+        <div class="stat-label">Projects Delivered</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-number">9+</div>
+        <div class="stat-label">Years Active</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-number">38</div>
+        <div class="stat-label">Global Clients</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-number">14</div>
+        <div class="stat-label">Awards Won</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work -->
+  <section class="work">
+    <div class="work-header reveal">
+      <div>
+        <div class="section-label">002 — Selected Work</div>
+        <h2 class="work-heading">Recent <em>projects</em></h2>
+      </div>
+      <a href="#" class="view-all">View all work</a>
+    </div>
+    <div class="work-grid">
+      <div class="work-card reveal">
+        <div class="work-card-bg"></div>
+        <div class="work-card-content">
+          <div class="work-card-tag">Brand Identity</div>
+          <div class="work-card-title">Meridian Collective</div>
+        </div>
+      </div>
+      <div class="work-card reveal">
+        <div class="work-card-bg"></div>
+        <div class="work-card-content">
+          <div class="work-card-tag">Web Platform</div>
+          <div class="work-card-title">Solara Health</div>
+        </div>
+      </div>
+      <div class="work-card reveal">
+        <div class="work-card-bg"></div>
+        <div class="work-card-content">
+          <div class="work-card-tag">Digital Experience</div>
+          <div class="work-card-title">Oaken Studios</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="services">
+    <div class="section-label reveal">003 — Services</div>
+    <h2 class="services-heading reveal">Disciplines that <em>drive</em> results</h2>
+    <div class="service-list">
+      <div class="service-item reveal">
+        <span class="service-num">01</span>
+        <span class="service-name">Brand Strategy</span>
+        <span class="service-arrow">→</span>
+      </div>
+      <div class="service-item reveal">
+        <span class="service-num">02</span>
+        <span class="service-name">Visual Identity</span>
+        <span class="service-arrow">→</span>
+      </div>
+      <div class="service-item reveal">
+        <span class="service-num">03</span>
+        <span class="service-name">Web Design & Development</span>
+        <span class="service-arrow">→</span>
+      </div>
+      <div class="service-item reveal">
+        <span class="service-num">04</span>
+        <span class="service-name">Art Direction</span>
+        <span class="service-arrow">→</span>
+      </div>
+      <div class="service-item reveal">
+        <span class="service-num">05</span>
+        <span class="service-name">Motion & Content</span>
+        <span class="service-arrow">→</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <section class="marquee-section">
+    <div class="marquee-track">
+      <span class="marquee-item">Strategy</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Identity</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Digital</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Motion</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Craft</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Strategy</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Identity</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Digital</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Motion</span>
+      <div class="marquee-dot"></div>
+      <span class="marquee-item">Craft</span>
+      <div class="marquee-dot"></div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact">
+    <div class="section-label reveal">004 — Contact</div>
+    <h2 class="contact-heading reveal">Let's<br>create</h2>
+    <p class="contact-text reveal">Have a project in mind? We'd love to hear about it. Drop us a line and let's explore what we can build together.</p>
+    <a href="#" class="contact-btn reveal">Start a conversation <span>→</span></a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-brand">Veloured</div>
+    <div class="footer-links">
+      <a href="#">Instagram</a>
+      <a href="#">Behance</a>
+      <a href="#">LinkedIn</a>
+    </div>
+    <div class="footer-copy">© 2026</div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    let cursorX = 0, cursorY = 0, actualX = 0, actualY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      cursorX = e.clientX;
+      cursorY = e.clientY;
+    });
+
+    function animateCursor() {
+      actualX += (cursorX - actualX) * 0.12;
+      actualY += (cursorY - actualY) * 0.12;
+      cursor.style.left = actualX - 10 + 'px';
+      cursor.style.top = actualY - 10 + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('a, .service-item, .work-card, .contact-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 80);
+    });
+
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    revealEls.forEach(el => observer.observe(el));
+
+    // Counter animation for stats
+    const statNumbers = document.querySelectorAll('.stat-number');
+    const statObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const text = el.textContent;
+          const num = parseInt(text);
+          const suffix = text.replace(/[0-9]/g, '');
+          let current = 0;
+          const step = Math.ceil(num / 40);
+          const interval = setInterval(() => {
+            current += step;
+            if (current >= num) {
+              current = num;
+              clearInterval(interval);
+            }
+            el.textContent = current + suffix;
+          }, 30);
+          statObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    statNumbers.forEach(el => statObserver.observe(el));
+
+    // Parallax on hero floating elements
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      const floats = document.querySelectorAll('.hero-float');
+      floats.forEach((el, i) => {
+        const speed = (i + 1) * 0.15;
+        el.style.transform = `translateY(${scrolled * speed}px)`;
+      });
+    });
+  </script>
+</body>
+</html>

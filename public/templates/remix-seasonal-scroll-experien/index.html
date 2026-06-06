@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remix: Seasonal Scroll Experience</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:wght@400;500;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #fafafa; color: #1a1a1a; overflow-x: hidden; }
+
+    .section {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 80px 60px;
+      transition: background-color 1s ease;
+    }
+
+    .section-content {
+      position: relative;
+      z-index: 20;
+      max-width: 420px;
+      transition: color 0.8s ease;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 24px;
+    }
+
+    .section-desc {
+      font-size: 14px;
+      line-height: 1.8;
+      opacity: 0.6;
+      font-weight: 300;
+      max-width: 340px;
+    }
+
+    .tags {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid;
+      opacity: 0.6;
+      cursor: default;
+      transition: opacity 0.3s;
+    }
+
+    .tag:hover { opacity: 1; }
+
+    .section-indicator {
+      position: fixed;
+      right: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .indicator-dot.active {
+      background: currentColor;
+      transform: scale(1.3);
+    }
+
+    .section-spring  { background: #c8dbbe; }
+    .section-summer  { background: #e8d4b0; }
+    .section-autumn  { background: #d4bfaa; }
+    .section-winter  { background: #b8c8dc; }
+
+    /* ── Layout variants ── */
+    .layout-center { align-items: center; justify-content: center; padding: 60px; }
+    .layout-right   { align-items: flex-end; padding: 80px 60px; }
+
+    .content-center { text-align: center; max-width: 520px; }
+    .content-right  { text-align: right;  max-width: 420px; }
+    .content-wide   { max-width: 600px; }
+
+    /* ── Big centered quote ── */
+    .big-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 3.5vw, 42px);
+      font-weight: 400;
+      line-height: 1.35;
+      font-style: italic;
+      margin: 20px 0 18px;
+      opacity: 0.85;
+    }
+    .quote-attr {
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      opacity: 0.45;
+      line-height: 1.7;
+    }
+
+    /* ── Side quote (no italic giant) ── */
+    .side-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(16px, 2vw, 22px);
+      font-style: italic;
+      line-height: 1.7;
+      opacity: 0.75;
+      border-left: 2px solid currentColor;
+      padding-left: 20px;
+      max-width: 380px;
+    }
+
+    /* ── Oversized single word ── */
+    .word-display {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 9vw, 110px);
+      font-weight: 500;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin: 16px 0 20px;
+      opacity: 0.15;
+    }
+    .word-sub {
+      font-size: 13px;
+      line-height: 1.9;
+      opacity: 0.5;
+      font-weight: 300;
+    }
+
+    /* ── Stat grid ── */
+    .stat-grid {
+      display: flex;
+      gap: 32px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-num  { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 40px); font-weight: 400; line-height: 1; }
+    .stat-unit { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.45; }
+    .stat-desc { font-size: 11px; opacity: 0.5; max-width: 120px; line-height: 1.5; margin-top: 4px; }
+
+    /* ── Divider + facts ── */
+    .divider { border: none; border-top: 1px solid currentColor; opacity: 0.2; margin: 28px 0; }
+    .fact-pair { display: flex; gap: 40px; flex-wrap: wrap; }
+    .fact { display: flex; flex-direction: column; gap: 8px; max-width: 240px; }
+    .fact-num  { font-family: 'Playfair Display', serif; font-size: clamp(22px, 3vw, 32px); font-weight: 400; }
+    .fact-text { font-size: 12px; line-height: 1.7; opacity: 0.5; }
+
+    /* ── Lead text ── */
+    .lead-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(20px, 2.5vw, 30px);
+      font-weight: 400;
+      line-height: 1.4;
+      margin-bottom: 8px;
+      opacity: 0.85;
+    }
+
+    /* ── Single line note ── */
+    .single-line-note {
+      font-size: 13px;
+      opacity: 0.4;
+      letter-spacing: 0.5px;
+      margin-top: 18px;
+      font-style: italic;
+    }
+
+    /* ── Two column ── */
+    .two-col { display: flex; gap: 40px; align-items: flex-start; margin-top: 28px; }
+    .col-num {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(48px, 7vw, 80px);
+      font-weight: 400;
+      opacity: 0.1;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .col-text { display: flex; flex-direction: column; gap: 14px; }
+    .col-text p { font-size: 14px; line-height: 1.8; opacity: 0.6; font-weight: 300; }
+
+    @media (max-width: 768px) {
+      .section { padding: 60px 28px; }
+      .layout-center { padding: 40px 28px; }
+      .section-indicator { right: 16px; }
+      .stat-grid { gap: 20px; }
+      .fact-pair { flex-direction: column; gap: 24px; }
+      .two-col { flex-direction: column; gap: 12px; }
+      .col-num { font-size: 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════ SPRING ═══════════════ -->
+
+  <!-- S1 — intro: title + desc + tags (original feel) -->
+  <div class="section section-spring" id="sec-0">
+    <div class="section-content">
+      <div class="section-label">01 — Spring</div>
+      <div class="section-title">Awakening<br>of form.</div>
+      <div class="section-desc">New geometries emerge from silence. The surface breathes with soft organic textures, alive with potential energy.</div>
+      <div class="tags">
+        <span class="tag">Growth</span>
+        <span class="tag">Renewal</span>
+        <span class="tag">Bloom</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2 — big italic quote, centered -->
+  <div class="section section-spring layout-center" id="sec-0b">
+    <div class="section-content content-center">
+      <div class="section-label">01 — Spring / Voice</div>
+      <blockquote class="big-quote">"To pay attention,<br>this is our endless<br>and proper work."</blockquote>
+      <div class="quote-attr">— Mary Oliver</div>
+    </div>
+  </div>
+
+  <!-- S3 — stat row -->
+  <div class="section section-spring" id="sec-0c">
+    <div class="section-content">
+      <div class="section-label">01 — Spring / Numbers</div>
+      <div class="section-title">A season<br>in figures.</div>
+      <div class="stat-grid">
+        <div class="stat-item"><span class="stat-num">92</span><span class="stat-unit">days</span><span class="stat-desc">average duration</span></div>
+        <div class="stat-item"><span class="stat-num">+2°</span><span class="stat-unit">daily</span><span class="stat-desc">temperature gain</span></div>
+        <div class="stat-item"><span class="stat-num">17k</span><span class="stat-unit">species</span><span class="stat-desc">begin flowering</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 — minimal, just a line of text, right-aligned -->
+  <div class="section section-spring layout-right" id="sec-0d">
+    <div class="section-content content-right">
+      <div class="section-label">01 — Spring / Light</div>
+      <div class="section-title">Dawn breaks<br>earlier now.</div>
+      <div class="single-line-note">The axis tilts. Everything follows.</div>
+    </div>
+  </div>
+
+  <!-- S5 — two-column: number + long text -->
+  <div class="section section-spring" id="sec-0e">
+    <div class="section-content content-wide">
+      <div class="section-label">01 — Spring / Emergence</div>
+      <div class="two-col">
+        <div class="col-num">005</div>
+        <div class="col-text">
+          <p>Frost yields to upward force. Every green thing knows where to go — guided not by choice but by accumulated code written over millennia.</p>
+          <p>The impulse is older than memory. It does not hesitate.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SUMMER ═══════════════ -->
+
+  <!-- S6 — intro -->
+  <div class="section section-summer" id="sec-1">
+    <div class="section-content">
+      <div class="section-label">02 — Summer</div>
+      <div class="section-title">Radiance<br>at peak.</div>
+      <div class="section-desc">Light saturates every facet. The form reaches maximum intensity — warm, golden, impossibly vivid.</div>
+      <div class="tags">
+        <span class="tag">Warmth</span>
+        <span class="tag">Zenith</span>
+        <span class="tag">Energy</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7 — oversized single word, center -->
+  <div class="section section-summer layout-center" id="sec-1b">
+    <div class="section-content content-center">
+      <div class="section-label">02 — Summer / Intensity</div>
+      <div class="word-display">SOLSTICE</div>
+      <div class="word-sub">June 21 — the longest day.<br>17 hours, 4 minutes of light.</div>
+    </div>
+  </div>
+
+  <!-- S8 — horizontal rule divider + two facts -->
+  <div class="section section-summer" id="sec-1c">
+    <div class="section-content content-wide">
+      <div class="section-label">02 — Summer / Canopy</div>
+      <div class="section-title">Inside<br>the green.</div>
+      <hr class="divider"/>
+      <div class="fact-pair">
+        <div class="fact"><span class="fact-num">40%</span><span class="fact-text">of solar radiation is absorbed by a mature forest canopy before reaching the ground.</span></div>
+        <div class="fact"><span class="fact-num">8°C</span><span class="fact-text">cooler inside dense woodland compared to exposed open fields on a peak summer day.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S9 — pure desc, no title, large leading text -->
+  <div class="section section-summer layout-right" id="sec-1d">
+    <div class="section-content content-right">
+      <div class="section-label">02 — Summer / Heat</div>
+      <div class="lead-text">Hot air bends the visible world.</div>
+      <div class="section-desc" style="margin-top:20px;">The line between ground and sky softens — reality becomes negotiable at the edges of temperature. The mirage is not an illusion. It is physics, visible.</div>
+    </div>
+  </div>
+
+  <!-- S10 — quote + tags -->
+  <div class="section section-summer" id="sec-1e">
+    <div class="section-content">
+      <div class="section-label">02 — Summer / Storm</div>
+      <blockquote class="side-quote">"Pressure accumulates for days until the sky releases everything at once — a violent generosity."</blockquote>
+      <div class="tags" style="margin-top:32px;">
+        <span class="tag">Thunder</span>
+        <span class="tag">Release</span>
+        <span class="tag">Charge</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ AUTUMN ═══════════════ -->
+
+  <!-- S11 — intro -->
+  <div class="section section-autumn" id="sec-2">
+    <div class="section-content">
+      <div class="section-label">03 — Autumn</div>
+      <div class="section-title">Graceful<br>decay.</div>
+      <div class="section-desc">Rich tones settle into the surface. The geometry matures, carrying the weight of accumulated time.</div>
+      <div class="tags">
+        <span class="tag">Harvest</span>
+        <span class="tag">Depth</span>
+        <span class="tag">Patina</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S12 — stat grid, earthy -->
+  <div class="section section-autumn" id="sec-2b">
+    <div class="section-content content-wide">
+      <div class="section-label">03 — Autumn / Release</div>
+      <div class="section-title">What falls.</div>
+      <div class="stat-grid" style="margin-top:32px;">
+        <div class="stat-item"><span class="stat-num">200k</span><span class="stat-unit">tons</span><span class="stat-desc">leaves shed per km² of forest</span></div>
+        <div class="stat-item"><span class="stat-num">3</span><span class="stat-unit">weeks</span><span class="stat-desc">peak colour window</span></div>
+        <div class="stat-item"><span class="stat-num">60%</span><span class="stat-unit">nitrogen</span><span class="stat-desc">reclaimed before leaf drop</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S13 — centered quote -->
+  <div class="section section-autumn layout-center" id="sec-2c">
+    <div class="section-content content-center">
+      <div class="section-label">03 — Autumn / Harvest</div>
+      <blockquote class="big-quote">"Season of mists<br>and mellow<br>fruitfulness."</blockquote>
+      <div class="quote-attr">— John Keats, 1819</div>
+    </div>
+  </div>
+
+  <!-- S14 — two-column chemistry -->
+  <div class="section section-autumn" id="sec-2d">
+    <div class="section-content content-wide">
+      <div class="section-label">03 — Autumn / Colour</div>
+      <div class="two-col">
+        <div class="col-num">004</div>
+        <div class="col-text">
+          <p>Chlorophyll recedes and reveals what was always there — deep reds and golds hidden beneath the green surface of summer work.</p>
+          <p>Anthocyanins, carotenoids, xanthophylls: the chemistry of farewell has names.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S15 — fog, minimal right -->
+  <div class="section section-autumn layout-right" id="sec-2e">
+    <div class="section-content content-right">
+      <div class="section-label">03 — Autumn / Fog</div>
+      <div class="section-title">Distance<br>becomes soft.</div>
+      <div class="single-line-note">A natural depth of field, imposed by atmosphere alone.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ WINTER ═══════════════ -->
+
+  <!-- S16 — intro -->
+  <div class="section section-winter" id="sec-3">
+    <div class="section-content">
+      <div class="section-label">04 — Winter</div>
+      <div class="section-title">Crystalline<br>stillness.</div>
+      <div class="section-desc">Stripped to essence. The form becomes translucent, reflecting cold clarity and quiet contemplation.</div>
+      <div class="tags">
+        <span class="tag">Frost</span>
+        <span class="tag">Silence</span>
+        <span class="tag">Rest</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S17 — oversized word -->
+  <div class="section section-winter layout-center" id="sec-3b">
+    <div class="section-content content-center">
+      <div class="section-label">04 — Winter / Dormancy</div>
+      <div class="word-display">STILLNESS</div>
+      <div class="word-sub">Under the ice, slow processes persist.<br>Life compressed to a signal.</div>
+    </div>
+  </div>
+
+  <!-- S18 — acoustic fact -->
+  <div class="section section-winter" id="sec-3c">
+    <div class="section-content content-wide">
+      <div class="section-label">04 — Winter / Silence</div>
+      <div class="section-title">Snow absorbs<br>all sound.</div>
+      <hr class="divider"/>
+      <div class="fact-pair">
+        <div class="fact"><span class="fact-num">–10dB</span><span class="fact-text">reduction in ambient noise across open ground with 30cm of fresh snow cover.</span></div>
+        <div class="fact"><span class="fact-num">0.9</span><span class="fact-text">sound absorption coefficient — fresh snow is among the most acoustically absorbent natural materials.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S19 — bare text, no title -->
+  <div class="section section-winter layout-right" id="sec-3d">
+    <div class="section-content content-right">
+      <div class="section-label">04 — Winter / Structure</div>
+      <div class="lead-text">The skeleton is more honest than the dressed form.</div>
+      <div class="section-desc" style="margin-top:20px;">Without leaves, true branching logic is revealed. Every junction is a decision made over decades — visible only in the cold months that strip it bare.</div>
+    </div>
+  </div>
+
+  <!-- S20 — return, poetic close -->
+  <div class="section section-winter layout-center" id="sec-3e">
+    <div class="section-content content-center">
+      <div class="section-label">04 — Winter / Return</div>
+      <blockquote class="big-quote">"The last cold night<br>carries the first<br>signal."</blockquote>
+      <div class="quote-attr">A pressure shift. A degree of warmth.<br>And the whole cycle leans forward.</div>
+    </div>
+  </div>
+
+  <div class="section-indicator" id="indicators"></div>
+<script type="module" src="/scene.js"></script>
+</body>
+</html>

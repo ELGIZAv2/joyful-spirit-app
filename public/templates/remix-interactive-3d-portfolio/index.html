@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remix: Interactive 3D portfolio scatter</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Space+Mono:wght@400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #fafaf8;
+      --text: #111;
+      --muted: #999;
+      --accent: #e5e5e0;
+      --border: rgba(0,0,0,0.06);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: default;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: #111; color: #fafaf8; }
+
+    #three-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    #three-container.active {
+      pointer-events: all;
+      z-index: 100;
+    }
+
+    #three-container.homepage-interactive {
+      pointer-events: all;
+      z-index: 5;
+      cursor: grab;
+    }
+
+    .content {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+    }
+
+  .content .hero,
+  .content .feed-section,
+  .content .about-section,
+  .content .disciplines-section,
+  .content .process-section,
+  .content .stats-section,
+  .content .clients-section,
+  .content .testimonials-section,
+  .content .writing-section,
+  .content .contact-section,
+  .content a,
+  .content button {
+      pointer-events: auto;
+    }
+
+    .content.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* HERO */
+    .hero {
+      padding: 100px 48px 40px;
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--muted);
+    }
+
+    .hero h1 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(36px, 5.8vw, 78px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      max-width: 780px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .hero h1 .thin {
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .hero-meta {
+      margin-top: 48px;
+      display: flex;
+      gap: 48px;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hero-meta-item .label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hero-meta-item .value {
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    /* DISCIPLINES */
+    .disciplines-section {
+      padding: 0 48px;
+      margin-top: 80px;
+    }
+
+    .disciplines-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border);
+    }
+
+    .discipline-card {
+      padding: 40px 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      cursor: default;
+      transition: background 0.4s;
+    }
+
+    .discipline-card:not(:nth-child(3n))  {
+      border-right: 1px solid var(--border);
+      padding-right: 32px;
+    }
+
+    .discipline-card:not(:nth-child(3n+1)) {
+      padding-left: 32px;
+    }
+
+    .discipline-card .disc-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+
+    .discipline-card h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .discipline-card p {
+      font-size: 13px;
+      line-height: 1.65;
+      color: #666;
+      font-weight: 300;
+    }
+
+    .discipline-card .disc-arrow {
+      position: absolute;
+      top: 40px;
+      right: 32px;
+      font-size: 14px;
+      color: var(--muted);
+      opacity: 0;
+      transform: translate(-4px, 4px);
+      transition: all 0.3s;
+    }
+
+    .discipline-card:hover .disc-arrow {
+      opacity: 1;
+      transform: translate(0,0);
+    }
+
+    /* FEED SECTION */
+    .feed-section {
+      padding: 100px 48px 40px;
+      margin-top: 0;
+    }
+
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .feed-header span {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .feed-header a {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    .feed-header a:hover { color: var(--text); }
+
+    .feed-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .feed-item {
+      aspect-ratio: 3/4;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .feed-item .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background 0.5s cubic-bezier(0.16,1,0.3,1);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 20px;
+    }
+
+    .feed-item:hover .overlay {
+      background: rgba(0,0,0,0.3);
+    }
+
+    .feed-item .overlay .feed-label {
+      color: white;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .feed-item .overlay .feed-cat {
+      color: rgba(255,255,255,0.6);
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.5s cubic-bezier(0.16,1,0.3,1) 0.05s;
+      margin-top: 4px;
+    }
+
+    .feed-item:hover .overlay .feed-label,
+    .feed-item:hover .overlay .feed-cat {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ABOUT */
+    .about-section {
+      padding: 100px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 120px;
+      max-width: 1200px;
+    }
+
+    .about-section h2 {
+      font-family: 'Space Mono', monospace;
+      font-weight: 400;
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .about-section p {
+      font-size: 15px;
+      line-height: 1.75;
+      color: #555;
+      font-weight: 300;
+    }
+
+    .services-list {
+      list-style: none;
+      padding-top: 0;
+    }
+
+    .services-list li {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 300;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: default;
+      transition: padding-left 0.3s;
+    }
+
+    .services-list li:hover {
+      padding-left: 8px;
+    }
+
+    .services-list li .num {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* SETTINGS BUTTON REMOVED */
+
+    /* BACK BUTTON */
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 48px;
+      z-index: 200;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 50px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .back-btn.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .back-btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    /* 3D HINT */
+    .hint-text {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+
+    .hint-text.visible { opacity: 1; }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* PROCESS SECTION */
+    .process-section {
+      padding: 100px 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .process-section .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 60px;
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .process-step {
+      padding: 40px 32px 40px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .process-step:not(:last-child) {
+      border-right: 1px solid var(--border);
+      margin-right: 0;
+    }
+
+    .process-step:not(:first-child) {
+      padding-left: 32px;
+    }
+
+    .process-step .step-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+
+    .process-step h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .process-step p {
+      font-size: 13px;
+      line-height: 1.65;
+      color: #666;
+      font-weight: 300;
+    }
+
+    /* CLIENTS SECTION */
+    .clients-section {
+      padding: 80px 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .clients-section .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    .clients-row {
+      display: flex;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .client-item {
+      flex: 1;
+      padding: 28px 24px;
+      border-right: 1px solid var(--border);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.3s;
+    }
+
+    .client-item:last-child { border-right: none; }
+    .client-item:hover { color: var(--text); }
+
+    /* TESTIMONIALS */
+    .testimonials-section {
+      padding: 100px 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .testimonials-section .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 60px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .testimonial-card {
+      padding: 36px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .testimonial-card blockquote {
+      font-size: 14px;
+      line-height: 1.75;
+      font-weight: 300;
+      color: #555;
+      margin-bottom: 28px;
+      font-style: italic;
+    }
+
+    .testimonial-card .cite-name {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .testimonial-card .cite-role {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* STATS SECTION */
+    .stats-section {
+      padding: 80px 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item {
+      padding: 48px 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child { border-right: none; }
+    .stat-item:not(:first-child) { padding-left: 40px; }
+
+    .stat-item .stat-number {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(36px, 4vw, 56px);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-item .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* CONTACT SECTION */
+    .contact-section {
+      padding: 120px 48px;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 120px;
+      max-width: 1200px;
+    }
+
+    .contact-section h2 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(28px, 3.5vw, 48px);
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .contact-section h2 em { font-style: italic; }
+
+    .contact-section .contact-desc {
+      font-size: 14px;
+      line-height: 1.75;
+      color: #666;
+      font-weight: 300;
+      margin-bottom: 40px;
+    }
+
+    .contact-detail {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .contact-detail .cd-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .contact-detail .cd-value {
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    /* RECENT WRITING */
+    .writing-section {
+      padding: 100px 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .writing-section .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    .writing-list { list-style: none; }
+
+    .writing-item {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 48px;
+      cursor: default;
+      transition: padding-left 0.3s;
+    }
+
+    .writing-item:hover { padding-left: 8px; }
+
+    .writing-item h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .writing-item p {
+      font-size: 13px;
+      color: #888;
+      font-weight: 300;
+    }
+
+    .writing-item .writing-meta {
+      text-align: right;
+    }
+
+    .writing-item .writing-date {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .writing-item .writing-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: var(--text);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 60px 20px 30px; min-height: 50vh; }
+      .hero h1 { font-size: clamp(28px, 8vw, 48px); }
+      .hero-meta { flex-direction: column; gap: 20px; }
+      .disciplines-section { padding: 0 20px; }
+      .disciplines-grid { grid-template-columns: 1fr; }
+      .discipline-card { padding: 28px 0 !important; border-right: none !important; }
+      .feed-section { padding: 60px 20px 20px; }
+      .feed-grid { grid-template-columns: repeat(2, 1fr); }
+      .about-section { grid-template-columns: 1fr; gap: 48px; padding: 60px 20px; }
+      .process-section { padding: 60px 20px; }
+      .process-grid { grid-template-columns: 1fr 1fr; }
+      .clients-section { padding: 60px 20px; }
+      .clients-row { flex-wrap: wrap; }
+      .client-item { flex: 1 1 40%; }
+      .testimonials-section { padding: 60px 20px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .stats-section { padding: 60px 20px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(even) { border-right: none; }
+      .contact-section { grid-template-columns: 1fr; gap: 48px; padding: 60px 20px; }
+      .writing-section { padding: 60px 20px; }
+      .writing-item { grid-template-columns: 1fr; gap: 8px; }
+      .writing-item .writing-meta { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="three-container"></canvas>
+
+<button class="back-btn" id="backBtn" onclick="returnToSite()">← Back</button>
+<div class="hint-text" id="hintText">Click objects to interact · Drag to orbit</div>
+
+<div class="content" id="mainContent">
+
+  <section class="hero">
+    <div class="hero-label">Multidisciplinary Designer</div>
+    <h1>Shaping spaces,<br>interfaces <em>&</em> objects<br><span class="thin">with intention</span></h1>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="label">Based in</span>
+        <span class="value">New York, NY</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Focus</span>
+        <span class="value">UI/UX · Industrial · Architecture</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="label">Available</span>
+        <span class="value">Select Commissions 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="disciplines-section reveal">
+    <div class="disciplines-grid">
+      <div class="discipline-card">
+        <div class="disc-num">01</div>
+        <h3>UI/UX Design</h3>
+        <p>Crafting intuitive digital experiences — from product strategy and wireframes to polished interface systems.</p>
+        <span class="disc-arrow">↗</span>
+      </div>
+      <div class="discipline-card">
+        <div class="disc-num">02</div>
+        <h3>Industrial Design</h3>
+        <p>Giving form to function — designing objects, furniture and consumer products with material honesty.</p>
+        <span class="disc-arrow">↗</span>
+      </div>
+      <div class="discipline-card">
+        <div class="disc-num">03</div>
+        <h3>Architecture</h3>
+        <p>Designing spaces that breathe — residential, commercial and conceptual structures rooted in context.</p>
+        <span class="disc-arrow">↗</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="feed-section reveal">
+    <div class="feed-header">
+      <span>Selected Projects</span>
+      <a href="#">View archive →</a>
+    </div>
+    <div class="feed-grid" id="feedGrid">
+    </div>
+  </section>
+
+  <section class="about-section reveal">
+    <div>
+      <h2>About</h2>
+      <p>I work at the intersection of architecture, product and digital — believing that good design transcends medium. Every project begins with deep research and ends with refined craft, whether it's a building facade, a chair, or an app interface. Currently open for select commissions and collaborations.</p>
+    </div>
+    <div>
+      <h2>Capabilities</h2>
+      <ul class="services-list">
+        <li>User Experience Strategy <span class="num">01</span></li>
+        <li>Interface Design Systems <span class="num">02</span></li>
+        <li>Product & Furniture Design <span class="num">03</span></li>
+        <li>Architectural Concept <span class="num">04</span></li>
+        <li>Spatial Planning <span class="num">05</span></li>
+        <li>3D Visualization & Prototyping <span class="num">06</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PROCESS SECTION -->
+  <section class="process-section reveal">
+    <div class="section-label">Process</div>
+    <div class="process-grid">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <h4>Research</h4>
+        <p>Every project begins with listening. Deep dives into context, user behavior, material constraints, and cultural cues shape the foundation of every decision.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <h4>Concept</h4>
+        <p>Ideas are explored rapidly — sketches, models, wireframes. The goal is divergence before convergence, testing assumptions before committing to form.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <h4>Refinement</h4>
+        <p>Details define quality. From material selection to typographic hierarchy, each element is scrutinized until the piece communicates exactly what it needs to.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <h4>Delivery</h4>
+        <p>Handoff is a collaboration, not a transaction. Documentation, prototypes, and post-launch support ensure the vision survives implementation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS SECTION -->
+  <section class="stats-section reveal">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number">47</div>
+        <div class="stat-label">Projects Completed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Years of Practice</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">23</div>
+        <div class="stat-label">Ongoing Clients</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Disciplines</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLIENTS SECTION -->
+  <section class="clients-section reveal">
+    <div class="section-label">Selected Clients</div>
+    <div class="clients-row">
+      <div class="client-item">Muji</div>
+      <div class="client-item">Aesop</div>
+      <div class="client-item">Vitsoe</div>
+      <div class="client-item">Matter</div>
+      <div class="client-item">Kinfolk</div>
+      <div class="client-item">Hem</div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS SECTION -->
+  <section class="testimonials-section reveal">
+    <div class="section-label">What Clients Say</div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <blockquote>Working with Kaelen reshaped how we think about our physical and digital presence. The outcome was far beyond what we imagined possible within the timeline.</blockquote>
+        <cite>
+          <span class="cite-name">Hana Mori</span>
+          <span class="cite-role">Creative Director, Muji EU</span>
+        </cite>
+      </div>
+      <div class="testimonial-card">
+        <blockquote>There is a rare quality here — the ability to hold architectural thinking and product thinking simultaneously. The Ora lamp became our best-selling piece that year.</blockquote>
+        <cite>
+          <span class="cite-name">Tom Brandt</span>
+          <span class="cite-role">Founder, Matter Studio</span>
+        </cite>
+      </div>
+      <div class="testimonial-card">
+        <blockquote>Kaelen brought rigour and restraint to the Aether project. The system is clean, scalable, and still feels considered eighteen months later.</blockquote>
+        <cite>
+          <span class="cite-name">Lena Vasquez</span>
+          <span class="cite-role">Head of Product, Aether</span>
+        </cite>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECENT WRITING SECTION -->
+  <section class="writing-section reveal">
+    <div class="section-label">Recent Writing</div>
+    <ul class="writing-list">
+      <li class="writing-item">
+        <div>
+          <h4>On Designing for Silence</h4>
+          <p>How restraint in interface design mirrors spatial thinking in architecture — and why both disciplines benefit from saying less.</p>
+        </div>
+        <div class="writing-meta">
+          <span class="writing-date">Mar 2026</span>
+          <span class="writing-tag">Essay</span>
+        </div>
+      </li>
+      <li class="writing-item">
+        <div>
+          <h4>Material Honesty in Consumer Products</h4>
+          <p>A look at why the most enduring objects expose their material logic rather than conceal it, and what that means for modern manufacturing.</p>
+        </div>
+        <div class="writing-meta">
+          <span class="writing-date">Jan 2026</span>
+          <span class="writing-tag">Essay</span>
+        </div>
+      </li>
+      <li class="writing-item">
+        <div>
+          <h4>The Grid as a Design Philosophy</h4>
+          <p>From Mies van der Rohe to CSS Grid — tracing how the grid became the lingua franca of visual order across disciplines.</p>
+        </div>
+        <div class="writing-meta">
+          <span class="writing-date">Nov 2025</span>
+          <span class="writing-tag">Research</span>
+        </div>
+      </li>
+      <li class="writing-item">
+        <div>
+          <h4>Revisiting the Monochrome Palette</h4>
+          <p>Why leading studios are stripping color from their identities, and how warmth can be communicated through texture and proportion alone.</p>
+        </div>
+        <div class="writing-meta">
+          <span class="writing-date">Sep 2025</span>
+          <span class="writing-tag">Observation</span>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- CONTACT SECTION -->
+  <section class="contact-section reveal">
+    <div>
+      <h2>Let's make something <em>considered</em> together.</h2>
+      <p class="contact-desc">Whether it's a building, a product, or a digital system — the starting point is always a conversation. Reach out to discuss your project or just to exchange ideas.</p>
+    </div>
+    <div>
+      <div class="contact-detail">
+        <span class="cd-label">Email</span>
+        <span class="cd-value">studio@kaelen.work</span>
+      </div>
+      <div class="contact-detail">
+        <span class="cd-label">Location</span>
+        <span class="cd-value">New York, NY / Remote</span>
+      </div>
+      <div class="contact-detail">
+        <span class="cd-label">Availability</span>
+        <span class="cd-value">Open for 2026 projects</span>
+      </div>
+      <div class="contact-detail">
+        <span class="cd-label">Response time</span>
+        <span class="cd-value">Within 48 hours</span>
+      </div>
+      <div class="contact-detail">
+        <span class="cd-label">Instagram</span>
+        <span class="cd-value">@kaelen.studio</span>
+      </div>
+      <div class="contact-detail">
+        <span class="cd-label">Read.cv</span>
+        <span class="cd-value">read.cv/kaelen</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// ========== 3D SCENE ==========
+const canvas = document.getElementById('three-container');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xfafaf8);
+
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 14);
+
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.enablePan = false;
+controls.enabled = false;
+controls.minDistance = 6;
+controls.maxDistance = 22;
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+dirLight.position.set(5, 8, 6);
+dirLight.castShadow = true;
+scene.add(dirLight);
+
+const fillLight = new THREE.DirectionalLight(0xc8b8ff, 0.3);
+fillLight.position.set(-4, 2, -3);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xffc8d0, 0.4);
+rimLight.position.set(0, -3, 5);
+scene.add(rimLight);
+
+// Refined monochromatic palette with warm neutrals
+const colors = [
+  0xD4CFC8, // warm stone
+  0xC2BAB0, // taupe
+  0xBEB8AE, // greige
+  0xA89F94, // warm gray
+  0xD9D3CB, // cream stone
+  0xC8C0B6, // sand
+  0xE0DBD4, // light warm
+  0xB5ADA3, // muted clay
+];
+
+function getColor() {
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function createMaterial(color) {
+  return new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.25,
+    metalness: 0.05,
+  });
+}
+
+const objects = [];
+const originalPositions = [];
+const originalRotations = [];
+const targetPositions = [];
+const targetRotations = [];
+
+// — Minimal geometric primitives for a refined aesthetic —
+
+// ARCH
+function createArch() {
+  const group = new THREE.Group();
+  const mat = createMaterial(getColor());
+  const curve = new THREE.TorusGeometry(0.5, 0.1, 16, 32, Math.PI);
+  const arch = new THREE.Mesh(curve, mat);
+  group.add(arch);
+  const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.8, 12), mat);
+  legL.position.set(-0.5, -0.4, 0);
+  group.add(legL);
+  const legR = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.8, 12), mat);
+  legR.position.set(0.5, -0.4, 0);
+  group.add(legR);
+  return group;
+}
+
+// STEPPED FORM
+function createSteps() {
+  const group = new THREE.Group();
+  const mat = createMaterial(getColor());
+  for (let i = 0; i < 4; i++) {
+    const step = new THREE.Mesh(new THREE.BoxGeometry(0.8 - i * 0.1, 0.18, 0.6 - i * 0.08), mat);
+    step.position.y = i * 0.2 - 0.3;
+    group.add(step);
+  }
+  return group;
+}
+
+// SMOOTH SPHERE
+function createSphere(color) {
+  return new THREE.Mesh(new THREE.SphereGeometry(0.45, 32, 32), createMaterial(color || getColor()));
+}
+
+// TORUS
+function createTorus(color) {
+  return new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.12, 24, 48), createMaterial(color || getColor()));
+}
+
+// COLUMN
+function createColumn() {
+  const group = new THREE.Group();
+  const mat = createMaterial(getColor());
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 1.6, 16), mat);
+  group.add(shaft);
+  const cap = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.1, 0.45), mat);
+  cap.position.y = 0.85;
+  group.add(cap);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.08, 0.4), mat);
+  base.position.y = -0.84;
+  group.add(base);
+  return group;
+}
+
+// CAPSULE
+function createCapsule(color) {
+  const group = new THREE.Group();
+  const mat = createMaterial(color || getColor());
+  const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.7, 20), mat);
+  group.add(cyl);
+  const top = new THREE.Mesh(new THREE.SphereGeometry(0.18, 20, 20), mat);
+  top.position.y = 0.35;
+  group.add(top);
+  const bottom = new THREE.Mesh(new THREE.SphereGeometry(0.18, 20, 20), mat);
+  bottom.position.y = -0.35;
+  group.add(bottom);
+  return group;
+}
+
+// CUBE
+function createCube() {
+  return new THREE.Mesh(
+    new THREE.BoxGeometry(0.65, 0.65, 0.65),
+    createMaterial(getColor())
+  );
+}
+
+// RING
+function createRing() {
+  return new THREE.Mesh(
+    new THREE.TorusGeometry(0.4, 0.06, 16, 48),
+    createMaterial(getColor())
+  );
+}
+
+// CONE
+function createCone() {
+  return new THREE.Mesh(
+    new THREE.ConeGeometry(0.35, 0.9, 24),
+    createMaterial(getColor())
+  );
+}
+
+// PLATFORM
+function createPlatform() {
+  const group = new THREE.Group();
+  const mat = createMaterial(getColor());
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.08, 0.7), mat);
+  group.add(slab);
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 20), mat);
+  sphere.position.y = 0.24;
+  group.add(sphere);
+  return group;
+}
+
+// CROSS FORM
+function createCross() {
+  const group = new THREE.Group();
+  const mat = createMaterial(getColor());
+  const h = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.14, 0.14), mat);
+  group.add(h);
+  const v = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.0, 0.14), mat);
+  group.add(v);
+  return group;
+}
+
+// HALF-SPHERE / DOME
+function createDome() {
+  const geo = new THREE.SphereGeometry(0.45, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+  const mat = createMaterial(getColor());
+  const dome = new THREE.Mesh(geo, mat);
+  dome.rotation.x = Math.PI;
+  return dome;
+}
+
+// Create all objects — architectural / design primitives
+const creators = [
+  () => createArch(),
+  () => createSteps(),
+  () => createSphere(),
+  () => createColumn(),
+  () => createTorus(),
+  () => createCapsule(),
+  () => createCube(),
+  () => createRing(),
+  () => createCone(),
+  () => createPlatform(),
+  () => createCross(),
+  () => createDome(),
+];
+
+// Clustered initial positions — centered on screen, offset right to complement hero text
+const clusterCenter = { x: 2.5, y: 0.5, z: 0 };
+const clusterPositions = [
+  [clusterCenter.x - 0.5, clusterCenter.y + 1.5, 0],
+  [clusterCenter.x + 0.8, clusterCenter.y + 0.2, 0.3],
+  [clusterCenter.x + 1.2, clusterCenter.y + 1.8, -0.2],
+  [clusterCenter.x - 0.3, clusterCenter.y - 1, 0.2],
+  [clusterCenter.x + 0.5, clusterCenter.y - 0.5, 0.5],
+  [clusterCenter.x - 1.2, clusterCenter.y + 0.5, -0.3],
+  [clusterCenter.x + 0.3, clusterCenter.y + 2.5, 0.1],
+  [clusterCenter.x - 1, clusterCenter.y - 0.3, 0.4],
+  [clusterCenter.x + 0.8, clusterCenter.y - 1.5, -0.2],
+  [clusterCenter.x - 0.2, clusterCenter.y + 1, 0.6],
+  [clusterCenter.x + 1.5, clusterCenter.y + 0.8, -0.4],
+  [clusterCenter.x - 0.8, clusterCenter.y + 2, 0.2],
+];
+
+creators.forEach((create, i) => {
+  const obj = create();
+  const cp = clusterPositions[i % clusterPositions.length];
+  obj.position.set(cp[0], cp[1], cp[2]);
+  obj.rotation.set(
+    Math.random() * Math.PI,
+    Math.random() * Math.PI,
+    Math.random() * Math.PI
+  );
+
+  scene.add(obj);
+  objects.push(obj);
+  originalPositions.push(new THREE.Vector3(cp[0], cp[1], cp[2]));
+  originalRotations.push(new THREE.Euler(obj.rotation.x, obj.rotation.y, obj.rotation.z));
+
+  // Scattered positions
+  const r = 4 + Math.random() * 5;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.random() * Math.PI;
+  targetPositions.push(new THREE.Vector3(
+    r * Math.sin(phi) * Math.cos(theta),
+    r * Math.sin(phi) * Math.sin(theta) - 1,
+    r * Math.cos(phi) - 2
+  ));
+  targetRotations.push(new THREE.Euler(
+    Math.random() * Math.PI * 2,
+    Math.random() * Math.PI * 2,
+    Math.random() * Math.PI * 2
+  ));
+});
+
+// Scene starts VISIBLE on homepage
+objects.forEach(o => { o.visible = true; });
+canvas.classList.add('homepage-interactive');
+
+let isScattered = false;
+let animating = false;
+let sceneActive = false;
+let homepageMode = true;
+let hovered = null;
+
+// Mouse parallax for homepage
+const mouseParallax = { x: 0, y: 0, targetX: 0, targetY: 0 };
+
+document.addEventListener('mousemove', (e) => {
+  mouseParallax.targetX = (e.clientX / window.innerWidth - 0.5) * 2;
+  mouseParallax.targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// SCATTER MODE
+function enterScatterMode() {
+  sceneActive = true;
+  homepageMode = false;
+  canvas.classList.remove('homepage-interactive');
+  canvas.classList.add('active');
+  controls.enabled = true;
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('backBtn').classList.add('visible');
+  document.getElementById('hintText').classList.add('visible');
+
+  setTimeout(() => scatterObjects(), 200);
+}
+
+function returnToSite() {
+  gatherObjects();
+  setTimeout(() => {
+    sceneActive = false;
+    homepageMode = true;
+    canvas.classList.remove('active');
+    canvas.classList.add('homepage-interactive');
+    controls.enabled = false;
+    document.getElementById('mainContent').classList.remove('hidden');
+    document.getElementById('backBtn').classList.remove('visible');
+    document.getElementById('hintText').classList.remove('visible');
+  }, 1200);
+}
+
+window.enterScatterMode = enterScatterMode;
+window.returnToSite = returnToSite;
+
+function scatterObjects() {
+  if (animating) return;
+  animating = true;
+  isScattered = true;
+
+  objects.forEach((obj, i) => {
+    animateTo(obj, targetPositions[i], targetRotations[i], 800 + i * 80, () => {
+      if (i === objects.length - 1) animating = false;
+    });
+  });
+}
+
+function gatherObjects() {
+  if (animating) return;
+  animating = true;
+  isScattered = false;
+
+  objects.forEach((obj, i) => {
+    animateTo(obj, originalPositions[i], originalRotations[i], 800 + i * 80, () => {
+      if (i === objects.length - 1) animating = false;
+    });
+  });
+}
+
+function animateTo(obj, targetPos, targetRot, duration, onComplete) {
+  const startPos = obj.position.clone();
+  const startRot = new THREE.Euler(obj.rotation.x, obj.rotation.y, obj.rotation.z);
+  const startTime = performance.now();
+
+  function update() {
+    const elapsed = performance.now() - startTime;
+    let t = Math.min(elapsed / duration, 1);
+    // Elastic ease out
+    t = t === 1 ? 1 : 1 - Math.pow(2, -10 * t) * Math.cos((t * 10 - 0.75) * ((2 * Math.PI) / 3));
+
+    obj.position.lerpVectors(startPos, targetPos, t);
+    obj.rotation.x = startRot.x + (targetRot.x - startRot.x) * t;
+    obj.rotation.y = startRot.y + (targetRot.y - startRot.y) * t;
+    obj.rotation.z = startRot.z + (targetRot.z - startRot.z) * t;
+
+    if (elapsed < duration) {
+      requestAnimationFrame(update);
+    } else if (onComplete) {
+      onComplete();
+    }
+  }
+  update();
+}
+
+// CLICK INTERACTION — works in both homepage and scatter mode
+canvas.addEventListener('click', (e) => {
+  if (!sceneActive && !homepageMode) return;
+
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  const allMeshes = [];
+  objects.forEach((obj, i) => {
+    obj.traverse(child => {
+      if (child.isMesh) {
+        child.userData.parentIndex = i;
+        allMeshes.push(child);
+      }
+    });
+  });
+
+  const intersects = raycaster.intersectObjects(allMeshes);
+  if (intersects.length > 0) {
+    const idx = intersects[0].object.userData.parentIndex;
+    const obj = objects[idx];
+
+    // Pop out effect
+    const pushDir = obj.position.clone().normalize();
+    const newTarget = obj.position.clone().add(pushDir.multiplyScalar(2));
+    const spinRot = new THREE.Euler(
+      obj.rotation.x + Math.PI * (Math.random() - 0.5),
+      obj.rotation.y + Math.PI * (Math.random() - 0.5),
+      obj.rotation.z + Math.PI * (Math.random() - 0.5)
+    );
+    animateTo(obj, newTarget, spinRot, 600, () => {
+      // Bounce back slightly
+      const returnTarget = newTarget.clone().sub(pushDir.normalize().multiplyScalar(0.5));
+      animateTo(obj, returnTarget, spinRot, 400, null);
+    });
+  }
+});
+
+// HOVER — works in both modes
+canvas.addEventListener('mousemove', (e) => {
+  if (!sceneActive && !homepageMode) return;
+
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  const allMeshes = [];
+  objects.forEach(obj => obj.traverse(child => { if (child.isMesh) allMeshes.push(child); }));
+
+  const intersects = raycaster.intersectObjects(allMeshes);
+  canvas.style.cursor = intersects.length > 0 ? 'pointer' : (homepageMode ? 'default' : 'grab');
+});
+
+// FEED GRID — refined project tiles
+const feedGrid = document.getElementById('feedGrid');
+const feedItems = [
+  { bg: '#D4CFC8', name: 'Muji Store Redesign', cat: 'Architecture' },
+  { bg: '#C2BAB0', name: 'Aether — Banking App', cat: 'UI/UX' },
+  { bg: '#BEB8AE', name: 'Ora Desk Lamp', cat: 'Industrial' },
+  { bg: '#A89F94', name: 'Nōma Residence', cat: 'Architecture' },
+];
+
+feedItems.forEach((data) => {
+  const item = document.createElement('div');
+  item.className = 'feed-item';
+  item.style.background = data.bg;
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  const label = document.createElement('span');
+  label.className = 'feed-label';
+  label.textContent = data.name;
+  const cat = document.createElement('span');
+  cat.className = 'feed-cat';
+  cat.textContent = data.cat;
+  overlay.appendChild(label);
+  overlay.appendChild(cat);
+  item.appendChild(overlay);
+  feedGrid.appendChild(item);
+});
+
+// SCROLL REVEAL
+const revealEls = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15 });
+revealEls.forEach(el => revealObserver.observe(el));
+
+// ANIMATE
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const elapsed = clock.getElapsedTime();
+
+  // Smooth mouse parallax interpolation
+  mouseParallax.x += (mouseParallax.targetX - mouseParallax.x) * 0.04;
+  mouseParallax.y += (mouseParallax.targetY - mouseParallax.y) * 0.04;
+
+  // Gentle floating + mouse reactivity
+  objects.forEach((obj, i) => {
+    if (obj.visible) {
+      obj.position.y += Math.sin(elapsed * 0.5 + i * 0.8) * 0.0008;
+      obj.position.x += Math.cos(elapsed * 0.3 + i * 1.2) * 0.0003;
+      obj.rotation.x += 0.001;
+      obj.rotation.y += 0.0008;
+
+      // Parallax: objects shift subtly with mouse on homepage
+      if (homepageMode) {
+        const depth = (i % 3 + 1) * 0.15;
+        obj.position.x += mouseParallax.x * depth * 0.008;
+        obj.position.y += -mouseParallax.y * depth * 0.006;
+      }
+    }
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

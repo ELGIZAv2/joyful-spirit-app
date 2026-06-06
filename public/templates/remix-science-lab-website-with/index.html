@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Remix: Science Lab website with SDF scene and dot-matrix shader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      src: url('assets/Redaction_50-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    * { margin: 0; padding: 0; outline: none !important; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow-x: hidden; background: rgb(2,2,3); font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { overflow-y: auto; }
+
+    /* ===== 3D BACKGROUND ===== */
+    #crt-frame {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    #crt-frame canvas { display: block; width: 100% !important; height: 100% !important; pointer-events: none; }
+
+    /* ===== HERO WRAPPER ===== */
+    .hero-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== HERO OVERLAY ===== */
+    #hero-overlay {
+      position: relative;
+      width: 100%; height: 100%;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== NAV ===== */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      pointer-events: auto;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease;
+    }
+    .nav.scrolled {
+      background: rgba(2,2,3,0.8);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-brand-dot {
+      width: 8px; height: 8px;
+      background: #fff;
+      box-shadow: 0 0 12px rgba(255,255,255,0.4);
+      animation: pulse 1s steps(2) infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+    .nav-brand-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      transition: color 0.2s ease;
+    }
+    .nav-links a:hover {
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ===== HAMBURGER MENU (mobile) ===== */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      pointer-events: auto;
+      z-index: 100;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 100%;
+      height: 1.5px;
+      background: rgba(255,255,255,0.8);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .nav-hamburger.open span:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+    .nav-hamburger.open span:nth-child(2) {
+      opacity: 0;
+    }
+    .nav-hamburger.open span:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(2, 2, 3, 0.95);
+      z-index: 50;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+    }
+    .mobile-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-menu a {
+      font-size: 28px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      padding: 16px 0;
+      transition: color 0.2s ease;
+    }
+    .mobile-menu a:hover {
+      color: rgba(255,255,255,0.95);
+    }
+    .mobile-menu .mobile-cta {
+      margin-top: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #000;
+      background: #fff;
+      padding: 14px 36px;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+    }
+    .nav-cta {
+      font-size: 13px;
+      font-weight: 500;
+      color: #000 !important;
+      background: #fff;
+      padding: 10px 24px;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+      transition: opacity 0.25s ease;
+      border: 1px solid rgba(255,255,255,0.15);
+      will-change: transform;
+    }
+    .nav-cta:hover {
+      opacity: 0.85;
+      color: #000 !important;
+    }
+
+    /* ===== BOTTOM FADE ===== */
+    .hero-fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 55%;
+      background: linear-gradient(to top, rgb(2,2,3) 0%, rgb(2,2,3) 8%, transparent 100%);
+      z-index: 5;
+      pointer-events: none !important;
+    }
+
+    /* ===== TOP FADE ===== */
+    .hero-fade-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 20%;
+      background: linear-gradient(to bottom, rgb(2,2,3) 0%, rgb(2,2,3) 5%, transparent 100%);
+      z-index: 5;
+      pointer-events: none !important;
+    }
+
+    /* ===== HERO CONTENT ===== */
+    .hero-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 44px;
+      pointer-events: none;
+    }
+
+    .hero-h1 {
+      font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+      font-size: clamp(56px, 11vw, 152px);
+      font-weight: 400;
+      color: #fff;
+      line-height: 0.93;
+      letter-spacing: -3px;
+      margin-bottom: 32px;
+      width: 100%;
+      text-shadow: none;
+    }
+    .hero-h1 .thin {
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* Row below headline: description left, buttons right */
+    .hero-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      pointer-events: none;
+    }
+    .hero-sub {
+      font-size: 13px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.42);
+      line-height: 1.8;
+      max-width: 600px;
+      text-shadow: 0 2px 16px rgba(2,2,3,1), 0 4px 32px rgba(2,2,3,1), 0 0 60px rgba(2,2,3,1);
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      pointer-events: auto;
+    }
+    .btn-primary {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 28px;
+      background: transparent;
+      color: #000;
+      font-family: 'Geist', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid #fff;
+      border-radius: 100px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      will-change: transform;
+      isolation: isolate;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      border-radius: inherit;
+      transform: scaleX(1);
+      transform-origin: left center;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: -1;
+      will-change: transform;
+    }
+    .btn-primary:hover::before {
+      transform: scaleX(0);
+      transform-origin: right center;
+    }
+    .btn-primary:hover {
+      color: #fff;
+    }
+    .btn-primary svg { width: 13px; height: 13px; }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 28px;
+      background: transparent;
+      color: rgba(255,255,255,0.55);
+      font-family: 'Geist', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 100px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: border-color 0.25s ease, color 0.25s ease;
+      white-space: nowrap;
+      will-change: transform;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ===== BOTTOM BAR ===== */
+    .hero-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      pointer-events: none;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+    }
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .hero-stat-val {
+      font-size: 18px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: -0.5px;
+    }
+    .hero-stat-label {
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .hero-scroll {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ===== SCROLL TO EXPLORE ===== */
+    .scroll-cta {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .scroll-cta-text {
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .scroll-cta-line {
+      width: 1px;
+      height: 32px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+    }
+    .scroll-cta-line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.35), transparent);
+      animation: scrollDrop 2s ease-in-out infinite;
+    }
+    @keyframes scrollDrop {
+      0% { top: -100%; }
+      50% { top: 100%; }
+      100% { top: 100%; }
+    }
+
+    /* Scroll CTA entrance animation */
+    .scroll-cta {
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 1.8s;
+    }
+    .scroll-cta.anim-in {
+      opacity: 1;
+    }
+    /* ===== SETTINGS PANEL ===== */
+    .settings-toggle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s ease, transform 0.3s ease, background 0.2s ease;
+      pointer-events: auto;
+      flex-shrink: 0;
+    }
+    .settings-toggle:hover {
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.08);
+    }
+    .settings-toggle.open {
+      transform: rotate(60deg);
+    }
+    .settings-toggle svg {
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: rgba(255,255,255,0.4);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Backdrop overlay — transparent, no dimming */
+    .settings-backdrop {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 9998;
+      background: transparent;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .settings-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .settings-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 9999;
+      width: 320px;
+      height: 100%;
+      overflow-y: auto;
+      background: rgba(8,8,12,0.92);
+      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(24px);
+      border-left: 1px solid rgba(255,255,255,0.08);
+      padding: 0;
+      pointer-events: auto;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      visibility: hidden;
+    }
+    .settings-panel.open {
+      transform: translateX(0);
+      visibility: visible;
+    }
+    .settings-panel::-webkit-scrollbar { width: 4px; }
+    .settings-panel::-webkit-scrollbar-track { background: transparent; }
+    .settings-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .settings-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .settings-panel-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .settings-panel-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+    }
+    .settings-panel-close:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    .settings-panel-close svg {
+      width: 14px;
+      height: 14px;
+      stroke: rgba(255,255,255,0.5);
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+    }
+    .settings-panel-body {
+      padding: 20px 24px 32px;
+    }
+
+    .settings-section {
+      margin-bottom: 18px;
+    }
+    .settings-section:last-child {
+      margin-bottom: 0;
+    }
+    .settings-section-title {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .settings-row:last-child {
+      margin-bottom: 0;
+    }
+    .settings-label {
+      font-size: 12px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+    }
+    .settings-value {
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.3);
+      min-width: 32px;
+      text-align: right;
+    }
+    .settings-slider-row {
+      margin-bottom: 12px;
+    }
+    .settings-slider-row:last-child {
+      margin-bottom: 0;
+    }
+    .settings-slider-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .settings-slider-header .settings-label {
+      font-size: 12px;
+    }
+    .settings-slider-header .settings-value {
+      font-size: 11px;
+    }
+    input[type="range"].s-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"].s-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"].s-range::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    input[type="range"].s-range::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Toggle switch */
+    .s-toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      flex-shrink: 0;
+    }
+    .s-toggle.on {
+      background: rgba(255,255,255,0.25);
+    }
+    .s-toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .s-toggle.on::after {
+      transform: translateX(16px);
+      background: #fff;
+    }
+
+    .settings-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+      margin: 16px 0;
+    }
+
+    .settings-tier {
+      font-size: 10px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.5px;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .settings-panel {
+        width: 100%;
+      }
+    }
+
+    /* ===== SECTIONS ===== */
+    .section {
+      position: relative;
+      z-index: 10;
+      background: rgb(2,2,3);
+    }
+
+    .section-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-whatwedo {
+      padding: 160px 48px 120px;
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .section-heading {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(36px, 5.5vw, 72px);
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.05;
+      letter-spacing: -1.5px;
+      max-width: 700px;
+      margin-bottom: 80px;
+    }
+    .section-heading .thin { color: rgba(255,255,255,0.3); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .feature-card {
+      background: rgb(2,2,3);
+      padding: 48px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: background 0.3s ease;
+    }
+    .feature-card:hover { background: rgba(255,255,255,0.02); }
+    .feature-icon {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .feature-icon svg {
+      width: 18px; height: 18px;
+      stroke: rgba(255,255,255,0.5);
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .feature-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: -0.3px;
+    }
+    .feature-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.7;
+    }
+
+    /* Research section */
+    .section-research {
+      padding: 120px 48px 0;
+    }
+    .section-research .section-inner {
+      display: flex;
+      flex-direction: column;
+    }
+    .research-content {
+      padding: 0 0 40px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .research-list {
+      display: flex;
+      gap: 48px;
+    }
+    .research-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex: 1;
+      cursor: default;
+      padding: 20px;
+      border-radius: 12px;
+      transition: background 0.3s ease;
+    }
+    .research-item:hover {
+      background: rgba(255,255,255,0.03);
+    }
+    .research-item.active .research-num {
+      color: rgba(255,255,255,0.5);
+    }
+    .research-item.active .research-item-title {
+      color: rgba(255,255,255,1);
+    }
+    .research-num {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 32px;
+      color: rgba(255,255,255,0.12);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 40px;
+    }
+    .research-item-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .research-item-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+    }
+    .research-item-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.7;
+    }
+    .research-canvas-wrap {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 360px;
+      background: rgb(2,2,3);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-top: 48px;
+    }
+    .research-canvas-wrap canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      pointer-events: none;
+      touch-action: auto;
+      opacity: 0.35;
+    }
+
+    /* Numbers section */
+    .section-numbers {
+      padding: 160px 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-numbers .section-inner {
+      position: relative;
+      z-index: 2;
+    }
+    .numbers-canvas-wrap {
+      display: none;
+    }
+    .numbers-content {
+      position: relative;
+    }
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 48px;
+      margin-top: 80px;
+    }
+    .number-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .number-val {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(48px, 6vw, 80px);
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+    .number-label {
+      font-size: 13px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.5;
+    }
+    .number-divider {
+      width: 32px;
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 8px 0;
+    }
+
+    /* CTA section */
+    .section-cta {
+      padding: 160px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .cta-heading {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(40px, 6vw, 88px);
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+    .cta-heading .thin { color: rgba(255,255,255,0.3); }
+    .cta-sub {
+      font-size: 14px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 48px;
+    }
+    .cta-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 10;
+      background: rgb(2,2,3);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-dot {
+      width: 6px; height: 6px;
+      background: rgba(255,255,255,0.3);
+    }
+    .footer-brand {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .footer-right {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.3px;
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.35s; }
+    .reveal-delay-5 { transition-delay: 0.4s; }
+    .reveal-delay-6 { transition-delay: 0.5s; }
+
+    .hero-scroll .status-dot {
+      width: 6px;
+      height: 6px;
+      background: rgba(100, 255, 160, 0.8);
+      border-radius: 50%;
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(100, 255, 160, 0.4); }
+      50% { opacity: 0.4; box-shadow: 0 0 2px rgba(100, 255, 160, 0.1); }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .mobile-menu { display: flex; }
+      .hero-content { padding: 0 24px 32px; }
+      .hero-h1 { font-size: clamp(44px, 13vw, 72px); letter-spacing: -1px; margin-bottom: 24px; }
+      .hero-row { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .hero-sub { font-size: 12px; max-width: 100%; }
+      .hero-bottom { padding: 16px 24px; }
+      .hero-stats { gap: 24px; }
+      .hero-stat-val { font-size: 14px; }
+      .hero-stat-label { font-size: 9px; }
+      .hero-scroll { display: none; }
+      .btn-primary, .btn-secondary { font-size: 12px; padding: 11px 22px; }
+
+      .section-whatwedo { padding: 100px 24px 80px; }
+      .section-heading { margin-bottom: 48px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card { padding: 32px 24px; }
+      .section-research { padding: 100px 24px 0; }
+      .research-list { flex-direction: column; gap: 32px; }
+      .research-canvas-wrap { height: 280px; }
+      .section-numbers { padding: 100px 24px; }
+      .numbers-grid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      .section-cta { padding: 100px 24px; }
+      .cta-actions { flex-direction: column; }
+      .footer { padding: 32px 24px; flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
+
+    /* ===== ENTRANCE ANIMATIONS ===== */
+    #crt-frame {
+      opacity: 0;
+      transition: opacity 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 0.8s;
+    }
+    #crt-frame.visible {
+      opacity: 1;
+    }
+
+    .nav-brand, .nav-links a, .nav-links .nav-cta, .nav-hamburger {
+      opacity: 0;
+      transform: translateY(-12px);
+      transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .nav-brand.anim-in, .nav-links a.anim-in, .nav-links .nav-cta.anim-in, .nav-hamburger.anim-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Nav link delays */
+    .nav-brand { transition-delay: 0.3s; }
+    .nav-links a:nth-child(1) { transition-delay: 0.4s; }
+    .nav-links a:nth-child(2) { transition-delay: 0.48s; }
+    .nav-links a:nth-child(3) { transition-delay: 0.56s; }
+    .nav-links a:nth-child(4) { transition-delay: 0.64s; }
+    .nav-links .nav-cta { transition-delay: 0.72s; }
+    .nav-hamburger { transition-delay: 0.4s; }
+
+    .hero-h1 {
+      opacity: 0;
+      transition: opacity 0.9s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 0.6s;
+      will-change: transform, opacity;
+    }
+    .hero-h1.anim-in {
+      opacity: 1;
+    }
+
+    .hero-sub {
+      opacity: 0;
+      transition: opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 0.9s;
+      will-change: transform, opacity;
+    }
+    .hero-sub.anim-in {
+      opacity: 1;
+    }
+
+    .hero-actions {
+      opacity: 0;
+      transition: opacity 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 1.05s;
+      will-change: transform, opacity;
+    }
+    .hero-actions.anim-in {
+      opacity: 1;
+    }
+
+    .hero-stat {
+      opacity: 0;
+      transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .hero-stat:nth-child(1) { transition-delay: 1.2s; }
+    .hero-stat:nth-child(2) { transition-delay: 1.32s; }
+    .hero-stat:nth-child(3) { transition-delay: 1.44s; }
+    .hero-stat.anim-in {
+      opacity: 1;
+    }
+
+    .hero-scroll {
+      opacity: 0;
+      transition: opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 1.5s;
+      gap: 10px;
+    }
+    .hero-scroll.anim-in {
+      opacity: 1;
+    }
+
+    .hero-bottom {
+      will-change: transform;
+    }
+
+    .hero-fade, .hero-fade-top {
+      opacity: 0;
+      transition: opacity 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition-delay: 1.0s;
+    }
+    .hero-fade.anim-in, .hero-fade-top.anim-in {
+      opacity: 1;
+    }
+
+    /* GPU layer promotion for overlay — prevents canvas repaints */
+    #hero-overlay, .hero-fade, .hero-fade-top {
+      will-change: auto;
+      transform: translateZ(0);
+    }
+
+    /* Prevent text selection from triggering overlay repaints during interaction */
+    #hero-overlay, #hero-overlay * {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    /* Allow selection only on actual text content when deliberately clicked */
+    .hero-h1, .hero-sub, .hero-stat-val, .hero-stat-label {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO WRAPPER -->
+<div class="hero-wrapper">
+
+<!-- 3D BACKGROUND -->
+<div id="crt-frame"></div>
+
+<!-- BOTTOM FADE (between canvas and overlay) -->
+<div class="hero-fade"></div>
+
+<!-- TOP FADE (below navbar) -->
+<div class="hero-fade-top"></div>
+
+<!-- HERO OVERLAY -->
+<div id="hero-overlay">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-brand-dot"></div>
+      <span class="nav-brand-text">Axiom</span>
+    </div>
+    <div class="nav-links">
+      <a href="#">Research</a>
+      <a href="#">Discoveries</a>
+      <a href="#">Publications</a>
+      <a href="#">About</a>
+      <a href="#" class="nav-cta">Join the Lab</a>
+    </div>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#" class="mobile-link">Research</a>
+    <a href="#" class="mobile-link">Discoveries</a>
+    <a href="#" class="mobile-link">Publications</a>
+    <a href="#" class="mobile-link">About</a>
+    <a href="#" class="mobile-cta">Join the Lab</a>
+  </div>
+
+  <!-- MAIN HERO -->
+  <div class="hero-content">
+    <h1 class="hero-h1">
+      The universe is math. </br><span class="thin">We help solve it.</span>
+    </h1>
+    <div class="hero-row">
+      <p class="hero-sub">
+        Accelerating scientific discovery through real-time simulation, high-fidelity rendering, and AI-driven analysis — from quantum fields to galactic structures.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary">
+          Explore Research
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+        <button class="btn-secondary">Read Papers</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-backdrop" id="settings-backdrop"></div>
+
+  <div class="settings-panel" id="settings-panel">
+    <div class="settings-panel-header">
+      <span class="settings-panel-title">Settings</span>
+      <button class="settings-panel-close" id="settings-close" aria-label="Close settings">
+        <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+    <div class="settings-panel-body">
+    <!-- SCENE -->
+    <div class="settings-section">
+      <div class="settings-section-title">Scene</div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Speed</span>
+          <span class="settings-value" id="val-speed">0.85</span>
+        </div>
+        <input type="range" class="s-range" id="s-speed" min="0" max="2" step="0.05" value="0.85">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Gooeyness</span>
+          <span class="settings-value" id="val-gooey">1.20</span>
+        </div>
+        <input type="range" class="s-range" id="s-gooey" min="0.1" max="3" step="0.05" value="1.20">
+      </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <!-- DITHER -->
+    <div class="settings-section">
+      <div class="settings-section-title">Dot Matrix</div>
+      <div class="settings-row">
+        <span class="settings-label">Enabled</span>
+        <div class="s-toggle on" id="t-dither"></div>
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Dot Size</span>
+          <span class="settings-value" id="val-dotsize">5.0</span>
+        </div>
+        <input type="range" class="s-range" id="s-dotsize" min="1" max="12" step="0.5" value="5.0">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Dot Gap</span>
+          <span class="settings-value" id="val-dotgap">2.5</span>
+        </div>
+        <input type="range" class="s-range" id="s-dotgap" min="0" max="6" step="0.5" value="2.5">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Brightness</span>
+          <span class="settings-value" id="val-bright">0.85</span>
+        </div>
+        <input type="range" class="s-range" id="s-bright" min="0.1" max="2" step="0.05" value="0.85">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Contrast</span>
+          <span class="settings-value" id="val-contrast">0.60</span>
+        </div>
+        <input type="range" class="s-range" id="s-contrast" min="0.1" max="2" step="0.05" value="0.60">
+      </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <!-- CROSSHATCH -->
+    <div class="settings-section">
+      <div class="settings-section-title">Crosshatch</div>
+      <div class="settings-row">
+        <span class="settings-label">Enabled</span>
+        <div class="s-toggle" id="t-cross"></div>
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Intensity</span>
+          <span class="settings-value" id="val-crossint">0.95</span>
+        </div>
+        <input type="range" class="s-range" id="s-crossint" min="0" max="1" step="0.05" value="0.95">
+      </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <!-- BLOOM -->
+    <div class="settings-section">
+      <div class="settings-section-title">Bloom</div>
+      <div class="settings-row">
+        <span class="settings-label">Enabled</span>
+        <div class="s-toggle on" id="t-bloom"></div>
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Intensity</span>
+          <span class="settings-value" id="val-bloomint">0.55</span>
+        </div>
+        <input type="range" class="s-range" id="s-bloomint" min="0" max="2" step="0.05" value="0.55">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Size</span>
+          <span class="settings-value" id="val-bloomsize">1.50</span>
+        </div>
+        <input type="range" class="s-range" id="s-bloomsize" min="0.5" max="4" step="0.1" value="1.50">
+      </div>
+    </div>
+
+    <div class="settings-divider"></div>
+
+    <!-- CRT -->
+    <div class="settings-section">
+      <div class="settings-section-title">CRT</div>
+      <div class="settings-row">
+        <span class="settings-label">Enabled</span>
+        <div class="s-toggle on" id="t-crt"></div>
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Scanlines</span>
+          <span class="settings-value" id="val-scanlines">0.75</span>
+        </div>
+        <input type="range" class="s-range" id="s-scanlines" min="0" max="1" step="0.05" value="0.75">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Curvature</span>
+          <span class="settings-value" id="val-curve">0.0</span>
+        </div>
+        <input type="range" class="s-range" id="s-curve" min="0" max="5" step="0.1" value="0.0">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Vignette</span>
+          <span class="settings-value" id="val-vignette">2.00</span>
+        </div>
+        <input type="range" class="s-range" id="s-vignette" min="0" max="5" step="0.1" value="2.00">
+      </div>
+      <div class="settings-slider-row">
+        <div class="settings-slider-header">
+          <span class="settings-label">Chroma</span>
+          <span class="settings-value" id="val-chroma">0.0</span>
+        </div>
+        <input type="range" class="s-range" id="s-chroma" min="0" max="5" step="0.1" value="0.0">
+      </div>
+    </div>
+
+    <div class="settings-tier" id="settings-tier">GPU Tier: detecting…</div>
+    </div><!-- end settings-panel-body -->
+  </div>
+
+  <!-- BOTTOM STATS -->
+  <div class="hero-bottom">
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-val">12M+</span>
+        <span class="hero-stat-label">Simulations</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">2,400+</span>
+        <span class="hero-stat-label">Citations</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">40+</span>
+        <span class="hero-stat-label">Researchers</span>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.35;flex-shrink:0;">
+        <path d="M6.5 1v11M2 8l4.5 4.5L11 8" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span style="letter-spacing:2px;">Scroll to explore</span>
+      <button class="settings-toggle" id="settings-toggle" aria-label="Settings" style="margin-left:10px;">
+        <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+</div><!-- end hero-wrapper -->
+
+<!-- ===== WHAT WE DO ===== -->
+<section class="section section-whatwedo">
+  <div class="section-inner">
+    <div class="section-label reveal">What We Do</div>
+    <h2 class="section-heading reveal reveal-delay-1">
+      Pushing the boundaries <span class="thin">of computational science</span>
+    </h2>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+        <div class="feature-title">Quantum Simulation</div>
+        <div class="feature-desc">Real-time quantum field simulations with unprecedented fidelity, enabling researchers to visualize particle interactions at the Planck scale.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+        <div class="feature-title">Neural Rendering</div>
+        <div class="feature-desc">AI-accelerated volumetric rendering pipelines that transform raw simulation data into intuitive, explorable 3D visualizations in real time.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="feature-title">Predictive Modeling</div>
+        <div class="feature-desc">Machine learning models trained on 12M+ simulations, capable of predicting complex system behaviors before physical experiments are run.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg></div>
+        <div class="feature-title">Data Architecture</div>
+        <div class="feature-desc">Petabyte-scale data infrastructure built for scientific workloads — ingesting, processing, and serving simulation results at wire speed.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-5">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="feature-title">Open Collaboration</div>
+        <div class="feature-desc">Every tool, dataset, and publication is open source. We believe breakthrough science happens when knowledge flows freely between institutions.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-6">
+        <div class="feature-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="feature-title">Frontier Research</div>
+        <div class="feature-desc">From dark matter candidates to protein folding dynamics — our team tackles the hardest problems at the intersection of physics and computation.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RESEARCH AREAS ===== -->
+<section class="section section-research">
+  <div class="section-inner">
+    <div class="research-content">
+      <div class="section-label reveal">Research Areas</div>
+      <h2 class="section-heading reveal reveal-delay-1" style="margin-bottom:48px;">Three pillars <span class="thin">of discovery</span></h2>
+      <div class="research-list">
+        <div class="research-item reveal reveal-delay-2" data-formation="1">
+          <div class="research-num">01</div>
+          <div class="research-item-content">
+            <div class="research-item-title">Topological Quantum Fields</div>
+            <div class="research-item-desc">Exploring emergent phenomena in condensed matter through large-scale tensor network simulations and topological invariant analysis.</div>
+          </div>
+        </div>
+        <div class="research-item reveal reveal-delay-3" data-formation="2">
+          <div class="research-num">02</div>
+          <div class="research-item-content">
+            <div class="research-item-title">Cosmological N-Body Dynamics</div>
+            <div class="research-item-desc">Modeling gravitational interactions across billions of particles to understand dark matter halos and large-scale structure formation.</div>
+          </div>
+        </div>
+        <div class="research-item reveal reveal-delay-4" data-formation="3">
+          <div class="research-num">03</div>
+          <div class="research-item-content">
+            <div class="research-item-title">Molecular Dynamics at Scale</div>
+            <div class="research-item-desc">GPU-accelerated molecular simulations for drug discovery, materials science, and understanding the machinery of life at atomic resolution.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="research-canvas-wrap" id="research-canvas"></div>
+  </div>
+</section>
+
+<!-- ===== BY THE NUMBERS ===== -->
+<section class="section section-numbers">
+  <div class="numbers-canvas-wrap" id="numbers-canvas"></div>
+  <div class="section-inner">
+    <div class="numbers-content">
+      <div class="section-label reveal">By The Numbers</div>
+      <h2 class="section-heading reveal reveal-delay-1">Scale that <span class="thin">speaks for itself</span></h2>
+      <div class="numbers-grid">
+        <div class="number-card reveal reveal-delay-2">
+          <div class="number-val" data-count="12" data-suffix="M+">0</div>
+          <div class="number-divider"></div>
+          <div class="number-label">Million simulations<br>completed to date</div>
+        </div>
+        <div class="number-card reveal reveal-delay-3">
+          <div class="number-val" data-count="2400" data-suffix="+">0</div>
+          <div class="number-divider"></div>
+          <div class="number-label">Peer-reviewed<br>citations</div>
+        </div>
+        <div class="number-card reveal reveal-delay-4">
+          <div class="number-val" data-count="40" data-suffix="+">0</div>
+          <div class="number-divider"></div>
+          <div class="number-label">Researchers across<br>8 countries</div>
+        </div>
+        <div class="number-card reveal reveal-delay-5">
+          <div class="number-val" data-count="99" data-suffix=".9%">0</div>
+          <div class="number-divider"></div>
+          <div class="number-label">Percent uptime on<br>compute cluster</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section section-cta">
+  <div class="section-inner" style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+    <div class="section-label reveal">Get Involved</div>
+    <h2 class="cta-heading reveal reveal-delay-1">The next breakthrough <span class="thin">starts with you</span></h2>
+    <p class="cta-sub reveal reveal-delay-2">We're always looking for curious minds — physicists, engineers, mathematicians, and dreamers who want to push the frontier of what's computable.</p>
+    <div class="cta-actions reveal reveal-delay-3">
+      <button class="btn-primary">Apply Now <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+      <button class="btn-secondary">View Open Positions</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="section-inner" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+    <div class="footer-left">
+      <div class="footer-dot"></div>
+      <span class="footer-brand">Axiom</span>
+    </div>
+    <div class="footer-right">&copy; 2026 Axiom Research Lab. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobile-menu');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+  });
+  mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+    });
+  });
+
+  // ===== SETTINGS PANEL =====
+  const settingsToggle = document.getElementById('settings-toggle');
+  const settingsPanel = document.getElementById('settings-panel');
+  const settingsBackdrop = document.getElementById('settings-backdrop');
+  const settingsClose = document.getElementById('settings-close');
+
+  function openSettings() {
+    settingsToggle.classList.add('open');
+    settingsPanel.classList.add('open');
+    settingsBackdrop.classList.add('open');
+  }
+  function closeSettings() {
+    settingsToggle.classList.remove('open');
+    settingsPanel.classList.remove('open');
+    settingsBackdrop.classList.remove('open');
+  }
+  settingsToggle.addEventListener('click', () => {
+    if (settingsPanel.classList.contains('open')) closeSettings();
+    else openSettings();
+  });
+  settingsBackdrop.addEventListener('click', closeSettings);
+  settingsClose.addEventListener('click', closeSettings);
+
+  // ===== NAV SCROLL EFFECT =====
+  const mainNav = document.querySelector('.nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) mainNav.classList.add('scrolled');
+    else mainNav.classList.remove('scrolled');
+  }, { passive: true });
+
+  // ===== SCROLL REVEAL =====
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ===== NUMBER COUNTER =====
+  const numObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseInt(el.dataset.count);
+      const suffix = el.dataset.suffix || '';
+      const duration = 2000;
+      const start = performance.now();
+      (function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const cur = Math.floor(eased * target);
+        el.textContent = (target >= 1000 ? cur.toLocaleString() : cur) + (p >= 1 ? suffix : '');
+        if (p < 1) requestAnimationFrame(tick);
+      })(start);
+      numObs.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.number-val[data-count]').forEach(el => numObs.observe(el));
+
+  // ===== ENTRANCE ANIMATION SEQUENCER =====
+  function triggerEntrance() {
+    // Fade in 3D canvas
+    document.getElementById('crt-frame').classList.add('visible');
+    // Fade in gradient overlays
+    document.querySelector('.hero-fade').classList.add('anim-in');
+    document.querySelector('.hero-fade-top').classList.add('anim-in');
+    // Nav items
+    document.querySelector('.nav-brand').classList.add('anim-in');
+    document.querySelectorAll('.nav-links a, .nav-links .nav-cta').forEach(el => el.classList.add('anim-in'));
+    document.querySelector('.nav-hamburger').classList.add('anim-in');
+    // Hero content
+    document.querySelector('.hero-h1').classList.add('anim-in');
+    document.querySelector('.hero-sub').classList.add('anim-in');
+    document.querySelector('.hero-actions').classList.add('anim-in');
+    // Stats & status
+    document.querySelectorAll('.hero-stat').forEach(el => el.classList.add('anim-in'));
+    document.querySelector('.hero-scroll').classList.add('anim-in');
+  }
+  // Kick off after first frame paint
+  requestAnimationFrame(() => requestAnimationFrame(triggerEntrance));
+</script>
+<script type="module" src="/index.js"></script>
+</body>
+</html>

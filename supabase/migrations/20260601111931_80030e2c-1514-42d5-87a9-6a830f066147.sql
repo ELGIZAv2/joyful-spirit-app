@@ -1,0 +1,1 @@
+ALTER TABLE public.code_projects ADD COLUMN IF NOT EXISTS v0_chat_id TEXT;

@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPIDEY — The Web-Slinger</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #E23636;
+      --dark-red: #B71C1C;
+      --blue: #1565C0;
+      --dark-blue: #0D47A1;
+      --black: #0A0A0A;
+      --white: #F5F5F5;
+      --gold: #FFD54F;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
+
+    /* Web Pattern Background */
+    .web-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.03;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: difference;
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 6px;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--red); }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 2px;
+      background: var(--red);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links a:hover { color: var(--red); }
+
+    /* Hero Section */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      text-align: center;
+      z-index: 2;
+      position: relative;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 20px;
+      font-weight: 500;
+      opacity: 0;
+      animation: fadeUp 1s 0.3s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(80px, 15vw, 200px);
+      line-height: 0.85;
+      letter-spacing: -2px;
+      position: relative;
+    }
+
+    .hero-title .line1 {
+      display: block;
+      opacity: 0;
+      animation: fadeUp 1s 0.5s forwards;
+      color: var(--white);
+    }
+
+    .hero-title .line2 {
+      display: block;
+      opacity: 0;
+      animation: fadeUp 1s 0.7s forwards;
+      -webkit-text-stroke: 2px var(--red);
+      color: transparent;
+    }
+
+    .hero-tagline {
+      margin-top: 32px;
+      font-size: 16px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      opacity: 0;
+      animation: fadeUp 1s 0.9s forwards;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .hero-cta {
+      margin-top: 48px;
+      opacity: 0;
+      animation: fadeUp 1s 1.1s forwards;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 16px 48px;
+      background: var(--red);
+      color: var(--white);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s;
+    }
+
+    .btn-primary:hover {
+      background: var(--white);
+      color: var(--black);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 40px rgba(226,54,54,0.3);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 1s 1.5s forwards;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--red), transparent);
+      animation: scrollPulse 2s infinite;
+    }
+
+    .scroll-text {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Spider Web Canvas */
+    #webCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+
+    /* Stats Section */
+    .stats {
+      padding: 80px 48px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      background: rgba(226,54,54,0.05);
+      border-top: 1px solid rgba(226,54,54,0.1);
+      border-bottom: 1px solid rgba(226,54,54,0.1);
+    }
+
+    .stat-item {
+      padding: 40px;
+      text-align: center;
+      position: relative;
+      transition: all 0.4s;
+    }
+
+    .stat-item:hover { background: rgba(226,54,54,0.05); }
+
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px;
+      color: var(--red);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-top: 8px;
+    }
+
+    /* Suits Gallery */
+    .suits {
+      padding: 120px 48px;
+      position: relative;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 80px;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 6vw, 80px);
+      line-height: 0.9;
+    }
+
+    .section-desc {
+      max-width: 320px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.5);
+      font-weight: 300;
+    }
+
+    .suits-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .suit-card {
+      position: relative;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      cursor: pointer;
+      group: true;
+    }
+
+    .suit-card-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .suit-card:nth-child(1) .suit-card-bg {
+      background: linear-gradient(135deg, #E23636 0%, #B71C1C 40%, #1565C0 100%);
+    }
+    .suit-card:nth-child(2) .suit-card-bg {
+      background: linear-gradient(135deg, #0A0A0A 0%, #1a1a1a 50%, #333 100%);
+    }
+    .suit-card:nth-child(3) .suit-card-bg {
+      background: linear-gradient(135deg, #E23636 0%, #0A0A0A 60%, #E23636 100%);
+    }
+
+    .suit-card:hover .suit-card-bg { transform: scale(1.05); }
+
+    .suit-card-content {
+      position: absolute;
+      inset: 0;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+      z-index: 2;
+    }
+
+    .suit-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 120px;
+      position: absolute;
+      top: 16px; right: 24px;
+      opacity: 0.1;
+      line-height: 1;
+    }
+
+    .suit-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 2px;
+    }
+
+    .suit-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 8px;
+      font-weight: 300;
+    }
+
+    .suit-icon {
+      width: 100px;
+      height: 100px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    /* Spider emblem SVG styling */
+    .spider-emblem {
+      fill: rgba(255,255,255,0.15);
+      transition: all 0.4s;
+    }
+
+    .suit-card:hover .spider-emblem { fill: rgba(255,255,255,0.3); }
+
+    /* Abilities Section */
+    .abilities {
+      padding: 120px 48px;
+      background: linear-gradient(180deg, var(--black) 0%, #0d0a0a 100%);
+    }
+
+    .abilities-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      margin-top: 80px;
+    }
+
+    .ability-item {
+      padding: 60px 48px;
+      border: 1px solid rgba(226,54,54,0.08);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s;
+    }
+
+    .ability-item::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(226,54,54,0.05), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .ability-item:hover::before { opacity: 1; }
+
+    .ability-icon {
+      font-size: 32px;
+      margin-bottom: 24px;
+    }
+
+    .ability-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .ability-desc {
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.5);
+      font-weight: 300;
+      max-width: 400px;
+    }
+
+    .ability-bar {
+      margin-top: 24px;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ability-bar-fill {
+      height: 100%;
+      background: var(--red);
+      transition: width 1.5s cubic-bezier(0.23, 1, 0.32, 1);
+      width: 0;
+    }
+
+    .ability-item.visible .ability-bar-fill { width: var(--power); }
+
+    /* Timeline */
+    .timeline {
+      padding: 120px 48px;
+      position: relative;
+    }
+
+    .timeline-track {
+      position: relative;
+      margin-top: 80px;
+    }
+
+    .timeline-line {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      background: rgba(226,54,54,0.15);
+    }
+
+    .timeline-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 80px;
+      position: relative;
+    }
+
+    .timeline-item:nth-child(odd) { flex-direction: row; }
+    .timeline-item:nth-child(even) { flex-direction: row-reverse; }
+
+    .timeline-content {
+      width: 45%;
+      padding: 40px;
+      border: 1px solid rgba(226,54,54,0.1);
+      transition: all 0.4s;
+    }
+
+    .timeline-content:hover {
+      border-color: rgba(226,54,54,0.3);
+      background: rgba(226,54,54,0.02);
+    }
+
+    .timeline-dot {
+      width: 12px; height: 12px;
+      background: var(--red);
+      border-radius: 50%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      box-shadow: 0 0 20px rgba(226,54,54,0.4);
+    }
+
+    .timeline-year {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--red);
+      opacity: 0.5;
+    }
+
+    .timeline-event {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .timeline-detail {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 8px;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    /* Quote Section */
+    .quote-section {
+      padding: 160px 48px;
+      text-align: center;
+      position: relative;
+    }
+
+    .quote-mark {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 200px;
+      color: var(--red);
+      opacity: 0.1;
+      line-height: 0.5;
+    }
+
+    .quote-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(32px, 5vw, 64px);
+      max-width: 900px;
+      margin: 0 auto;
+      line-height: 1.1;
+      letter-spacing: 1px;
+    }
+
+    .quote-author {
+      margin-top: 32px;
+      font-size: 12px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--red);
+    }
+
+    /* Footer */
+    .footer {
+      padding: 80px 48px 40px;
+      border-top: 1px solid rgba(226,54,54,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 6px;
+    }
+
+    .footer-logo span { color: var(--red); }
+
+    .footer-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 2px;
+    }
+
+    /* Floating Particles */
+    .particle {
+      position: fixed;
+      width: 2px; height: 2px;
+      background: var(--red);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      animation: particleFloat 6s infinite;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes particleFloat {
+      0% { opacity: 0; transform: translateY(0) scale(1); }
+      20% { opacity: 0.6; }
+      80% { opacity: 0.6; }
+      100% { opacity: 0; transform: translateY(-200px) scale(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .suits-grid { grid-template-columns: 1fr; }
+      .abilities-grid { grid-template-columns: 1fr; }
+      .section-header { flex-direction: column; gap: 24px; align-items: flex-start; }
+      .timeline-line { display: none; }
+      .timeline-dot { display: none; }
+      .timeline-item,
+      .timeline-item:nth-child(even) { flex-direction: column; }
+      .timeline-content { width: 100%; }
+      .footer { flex-direction: column; gap: 24px; align-items: flex-start; }
+      .hero-title { letter-spacing: 0; }
+      .suits, .abilities, .timeline, .quote-section { padding: 80px 24px; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Web Background -->
+  <canvas id="webCanvas" class="web-bg"></canvas>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="#" class="nav-logo">SPIDER<span>VERSE</span></a>
+    <ul class="nav-links">
+      <li><a href="#suits">Suits</a></li>
+      <li><a href="#abilities">Powers</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#quote">Legacy</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-subtitle">Your Friendly Neighborhood</p>
+      <h1 class="hero-title">
+        <span class="line1">SPIDER</span>
+        <span class="line2">MAN</span>
+      </h1>
+      <p class="hero-tagline">With great power comes great responsibility</p>
+      <div class="hero-cta">
+        <a href="#suits" class="btn-primary">Explore the Web</a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <div class="scroll-line"></div>
+      <span class="scroll-text">Scroll</span>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="62">0</div>
+      <div class="stat-label">Years of Legacy</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="8">0</div>
+      <div class="stat-label">Live-Action Films</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="37">0</div>
+      <div class="stat-label">Iconic Suits</div>
+    </div>
+    <div class="stat-item reveal">
+      <div class="stat-number" data-target="1">0</div>
+      <div class="stat-label">Spider-Sense</div>
+    </div>
+  </section>
+
+  <!-- Suits Gallery -->
+  <section class="suits" id="suits">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-tag">// Collection</p>
+        <h2 class="section-title">ICONIC<br>SUITS</h2>
+      </div>
+      <p class="section-desc">From the classic red and blue to the symbiote black — every suit tells a story of evolution and sacrifice.</p>
+    </div>
+    <div class="suits-grid">
+      <div class="suit-card reveal">
+        <div class="suit-card-bg"></div>
+        <svg class="suit-icon" viewBox="0 0 100 100">
+          <path class="spider-emblem" d="M50 15 L53 35 L70 25 L58 40 L75 42 L58 48 L70 60 L55 52 L56 70 L50 55 L44 70 L45 52 L30 60 L42 48 L25 42 L42 40 L30 25 L47 35 Z"/>
+        </svg>
+        <div class="suit-card-content">
+          <span class="suit-number">01</span>
+          <h3 class="suit-name">CLASSIC SUIT</h3>
+          <p class="suit-desc">The original red & blue — where it all began</p>
+        </div>
+      </div>
+      <div class="suit-card reveal">
+        <div class="suit-card-bg"></div>
+        <svg class="suit-icon" viewBox="0 0 100 100">
+          <path class="spider-emblem" d="M50 15 L53 35 L70 25 L58 40 L75 42 L58 48 L70 60 L55 52 L56 70 L50 55 L44 70 L45 52 L30 60 L42 48 L25 42 L42 40 L30 25 L47 35 Z"/>
+        </svg>
+        <div class="suit-card-content">
+          <span class="suit-number">02</span>
+          <h3 class="suit-name">SYMBIOTE</h3>
+          <p class="suit-desc">The alien suit — power at a terrifying cost</p>
+        </div>
+      </div>
+      <div class="suit-card reveal">
+        <div class="suit-card-bg"></div>
+        <svg class="suit-icon" viewBox="0 0 100 100">
+          <path class="spider-emblem" d="M50 15 L53 35 L70 25 L58 40 L75 42 L58 48 L70 60 L55 52 L56 70 L50 55 L44 70 L45 52 L30 60 L42 48 L25 42 L42 40 L30 25 L47 35 Z"/>
+        </svg>
+        <div class="suit-card-content">
+          <span class="suit-number">03</span>
+          <h3 class="suit-name">IRON SPIDER</h3>
+          <p class="suit-desc">Stark tech meets spider agility — upgraded</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abilities -->
+  <section class="abilities" id="abilities">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-tag">// Powers</p>
+        <h2 class="section-title">SPIDER<br>ABILITIES</h2>
+      </div>
+      <p class="section-desc">A radioactive spider bite granted Peter Parker extraordinary abilities beyond human limits.</p>
+    </div>
+    <div class="abilities-grid">
+      <div class="ability-item reveal">
+        <div class="ability-icon">🕸️</div>
+        <h3 class="ability-name">WEB-SLINGING</h3>
+        <p class="ability-desc">Custom web-shooters fire tensile webbing strong enough to restrain superhuman foes and swing between skyscrapers at incredible speeds.</p>
+        <div class="ability-bar"><div class="ability-bar-fill" style="--power: 95%"></div></div>
+      </div>
+      <div class="ability-item reveal">
+        <div class="ability-icon">⚡</div>
+        <h3 class="ability-name">SPIDER-SENSE</h3>
+        <p class="ability-desc">A precognitive danger-detection ability that manifests as a tingling at the base of the skull, alerting to threats before they materialize.</p>
+        <div class="ability-bar"><div class="ability-bar-fill" style="--power: 90%"></div></div>
+      </div>
+      <div class="ability-item reveal">
+        <div class="ability-icon">💪</div>
+        <h3 class="ability-name">SUPER STRENGTH</h3>
+        <p class="ability-desc">Proportional strength of a spider — capable of lifting approximately 10 tons and delivering devastating strikes.</p>
+        <div class="ability-bar"><div class="ability-bar-fill" style="--power: 85%"></div></div>
+      </div>
+      <div class="ability-item reveal">
+        <div class="ability-icon">🧗</div>
+        <h3 class="ability-name">WALL-CRAWLING</h3>
+        <p class="ability-desc">Electrostatic force between molecular boundary layers allows adhesion to virtually any surface at any angle.</p>
+        <div class="ability-bar"><div class="ability-bar-fill" style="--power: 100%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section class="timeline" id="timeline">
+    <div class="section-header reveal">
+      <div>
+        <p class="section-tag">// History</p>
+        <h2 class="section-title">THE<br>TIMELINE</h2>
+      </div>
+    </div>
+    <div class="timeline-track">
+      <div class="timeline-line"></div>
+      <div class="timeline-item reveal">
+        <div class="timeline-content">
+          <div class="timeline-year">1962</div>
+          <h3 class="timeline-event">First Appearance</h3>
+          <p class="timeline-detail">Spider-Man debuts in Amazing Fantasy #15, created by Stan Lee and Steve Ditko.</p>
+        </div>
+        <div class="timeline-dot"></div>
+        <div style="width:45%"></div>
+      </div>
+      <div class="timeline-item reveal">
+        <div style="width:45%"></div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-year">2002</div>
+          <h3 class="timeline-event">The Raimi Era</h3>
+          <p class="timeline-detail">Tobey Maguire swings onto the big screen, launching a cultural phenomenon.</p>
+        </div>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-content">
+          <div class="timeline-year">2018</div>
+          <h3 class="timeline-event">Into the Spider-Verse</h3>
+          <p class="timeline-detail">The multiverse cracks open. Miles Morales takes center stage in a groundbreaking animated masterpiece.</p>
+        </div>
+        <div class="timeline-dot"></div>
+        <div style="width:45%"></div>
+      </div>
+      <div class="timeline-item reveal">
+        <div style="width:45%"></div>
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-year">2021</div>
+          <h3 class="timeline-event">No Way Home</h3>
+          <p class="timeline-detail">Three generations of Spider-Men unite. The multiverse saga reaches an emotional crescendo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quote -->
+  <section class="quote-section" id="quote">
+    <div class="reveal">
+      <div class="quote-mark">"</div>
+      <p class="quote-text">ANYONE CAN WEAR THE MASK. YOU COULD WEAR THE MASK. IF YOU DIDN'T KNOW THAT BEFORE, I HOPE YOU DO NOW.</p>
+      <p class="quote-author">— Miles Morales</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-logo">SPIDER<span>VERSE</span></div>
+    <p class="footer-text">© 2026 — A tribute to the web-slinger</p>
+  </footer>
+
+  <script>
+    // === Web Pattern Canvas ===
+    const canvas = document.getElementById('webCanvas');
+    const ctx = canvas.getContext('2d');
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function drawWeb() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = mouseX;
+      const cy = mouseY;
+      const rays = 16;
+      const rings = 6;
+      const maxR = Math.max(canvas.width, canvas.height) * 0.6;
+
+      ctx.strokeStyle = 'rgba(226, 54, 54, 0.15)';
+      ctx.lineWidth = 0.5;
+
+      // Radial lines
+      for (let i = 0; i < rays; i++) {
+        const angle = (i / rays) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+        ctx.stroke();
+      }
+
+      // Concentric rings (with slight wobble)
+      for (let r = 1; r <= rings; r++) {
+        const radius = (r / rings) * maxR * 0.5;
+        ctx.beginPath();
+        for (let i = 0; i <= rays; i++) {
+          const angle = (i / rays) * Math.PI * 2;
+          const wobble = Math.sin(Date.now() * 0.001 + r + i) * 5;
+          const x = cx + Math.cos(angle) * (radius + wobble);
+          const y = cy + Math.sin(angle) * (radius + wobble);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      requestAnimationFrame(drawWeb);
+    }
+    drawWeb();
+
+    // === Scroll Reveal ===
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // === Counter Animation ===
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.target);
+          let current = 0;
+          const increment = target / 60;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              current = target;
+              clearInterval(timer);
+            }
+            el.textContent = Math.floor(current);
+          }, 30);
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stat-number').forEach(el => counterObserver.observe(el));
+
+    // === Floating Particles ===
+    function createParticles() {
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.top = Math.random() * 100 + 'vh';
+        p.style.animationDelay = Math.random() * 6 + 's';
+        p.style.animationDuration = (4 + Math.random() * 4) + 's';
+        p.style.width = p.style.height = (1 + Math.random() * 3) + 'px';
+        document.body.appendChild(p);
+      }
+    }
+    createParticles();
+
+    // === Smooth scroll ===
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // === Parallax on hero ===
+    window.addEventListener('scroll', () => {
+      const scroll = window.scrollY;
+      const hero = document.querySelector('.hero-content');
+      if (hero) {
+        hero.style.transform = `translateY(${scroll * 0.3}px)`;
+        hero.style.opacity = 1 - (scroll / 600);
+      }
+    });
+  </script>
+</body>
+</html>

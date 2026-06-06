@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voxel Website — Megsy Templates</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; outline: none !important; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #06060a; }
+    canvas { display: block; outline: none !important; }
+    .error { color: #ef4444; padding: 20px; font-family: monospace; white-space: pre-wrap; }
+
+    /* ── Max-width container ── */
+    .container {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 0 56px;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      height: 72px;
+      background: transparent;
+      pointer-events: none;
+    }
+    .navbar a,
+    .navbar button {
+      pointer-events: auto;
+    }
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+    }
+    .nav-logo {
+      font-family: 'Instrument Serif', serif;
+      font-size: 26px;
+      color: #fff;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+    .nav-logo span { color: #e2c8a0; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      letter-spacing: 0.2px;
+      transition: color 0.25s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #06060a;
+      background: #e2c8a0;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .nav-cta:hover { background: #ebd5b3; transform: translateY(-1px); }
+
+    /* ── Hero Layout ── */
+    .hero-section {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 3D canvas is the FULL background */
+    .hero-scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    #root {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Content on top of canvas */
+    .hero-inner {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      pointer-events: none;
+    }
+    .hero-inner .container {
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .hero-content {
+      width: 50%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .hero-content button,
+    .hero-content a,
+    .hero-content .btn-primary,
+    .hero-content .btn-secondary {
+      pointer-events: auto;
+    }
+    .hero-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: #e2c8a0;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-label::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: #e2c8a0;
+    }
+    .hero-h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(40px, 4.2vw, 68px);
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      margin-bottom: 24px;
+    }
+    .hero-h1 em {
+      font-style: italic;
+      color: #e2c8a0;
+    }
+    .hero-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.7;
+      max-width: 420px;
+      margin-bottom: 40px;
+    }
+    .hero-buttons {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .btn-primary {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #06060a;
+      background: #e2c8a0;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 32px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .btn-primary:hover { background: #ebd5b3; transform: translateY(-2px); }
+    .btn-secondary {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.7);
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 14px 28px;
+      cursor: pointer;
+      letter-spacing: 0.2px;
+      transition: border-color 0.25s, color 0.25s, transform 0.2s;
+    }
+    .btn-secondary:hover { border-color: rgba(255,255,255,0.4); color: #fff; transform: translateY(-2px); }
+
+    .hero-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 56px;
+      padding-top: 32px;
+      border-top: none;
+      position: relative;
+    }
+    .hero-stats::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120px;
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+    .hero-stat-number {
+      font-family: 'Instrument Serif', serif;
+      font-size: 32px;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .hero-stat-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Variation Bar ── */
+    #variation-bar {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 4px;
+      z-index: 1000;
+      user-select: none;
+      background: transparent;
+      border: none;
+      border-radius: 12px;
+      padding: 0;
+    }
+    #variation-bar .morph-btn {
+      padding: 10px 22px;
+      background: transparent;
+      backdrop-filter: none;
+      border: none;
+      border-radius: 10px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'Instrument Serif', serif;
+      font-size: 17px;
+      font-style: normal;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
+    #variation-bar .morph-btn:hover:not(.active) {
+      color: rgba(255,255,255,0.55);
+    }
+    #variation-bar .morph-btn.active {
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: #ffffff;
+    }
+    #variation-bar .morph-btn.active[data-variation="1"] {
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+    }
+    #variation-bar .morph-btn.active[data-variation="2"] {
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+    }
+
+    /* ── Hide original UI panels ── */
+    #ui-panel, #fps-counter, .toggle-btn { display: none !important; }
+
+    /* ── Entry Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .anim-1 { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
+    .anim-2 { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+    .anim-3 { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.5s both; }
+    .anim-4 { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.65s both; }
+    .anim-5 { animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.8s both; }
+    .nav-anim { animation: fadeIn 0.8s ease 0.1s both; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .container { padding: 0 24px; }
+      .navbar { height: 60px; }
+      .nav-links { display: none; }
+      .hero-content {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .hero-h1 { font-size: 36px; }
+      .hero-stats { gap: 24px; margin-top: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar nav-anim">
+    <div class="container">
+      <a href="javascript:void(0)" class="nav-logo">Arbor<span>.</span></a>
+      <ul class="nav-links">
+        <li><a href="javascript:void(0)">Collection</a></li>
+        <li><a href="javascript:void(0)">Process</a></li>
+        <li><a href="javascript:void(0)">Gallery</a></li>
+        <li><a href="javascript:void(0)">About</a></li>
+      </ul>
+      <button class="nav-cta" onclick="void(0)">Get Started</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-section">
+    <!-- 3D canvas fills the entire hero as background -->
+    <div class="hero-scene">
+      <div id="root"></div>
+    </div>
+
+    <!-- Content layer -->
+    <div class="hero-inner">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-label anim-1">Generative Nature</div>
+          <h1 class="hero-h1 anim-2">Crafting <em>Living</em><br>Digital Landscapes</h1>
+          <p class="hero-desc anim-3">Explore procedurally generated trees rendered in real-time 3D. Each variation is a unique blend of organic algorithms and artistic vision.</p>
+          <div class="hero-buttons anim-4">
+            <button class="btn-primary" onclick="void(0)">Explore Collections</button>
+            <button class="btn-secondary" onclick="void(0)">Watch Reel</button>
+          </div>
+          <div class="hero-stats anim-5">
+            <div>
+              <div class="hero-stat-number">16</div>
+              <div class="hero-stat-label">Unique Species</div>
+            </div>
+            <div>
+              <div class="hero-stat-number">∞</div>
+              <div class="hero-stat-label">Variations</div>
+            </div>
+            <div>
+              <div class="hero-stat-number">Smooth</div>
+              <div class="hero-stat-label">Real-time</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variation bar at bottom center -->
+    <div id="variation-bar">
+      <button class="morph-btn active" data-variation="0">Autumn Maple</button>
+      <button class="morph-btn" data-variation="1">Snowy Pine</button>
+      <button class="morph-btn" data-variation="2">Cherry Blossom</button>
+    </div>
+  </section>
+
+  <!-- Hidden UI panels -->
+  <div id="ui-panel" style="display:none;">
+    <input type="color" id="mat-color" value="#1a1a2e">
+    <input type="range" id="mat-roughness" min="0" max="1" step="0.01" value="0.60">
+    <span id="val-roughness">0.60</span>
+    <input type="range" id="mat-metalness" min="0" max="1" step="0.01" value="0.50">
+    <span id="val-metalness">0.50</span>
+    <input type="range" id="mat-clearcoat" min="0" max="1" step="0.01" value="1.00">
+    <span id="val-clearcoat">1.00</span>
+    <input type="range" id="mat-cc-rough" min="0" max="1" step="0.01" value="0.35">
+    <span id="val-cc-rough">0.35</span>
+    <input type="range" id="mat-ior" min="1" max="3" step="0.01" value="2.00">
+    <span id="val-ior">2.00</span>
+    <input type="range" id="mat-env" min="0" max="5" step="0.1" value="2.0">
+    <span id="val-env">2.00</span>
+    <input type="range" id="scene-blur" min="0" max="1" step="0.01" value="0.41">
+    <span id="val-blur">0.41</span>
+    <input type="range" id="scene-bg-int" min="0" max="2" step="0.05" value="0.30">
+    <span id="val-bg-int">0.30</span>
+    <input type="range" id="scene-exposure" min="0.1" max="3" step="0.05" value="1.00">
+    <span id="val-exposure">1.00</span>
+    <input type="checkbox" id="shadow-toggle" checked>
+    <span id="shadow-toggle-label">ON</span>
+    <span id="shadow-toggle-track"><span id="shadow-toggle-thumb"></span></span>
+    <input type="range" id="shadow-intensity" min="0" max="1" step="0.01" value="1.00">
+    <span id="val-shadow-intensity">1.00</span>
+    <input type="range" id="shadow-bias" min="-0.01" max="0.01" step="0.0001" value="0.0000">
+    <span id="val-shadow-bias">0.0000</span>
+    <input type="range" id="shadow-normal-bias" min="0" max="0.1" step="0.001" value="0.020">
+    <span id="val-shadow-normal-bias">0.020</span>
+    <input type="range" id="shadow-area" min="4" max="40" step="1" value="32">
+    <span id="val-shadow-area">32.00</span>
+    <input type="range" id="shadow-radius" min="0" max="30" step="0.5" value="5.0">
+    <span id="val-shadow-radius">5.00</span>
+    <input type="range" id="shadow-blur-samples" min="1" max="32" step="1" value="16">
+    <span id="val-shadow-blur-samples">16</span>
+    <input type="range" id="shadow-light-int" min="0" max="5" step="0.1" value="2.0">
+    <span id="val-shadow-light-int">2.00</span>
+    <input type="range" id="shadow-light-x" min="-10" max="10" step="0.1" value="5.0">
+    <span id="val-shadow-light-x">5.00</span>
+    <input type="range" id="shadow-light-y" min="1" max="20" step="0.1" value="10.0">
+    <span id="val-shadow-light-y">10.00</span>
+    <input type="range" id="shadow-light-z" min="-10" max="10" step="0.1" value="4.0">
+    <span id="val-shadow-light-z">4.00</span>
+    <select id="env-select">
+      <option value="studio_small_09_1k">Studio Small</option>
+      <option value="venice_sunset_1k" selected>Venice Sunset</option>
+      <option value="dikhololo_night_1k">Dikhololo Night</option>
+      <option value="mud_road_puresky_1k">Mud Road Sky</option>
+      <option value="kloofendal_48d_partly_cloudy_puresky_1k">Kloofendal</option>
+      <option value="brown_photostudio_01_1k">Brown Studio</option>
+    </select>
+    <input type="checkbox" id="ao-toggle" checked>
+    <span id="ao-toggle-label">ON</span>
+    <span id="ao-toggle-track"><span id="ao-toggle-thumb"></span></span>
+    <span id="ao-status">Checking…</span>
+    <input type="range" id="ao-radius" min="0.01" max="2" step="0.01" value="0.60">
+    <span id="val-ao-radius">0.60</span>
+    <input type="range" id="ao-intensity" min="0.1" max="5" step="0.1" value="1.6">
+    <span id="val-ao-intensity">1.60</span>
+    <input type="range" id="ao-samples" min="4" max="32" step="1" value="24">
+    <span id="val-ao-samples">24.00</span>
+    <input type="checkbox" id="ssr-toggle" checked>
+    <span id="ssr-toggle-label">ON</span>
+    <span id="ssr-toggle-track"><span id="ssr-toggle-thumb"></span></span>
+    <span id="ssr-status">Checking…</span>
+    <input type="range" id="ssr-strength" min="0" max="1" step="0.01" value="0.25">
+    <span id="val-ssr-strength">0.25</span>
+    <input type="range" id="ssr-thickness" min="0.01" max="2" step="0.01" value="0.20">
+    <span id="val-ssr-thickness">0.20</span>
+    <input type="range" id="ssr-max-distance" min="1" max="20" step="0.5" value="6.0">
+    <span id="val-ssr-max-distance">6.00</span>
+    <input type="checkbox" id="bloom-toggle" checked>
+    <span id="bloom-toggle-label">ON</span>
+    <span id="bloom-toggle-track"><span id="bloom-toggle-thumb"></span></span>
+    <span id="bloom-status">Checking…</span>
+    <input type="range" id="bloom-strength" min="0" max="3" step="0.05" value="0.50">
+    <span id="val-bloom-strength">0.50</span>
+    <input type="range" id="bloom-radius" min="0" max="1" step="0.01" value="0.20">
+    <span id="val-bloom-radius">0.20</span>
+    <input type="range" id="bloom-threshold" min="0" max="2" step="0.05" value="0.80">
+    <span id="val-bloom-threshold">0.80</span>
+    <button id="btn-randomize">Randomize</button>
+    <div id="color-presets">
+      <span class="color-swatch" data-color="#1a1a2e" style="background:#1a1a2e;"></span>
+      <span class="color-swatch" data-color="#4a90d9" style="background:#4a90d9;"></span>
+      <span class="color-swatch" data-color="#d94a4a" style="background:#d94a4a;"></span>
+      <span class="color-swatch" data-color="#3cb371" style="background:#3cb371;"></span>
+      <span class="color-swatch" data-color="#f5c542" style="background:#f5c542;"></span>
+      <span class="color-swatch" data-color="#9b59b6" style="background:#9b59b6;"></span>
+      <span class="color-swatch" data-color="#e8e8e8" style="background:#e8e8e8;"></span>
+      <span class="color-swatch" data-color="#2c2c2c" style="background:#2c2c2c;"></span>
+    </div>
+  </div>
+  <script type="module" src="/scene.js"></script>
+  <div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

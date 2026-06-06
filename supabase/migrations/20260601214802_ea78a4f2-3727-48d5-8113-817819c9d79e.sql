@@ -1,0 +1,1 @@
+UPDATE public.code_agent_runs SET status='error', error=COALESCE(error,'stuck_no_chat_id'), finished_at=now() WHERE status='running' AND v0_chat_id IS NULL AND started_at < now() - interval '5 minutes';

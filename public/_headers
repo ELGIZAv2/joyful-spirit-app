@@ -1,0 +1,40 @@
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+
+# HTML — لا يُخزَّن أبدًا، علشان أي تحديث يوصل المستخدم فورًا
+/
+  Cache-Control: public, max-age=0, must-revalidate
+  Pragma: no-cache
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+  Pragma: no-cache
+
+# ملفات Vite الناتجة (فيها hash في الاسم) — آمنة للتخزين سنة كاملة
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# الصور والـ favicons — كاش يوم واحد + revalidate
+/*.png
+  Cache-Control: public, max-age=86400, must-revalidate
+/*.jpg
+  Cache-Control: public, max-age=86400, must-revalidate
+/*.webp
+  Cache-Control: public, max-age=86400, must-revalidate
+/*.svg
+  Cache-Control: public, max-age=86400, must-revalidate
+
+# OG/Twitter image — قصير علشان السوشيال يلتقط التحديث
+/og-megsy.jpg
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# Sitemap & robots — لا كاش
+/sitemap.xml
+  Cache-Control: public, max-age=0, must-revalidate
+/sitemap-index.xml
+  Cache-Control: public, max-age=0, must-revalidate
+/sitemap-media.xml
+  Cache-Control: public, max-age=0, must-revalidate
+/robots.txt
+  Cache-Control: public, max-age=0, must-revalidate

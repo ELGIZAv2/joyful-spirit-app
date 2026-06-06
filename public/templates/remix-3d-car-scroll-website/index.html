@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Car Scroll Website — Megsy Templates</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@700;800;900&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f0ede8;
+      --accent: #c8a96e;
+      --gray: #888;
+      --light-gray: #1a1a1a;
+    }
+
+    html { scroll-behavior: auto; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 48px;
+      mix-blend-mode: normal;
+    }
+
+    nav::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 180px;
+      background: linear-gradient(to bottom, rgba(10,10,10,1) 10%, rgba(10,10,10,0.8) 50%, transparent 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .nav-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--white);
+      opacity: 0.9;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-right a {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+
+    .nav-right a:hover { opacity: 1; }
+    .nav-right a.nav-active {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    /* HAMBURGER */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none;
+      z-index: 200;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--white);
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.25s;
+      transform-origin: center;
+    }
+
+    .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+
+      .hamburger { display: flex; }
+
+      /* HERO MOBILE */
+      #section-hero {
+        padding: 0 24px 60px;
+        align-items: flex-start;
+        min-height: 100svh;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      .hero-headline {
+        font-size: clamp(100px, 34vw, 160px);
+        text-align: left;
+      }
+
+      .hero-sub {
+        display: none !important;
+      }
+
+      .nav-right {
+        position: fixed;
+        top: 0; right: 0;
+        height: 100vh;
+        width: 260px;
+        background: rgba(10,10,10,0.97);
+        border-left: 1px solid rgba(240,237,232,0.08);
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 80px 40px 40px;
+        gap: 28px;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+        z-index: 150;
+        pointer-events: none;
+      }
+
+      .nav-right.mobile-open {
+        transform: translateX(0);
+        pointer-events: all;
+      }
+
+      .nav-right a {
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        opacity: 0.7;
+      }
+
+      .nav-cta {
+        margin-top: 12px;
+        padding: 10px 24px;
+      }
+
+    }
+
+    .nav-cta {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid rgba(240,237,232,0.3);
+      padding: 8px 20px;
+      color: var(--white) !important;
+      opacity: 1 !important;
+      transition: background 0.3s, border-color 0.3s !important;
+    }
+    .nav-cta.nav-active {
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+    }
+
+    .nav-cta:hover {
+      background: var(--white);
+      color: var(--black) !important;
+    }
+
+    /* CANVAS STICKY */
+    #canvas-wrapper {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #vignette-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse 75% 65% at 50% 60%,
+        transparent 40%,
+        rgba(10,10,10,0.35) 62%,
+        rgba(10,10,10,0.75) 82%,
+        #0a0a0a 100%
+      );
+    }
+
+    #three-canvas {
+      width: 100%; height: 100%;
+      display: block;
+    }
+
+    /* SCROLL CONTAINER */
+    #scroll-container {
+      position: relative;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* SECTIONS */
+    .section {
+      min-height: 110vh;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 48px 80px;
+      pointer-events: none;
+      position: relative;
+    }
+
+    /* HERO */
+    #section-hero {
+      align-items: flex-end;
+      min-height: 100vh;
+    }
+
+    #section-cta {
+      min-height: 100vh;
+    }
+
+    .hero-headline {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(64px, 13vw, 200px);
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: var(--white);
+      mix-blend-mode: normal;
+      user-select: none;
+    }
+
+    .hero-headline .line { display: block; }
+    .hero-headline .stroke {
+      -webkit-text-stroke: 1px var(--white);
+      color: transparent;
+    }
+
+    .hero-sub {
+      position: absolute;
+      right: 48px;
+      bottom: 80px;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0;
+    }
+
+    .hero-sub p {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      line-height: 2;
+    }
+
+    .hero-sub .year {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      margin-top: 20px;
+    }
+
+    .scroll-indicator span {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    .scroll-line {
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(to left, var(--accent), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleX(1); }
+      50% { opacity: 1; transform: scaleX(1.2); }
+    }
+
+    /* LOAD-IN ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes revealLine {
+      from { clip-path: inset(0 100% 0 0); }
+      to   { clip-path: inset(0 0% 0 0); }
+    }
+
+    /* NAV */
+    nav .nav-logo {
+      animation: fadeDown 0.7s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+    }
+
+    @media (min-width: 769px) {
+      nav .nav-right {
+        animation: fadeDown 0.7s cubic-bezier(0.16,1,0.3,1) 0.35s both;
+      }
+    }
+
+    /* HERO TEXT */
+    .hero-headline .line:nth-child(1) {
+      display: block;
+      animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s both;
+    }
+
+    .hero-headline .line:nth-child(2) {
+      display: block;
+      animation: fadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.72s both;
+    }
+
+    .hero-sub {
+      animation: slideInRight 0.8s cubic-bezier(0.16,1,0.3,1) 0.95s both;
+    }
+
+    .scroll-indicator {
+      animation: fadeIn 0.8s ease 1.3s both;
+    }
+
+    /* Respect reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      nav .nav-logo,
+      nav .nav-right,
+      .hero-headline .line,
+      .hero-sub,
+      .scroll-indicator {
+        animation: none;
+      }
+    }
+
+    /* OVERVIEW SECTION */
+    #section-overview {
+      align-items: center;
+    }
+
+    .section-tag {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-tag::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .overview-content { max-width: 480px; }
+
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(40px, 6vw, 80px);
+      font-weight: 800;
+      text-transform: uppercase;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      margin-bottom: 32px;
+    }
+
+    .section-body {
+      font-size: 14px;
+      line-height: 1.8;
+      color: rgba(240,237,232,0.55);
+      max-width: 380px;
+      margin-bottom: 40px;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 40px;
+      margin-top: 40px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(240,237,232,0.08);
+    }
+
+    .stat { display: flex; flex-direction: column; gap: 4px; }
+
+    .stat-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+    }
+
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    /* SPECS SECTION */
+    #section-specs {
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .specs-content { max-width: 500px; text-align: right; }
+
+    .specs-list { list-style: none; margin-top: 32px; }
+
+    .specs-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(240,237,232,0.06);
+      gap: 40px;
+    }
+
+    .spec-name {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    .spec-val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--white);
+    }
+
+    /* FEATURES SECTION */
+    #section-features {
+      align-items: flex-end;
+      min-height: 100vh;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      max-width: 520px;
+      margin-top: 40px;
+    }
+
+    .feature-item {
+      background: rgba(6,6,6,0.72);
+      border: 1px solid rgba(240,237,232,0.06);
+      padding: 28px 24px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .feature-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .feature-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 11px;
+      line-height: 1.7;
+      color: rgba(240,237,232,0.45);
+    }
+
+    /* TESTIMONIAL SECTION */
+    #section-quote {
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;
+    }
+
+    .quote-mark {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 120px;
+      line-height: 0.6;
+      color: var(--accent);
+      opacity: 0.3;
+      margin-bottom: 16px;
+    }
+
+    .quote-text {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 700;
+      text-transform: uppercase;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      max-width: 800px;
+      margin: 0 auto 32px;
+    }
+
+    .quote-attr {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    .quote-attr strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* CTA SECTION */
+    #section-cta {
+      align-items: flex-end;
+    }
+
+    .cta-content { width: 100%; }
+
+    .cta-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cta-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .cta-headline {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(60px, 12vw, 160px);
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    .cta-headline .stroke {
+      -webkit-text-stroke: 1px var(--white);
+      color: transparent;
+    }
+
+    .cta-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(240,237,232,0.1);
+      padding-top: 32px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--accent);
+      color: var(--black);
+      text-decoration: none;
+      padding: 18px 40px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: transform 0.3s, background 0.3s;
+      pointer-events: all;
+    }
+
+    .cta-btn:hover { background: var(--white); transform: translateY(-2px); }
+
+    .cta-btn svg { transition: transform 0.3s; }
+    .cta-btn:hover svg { transform: translateX(4px); }
+
+    .footer-copy {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(240,237,232,0.3);
+      text-align: right;
+      line-height: 2;
+    }
+
+    /* DRAG TO ROTATE */
+    #drag-hint {
+      position: fixed;
+      bottom: 32px;
+      right: 48px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.6s;
+      pointer-events: none;
+    }
+
+    #drag-hint.visible { opacity: 1; }
+
+    #drag-hint svg { opacity: 0.5; }
+
+    #drag-hint span {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    /* SIDE TOGGLES */
+    #side-toggles {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: all;
+    }
+
+    #side-toggles.open { right: 340px; }
+
+    .side-btn {
+      background: rgba(10,10,10,0.9);
+      border: 1px solid rgba(240,237,232,0.12);
+      border-right: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+      pointer-events: all;
+      border-bottom: none;
+    }
+
+    .side-btn:last-child { border-bottom: 1px solid rgba(240,237,232,0.12); }
+    .side-btn:hover { background: rgba(200,169,110,0.12); }
+    .side-btn.active-panel { background: rgba(200,169,110,0.18); border-left-color: var(--accent); }
+
+    .side-btn svg { display: block; }
+
+    .side-btn span {
+      font-size: 8px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+
+    /* SETTINGS PANEL */
+    #settings-panel {
+      position: fixed;
+      top: 0; right: 0;
+      height: 100vh;
+      width: 340px;
+      background: rgba(10,10,10,0.96);
+      border-left: 1px solid rgba(240,237,232,0.08);
+      z-index: 1000;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', sans-serif;
+      pointer-events: all;
+    }
+
+    #settings-panel.open { transform: translateX(0); }
+
+    .settings-header {
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid rgba(240,237,232,0.07);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .settings-header h3 {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    .settings-header p {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--gray);
+      margin-top: 4px;
+    }
+
+    .settings-section-tabs {
+      display: flex;
+      padding: 12px 16px;
+      gap: 4px;
+      border-bottom: 1px solid rgba(240,237,232,0.07);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      padding: 5px 10px;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid rgba(240,237,232,0.1);
+      color: var(--gray);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--black);
+    }
+
+    .settings-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(200,169,110,0.3) transparent;
+    }
+
+    .settings-body::-webkit-scrollbar { width: 4px; }
+    .settings-body::-webkit-scrollbar-thumb { background: rgba(200,169,110,0.3); border-radius: 2px; }
+
+    .ctrl-group { margin-bottom: 20px; }
+
+    .ctrl-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ctrl-label span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0;
+    }
+
+    .ctrl-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 2px;
+      background: rgba(240,237,232,0.1);
+      outline: none;
+      cursor: pointer;
+      border-radius: 1px;
+    }
+
+    .ctrl-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .ctrl-slider::-webkit-slider-thumb:hover { transform: scale(1.4); }
+    .ctrl-slider::-moz-range-thumb {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    .settings-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(240,237,232,0.07);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .settings-btn {
+      flex: 1;
+      padding: 10px;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .settings-btn-reset {
+      background: transparent;
+      border: 1px solid rgba(240,237,232,0.15);
+      color: var(--gray);
+    }
+
+    .settings-btn-reset:hover { border-color: var(--white); color: var(--white); }
+
+    .settings-btn-apply {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: var(--black);
+      font-weight: 600;
+    }
+
+    .settings-btn-apply:hover { background: var(--white); border-color: var(--white); }
+
+    .section-name-badge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--white);
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(200,169,110,0.2);
+    }
+
+    /* PROGRESS BAR */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 1px;
+      background: var(--accent);
+      z-index: 200;
+      transition: width 0.1s linear;
+      width: 0%;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <div class="scroll-progress" id="progress-bar"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="cursor:pointer;">Turbo 930 / Archive</div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-right" id="nav-right">
+      <a href="#" data-nav-section="section-overview" onclick="scrollToSection('section-overview');return false;">Overview</a>
+      <a href="#" data-nav-section="section-specs" onclick="scrollToSection('section-specs');return false;">Specs</a>
+      <a href="#" data-nav-section="section-features" onclick="scrollToSection('section-features');return false;">Design</a>
+      <a href="#" data-nav-section="section-quote" onclick="scrollToSection('section-quote');return false;">Press</a>
+      <a href="#" class="nav-cta" data-nav-section="section-cta" onclick="scrollToSection('section-cta');return false;">Enquire</a>
+    </div>
+  </nav>
+
+
+
+    <!-- DRAG HINT -->
+    <div id="drag-hint">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M4 9h10M4 9l3-3M4 9l3 3M14 9l-3-3M14 9l-3 3" stroke="#888" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Drag to rotate</span>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+  <div id="side-toggles">
+    <button class="side-btn" id="scene-toggle" title="Scene Settings">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1 12l4-5 3 3 3-4 4 6H1z" stroke="#c8a96e" stroke-width="1.2" stroke-linejoin="round"/>
+        <circle cx="11.5" cy="4.5" r="1.5" stroke="#c8a96e" stroke-width="1.2"/>
+      </svg>
+      <span>Scene</span>
+    </button>
+    <button class="side-btn" id="settings-toggle" title="Camera Settings">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="2.5" stroke="#c8a96e" stroke-width="1.2"/>
+        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="#c8a96e" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <span>Cam</span>
+    </button>
+  </div>
+
+  <!-- SCENE SETTINGS PANEL -->
+  <div id="scene-panel" style="
+    position:fixed; top:0; right:0; height:100vh; width:340px;
+    background:rgba(10,10,10,0.96); border-left:1px solid rgba(240,237,232,0.08);
+    z-index:999; transform:translateX(100%);
+    transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    display:flex; flex-direction:column; font-family:'Inter',sans-serif; pointer-events:all;
+  ">
+    <div class="settings-header">
+      <div>
+        <h3>Scene Settings</h3>
+        <p>Lighting, HDR &amp; material controls</p>
+      </div>
+    </div>
+    <div class="settings-body" id="scene-body" style="flex:1;overflow-y:auto;padding:20px 24px;scrollbar-width:thin;scrollbar-color:rgba(200,169,110,0.3) transparent;"></div>
+    <div class="settings-footer">
+      <button class="settings-btn settings-btn-reset" id="btn-scene-reset">Reset All</button>
+      <button class="settings-btn settings-btn-apply" id="btn-scene-export">Copy Values</button>
+    </div>
+  </div>
+
+  <div id="settings-panel">
+    <div class="settings-header">
+      <div>
+        <h3>Camera Settings</h3>
+        <p>Per-section keyframe editor</p>
+      </div>
+    </div>
+    <div class="settings-section-tabs" id="settings-tabs"></div>
+    <div class="settings-body" id="settings-body"></div>
+    <div class="settings-footer">
+      <button class="settings-btn settings-btn-reset" id="btn-reset">Reset Section</button>
+      <button class="settings-btn settings-btn-apply" id="btn-copy">Copy Values</button>
+    </div>
+  </div>
+
+  <!-- THREE.JS CANVAS -->
+  <div id="canvas-wrapper">
+    <canvas id="three-canvas"></canvas>
+  </div>
+  <div id="vignette-overlay"></div>
+
+  <!-- SCROLL CONTAINER -->
+  <div id="scroll-container">
+
+    <!-- HERO -->
+    <section class="section" id="section-hero">
+      <div>
+        <h1 class="hero-headline">
+          <span class="line">PORSCHE</span>
+          <span class="line"><span class="stroke">911</span> TURBO</span>
+        </h1>
+      </div>
+      <div class="hero-sub">
+        <p class="year">1975 — 930 Series</p>
+        <p>Air-cooled legend</p>
+        <p>3.0L Turbocharged</p>
+        <div class="scroll-indicator">
+          <div class="scroll-line"></div>
+          <span>Scroll</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section class="section" id="section-overview">
+      <div class="overview-content">
+        <div class="section-tag">Overview</div>
+        <h2 class="section-title">Born to<br>Dominate</h2>
+        <p class="section-body">
+          The 1975 Porsche 911 Turbo — internally designated the 930 — arrived as a thunderclap. The first production turbocharged Porsche ever offered, it redefined what a sports car could be and cemented an era of performance mythology that still echoes today.
+        </p>
+        <div class="stat-row">
+          <div class="stat">
+            <span class="stat-val">260</span>
+            <span class="stat-label">Horsepower</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val">5.5s</span>
+            <span class="stat-label">0–60 mph</span>
+          </div>
+          <div class="stat">
+            <span class="stat-val">155</span>
+            <span class="stat-label">Top mph</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SPECS -->
+    <section class="section" id="section-specs">
+      <div class="specs-content">
+        <div class="section-tag" style="justify-content: flex-end;">Technical</div>
+        <h2 class="section-title">Specs &<br>Numbers</h2>
+        <ul class="specs-list">
+          <li><span class="spec-name">Engine</span><span class="spec-val">3.0L Flat-6 Turbo</span></li>
+          <li><span class="spec-name">Displacement</span><span class="spec-val">2994 cc</span></li>
+          <li><span class="spec-name">Boost Pressure</span><span class="spec-val">0.8 Bar</span></li>
+          <li><span class="spec-name">Torque</span><span class="spec-val">254 lb-ft</span></li>
+          <li><span class="spec-name">Transmission</span><span class="spec-val">4-Speed Manual</span></li>
+          <li><span class="spec-name">Curb Weight</span><span class="spec-val">2370 lbs</span></li>
+          <li><span class="spec-name">Production Run</span><span class="spec-val">1975–1989</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="section-features">
+      <div>
+        <div class="section-tag">Design</div>
+        <h2 class="section-title">Iconic<br>Details</h2>
+        <div class="features-grid">
+          <div class="feature-item">
+            <div class="feature-num">01</div>
+            <div class="feature-name">Whale Tail</div>
+            <div class="feature-desc">The signature rear spoiler that became a cultural icon, generating critical downforce at speed.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-num">02</div>
+            <div class="feature-name">Flared Arches</div>
+            <div class="feature-desc">Wider bodywork housed fat rear rubber and announced pure performance intent.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-num">03</div>
+            <div class="feature-name">Air-Cooled</div>
+            <div class="feature-desc">The last turbocharged boxer to rely on air-cooling, delivering a raw, visceral soundtrack.</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-num">04</div>
+            <div class="feature-name">Turbo Lag</div>
+            <div class="feature-desc">The notorious mid-corner boost hit — feared and revered in equal measure by drivers worldwide.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUOTE -->
+    <section class="section" id="section-quote">
+      <div class="quote-mark">"</div>
+      <p class="quote-text">It is not a car for the faint-hearted — but for those who master it, nothing else will do</p>
+      <p class="quote-attr"><strong>Turbo 930 Archive</strong> — Editorial, 1976</p>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" id="section-cta">
+      <div class="cta-content">
+        <p class="cta-label">Own the Legend</p>
+        <h2 class="cta-headline">
+          <span class="line">Acquire</span>
+          <span class="line stroke">Yours</span>
+        </h2>
+        <div class="cta-bottom">
+          <a href="#" class="cta-btn">
+            Begin Enquiry
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <div class="footer-copy">
+            <p>Turbo 930 Archive</p>
+            <p>All rights reserved</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- THREE.JS -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+    // NAV SCROLL
+    window.scrollToSection = function(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      // close mobile menu on nav click
+      document.getElementById('nav-right').classList.remove('mobile-open');
+      document.getElementById('hamburger').classList.remove('open');
+    };
+
+    // HAMBURGER TOGGLE
+    document.getElementById('hamburger').addEventListener('click', () => {
+      const nav = document.getElementById('nav-right');
+      const btn = document.getElementById('hamburger');
+      nav.classList.toggle('mobile-open');
+      btn.classList.toggle('open');
+    });
+
+    // SCENE SETUP
+    const canvas = document.getElementById('three-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 3.0;
+
+    const scene = new THREE.Scene();
+
+
+
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0.5, 3.4);
+    camera.lookAt(0, 0.1, 0);
+
+    // HDR ENVIRONMENT — loaded with low priority after the model
+    function loadHDR() {
+      const rgbeLoader = new RGBELoader();
+      rgbeLoader.load(
+        'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/evening_road_01_1k.hdr',
+        (hdrTexture) => {
+          hdrTexture.mapping = THREE.EquirectangularReflectionMapping;
+          scene.environment = hdrTexture;
+          applySceneValues();
+        }
+      );
+    }
+
+    // Keep a subtle fill + rim so the car doesn't feel flat on dark backgrounds
+    const rimLight = new THREE.DirectionalLight(0xff4500, 0.0);
+    rimLight.position.set(-4, 1.5, -5);
+    scene.add(rimLight);
+
+    const keyLight = new THREE.DirectionalLight(0xff9500, 1.0);
+    keyLight.position.set(8, 14, 8);
+
+    const keyLightTarget = new THREE.Object3D();
+    scene.add(keyLightTarget);
+    keyLight.target = keyLightTarget;
+    scene.add(keyLight);
+
+
+
+    // LOAD MODEL
+    let car = null;
+    let carLoaded = false;
+
+    const modelData = window.UPLOADED_3D_MODELS?.find(m => m.name === 'porsche-compressed-2.glb');
+
+    // Start HDR and model loading immediately — no deferral
+    loadHDR();
+    if (modelData) {
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+      const loader = new GLTFLoader();
+      loader.setDRACOLoader(dracoLoader);
+
+      loader.load(modelData.dataUrl, (gltf) => {
+        car = gltf.scene;
+
+        // Auto-center and scale
+        const box = new THREE.Box3().setFromObject(car);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 4.4 / maxDim;
+        car.scale.setScalar(scale);
+
+        car.position.x = -center.x * scale;
+        car.position.y = -center.y * scale - 0.75;
+        car.position.z = -center.z * scale;
+
+        car.traverse(child => {
+          if (child.isMesh) {
+
+            // Reduce material complexity on non-visible/small meshes
+            if (child.material) {
+              const mats = Array.isArray(child.material) ? child.material : [child.material];
+              mats.forEach(m => {
+                m.envMapIntensity = sceneValues.hdrIntensity;
+              });
+            }
+          }
+        });
+
+        scene.add(car);
+        carLoaded = true;
+      });
+    }
+
+    // SETTINGS PANEL LOGIC
+    const sectionNames = ['Hero', 'Overview', 'Specs', 'Features', 'Quote', 'CTA'];
+    let activeTabIdx = 0;
+
+    const defaultKeyframes = [
+      { x: -0.78, z: 0.0, cx: -2.61, cy: -0.29, cz: 2.3, lx: -0.7, ly: -0.97, lz: 0.29, fov: 45, yaw: 0.0 },
+      { x: 1.96,  z: 0.0, cx: 0.22, cy: 0.02, cz: 4.55, lx: 2.37, ly: -0.82, lz: -0.28, fov: 18.5, yaw: -2.242 },
+      { x: -2.05, z: 0.0, cx: -3.49, cy: -0.39, cz: 2.8, lx: -0.4, ly: -1.33, lz: -0.78, fov: 37, yaw: 0.008 },
+      { x: -0.06, z: -0.48, cx: 0.0, cy: 6.5, cz: 0.3, lx: 0.0,  ly: 0.0, lz: 0.0, fov: 20, yaw: 1.558 },
+      { x: 0.0,   z: 0.0, cx: -0.03, cy: 0.81, cz: 3.1, lx: 0.0,  ly: -0.81, lz: 0.99, fov: 32.5, yaw: 0.0 },
+      { x: -0.5,  z: -0.2, cx: 3.87, cy: 0.07, cz: 5.05, lx: -0.07, ly: -0.82, lz: 0.84, fov: 18.5, yaw: 0.0 },
+    ];
+
+    const settingsToggle = document.getElementById('settings-toggle');
+    const settingsPanel = document.getElementById('settings-panel');
+    const tabsEl = document.getElementById('settings-tabs');
+    const bodyEl = document.getElementById('settings-body');
+
+    // SCENE PANEL TOGGLE
+    const sceneToggleBtn = document.getElementById('scene-toggle');
+    const scenePanel = document.getElementById('scene-panel');
+    const sideToggles = document.getElementById('side-toggles');
+
+    sceneToggleBtn.addEventListener('click', () => {
+      const isOpen = scenePanel.style.transform === 'translateX(0%)' || scenePanel.style.transform === 'translateX(0)' || scenePanel.classList.contains('open-scene');
+      if (isOpen) {
+        scenePanel.style.transform = 'translateX(100%)';
+        sceneToggleBtn.classList.remove('active-panel');
+        sideToggles.classList.remove('open');
+      } else {
+        scenePanel.style.transform = 'translateX(0%)';
+        sceneToggleBtn.classList.add('active-panel');
+        sideToggles.classList.add('open');
+        // Close cam panel if open
+        settingsPanel.classList.remove('open');
+        settingsToggle.classList.remove('active-panel');
+      }
+    });
+
+    settingsToggle.addEventListener('click', () => {
+      const isOpen = settingsPanel.classList.contains('open');
+      if (isOpen) {
+        settingsPanel.classList.remove('open');
+        settingsToggle.classList.remove('active-panel');
+        sideToggles.classList.remove('open');
+      } else {
+        settingsPanel.classList.add('open');
+        settingsToggle.classList.add('active-panel');
+        sideToggles.classList.add('open');
+        // Close scene panel if open
+        scenePanel.style.transform = 'translateX(100%)';
+        sceneToggleBtn.classList.remove('active-panel');
+      }
+    });
+
+    const controls = [
+      { key: 'x',   label: 'Car X Position',   min: -10,  max: 10,  step: 0.01 },
+      { key: 'z',   label: 'Car Z Position',   min: -10,  max: 10,  step: 0.01 },
+      { key: 'cx',  label: 'Camera X',          min: -10,  max: 10,  step: 0.01 },
+      { key: 'cy',  label: 'Camera Y',          min: -5,   max: 10,  step: 0.01 },
+      { key: 'cz',  label: 'Camera Z',          min: -5,   max: 20,  step: 0.05 },
+      { key: 'lx',  label: 'Look-At X',         min: -10,  max: 10,  step: 0.01 },
+      { key: 'ly',  label: 'Look-At Y',         min: -5,   max: 10,  step: 0.01 },
+      { key: 'lz',  label: 'Look-At Z',         min: -10,  max: 10,  step: 0.01 },
+      { key: 'fov', label: 'FOV / Zoom',        min: 10,   max: 120, step: 0.5  },
+      { key: 'yaw', label: 'Orbit Yaw',         min: -Math.PI, max: Math.PI, step: 0.01 },
+    ];
+
+    function buildTabs() {
+      tabsEl.innerHTML = '';
+      sectionNames.forEach((name, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (i === activeTabIdx ? ' active' : '');
+        btn.textContent = name;
+        btn.addEventListener('click', () => {
+          activeTabIdx = i;
+          buildTabs();
+          buildControls();
+          const tops = Array.from(sections).map(s => s.offsetTop);
+          // Scroll to just past the section start so sectionT ≈ 0,
+          // which means the camera is exactly at this section's keyframe.
+          const targetScroll = tops[i] + 10;
+          window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        });
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function buildControls() {
+      bodyEl.innerHTML = '';
+      const kf = keyframes[activeTabIdx];
+
+      const badge = document.createElement('div');
+      badge.className = 'section-name-badge';
+      badge.textContent = sectionNames[activeTabIdx];
+      bodyEl.appendChild(badge);
+
+      controls.forEach(ctrl => {
+        const group = document.createElement('div');
+        group.className = 'ctrl-group';
+
+        const lbl = document.createElement('label');
+        lbl.className = 'ctrl-label';
+        lbl.innerHTML = `${ctrl.label} <span id="val-${ctrl.key}">${kf[ctrl.key].toFixed(2)}</span>`;
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.className = 'ctrl-slider';
+        slider.min = ctrl.min;
+        slider.max = ctrl.max;
+        slider.step = ctrl.step;
+        slider.value = kf[ctrl.key];
+        slider.id = `slider-${ctrl.key}`;
+
+        slider.addEventListener('input', () => {
+          const val = parseFloat(slider.value);
+          keyframes[activeTabIdx][ctrl.key] = val;
+          document.getElementById(`val-${ctrl.key}`).textContent = val.toFixed(2);
+        });
+
+        group.appendChild(lbl);
+        group.appendChild(slider);
+        bodyEl.appendChild(group);
+      });
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      const def = defaultKeyframes[activeTabIdx];
+      keyframes[activeTabIdx] = { ...def };
+      buildControls();
+    });
+
+    document.getElementById('btn-copy').addEventListener('click', () => {
+      const kf = keyframes[activeTabIdx];
+      const sectionLabel = sectionNames[activeTabIdx];
+      const sectionJson = JSON.stringify({
+        x: +kf.x.toFixed(3),
+        z: +kf.z.toFixed(3),
+        cx: +kf.cx.toFixed(3), cy: +kf.cy.toFixed(3), cz: +kf.cz.toFixed(3),
+        lx: +kf.lx.toFixed(3), ly: +kf.ly.toFixed(3), lz: +kf.lz.toFixed(3),
+        fov: +kf.fov.toFixed(1),
+        yaw: +kf.yaw.toFixed(3),
+      }, null, 2);
+      const output = `Use these properties on the "${sectionLabel}" section:\n\n${sectionJson}`;
+      navigator.clipboard.writeText(output).catch(() => {});
+      const btn = document.getElementById('btn-copy');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy Values', 1500);
+    });
+
+    // KEYFRAMES (must be declared before buildTabs/buildControls)
+    const keyframes = defaultKeyframes.map(k => ({ ...k }));
+
+    buildTabs();
+    buildControls();
+
+    // ── SCENE SETTINGS ──────────────────────────────────────────
+    const sceneDefaults = {
+      exposure:        3.0,
+      keyIntensity:    1.0,
+      keyColorR:       255, keyColorG: 149, keyColorB: 0,
+      rimIntensity:    0.0,
+      rimColorR:       255, rimColorG: 69,  rimColorB: 0,
+      hdrIntensity:    1.19,
+      starOpacity:     1.0,
+      starSize:        0.195,
+      starCount:       2800,
+      envRotation:     0.0,
+      bgTransparent:   true,
+
+    };
+
+    let sceneValues = { ...sceneDefaults };
+
+    const sceneControls = [
+      { section: 'Renderer', controls: [
+        { key: 'exposure',      label: 'Tone Map Exposure', min: 0.1, max: 3.0,   step: 0.01 },
+      ]},
+      { section: 'Key Light', controls: [
+        { key: 'keyIntensity',  label: 'Intensity',         min: 0,   max: 5.0,   step: 0.01 },
+        { key: 'keyColorR',     label: 'Color R',           min: 0,   max: 255,   step: 1    },
+        { key: 'keyColorG',     label: 'Color G',           min: 0,   max: 255,   step: 1    },
+        { key: 'keyColorB',     label: 'Color B',           min: 0,   max: 255,   step: 1    },
+      ]},
+      { section: 'Rim Light', controls: [
+        { key: 'rimIntensity',  label: 'Intensity',         min: 0,   max: 5.0,   step: 0.01 },
+        { key: 'rimColorR',     label: 'Color R',           min: 0,   max: 255,   step: 1    },
+        { key: 'rimColorG',     label: 'Color G',           min: 0,   max: 255,   step: 1    },
+        { key: 'rimColorB',     label: 'Color B',           min: 0,   max: 255,   step: 1    },
+      ]},
+      { section: 'HDR Environment', controls: [
+        { key: 'hdrIntensity',  label: 'Env Map Intensity',  min: 0,  max: 5.0,   step: 0.01 },
+        { key: 'envRotation',   label: 'Env Rotation',       min: 0,  max: Math.PI * 2, step: 0.01 },
+      ]},
+
+
+    ];
+
+    function applySceneValues() {
+      renderer.toneMappingExposure = sceneValues.exposure;
+      keyLight.intensity           = sceneValues.keyIntensity;
+      keyLight.color.setRGB(sceneValues.keyColorR / 255, sceneValues.keyColorG / 255, sceneValues.keyColorB / 255);
+      rimLight.intensity           = sceneValues.rimIntensity;
+      rimLight.color.setRGB(sceneValues.rimColorR / 255, sceneValues.rimColorG / 255, sceneValues.rimColorB / 255);
+
+
+
+      if (scene.environment) {
+        scene.environment.rotation = sceneValues.envRotation;
+      }
+      if (car) {
+        car.traverse(child => {
+          if (child.isMesh && child.material) {
+            const mats = Array.isArray(child.material) ? child.material : [child.material];
+            mats.forEach(m => { if (m.envMapIntensity !== undefined) m.envMapIntensity = sceneValues.hdrIntensity; });
+          }
+        });
+      }
+    }
+
+    function buildSceneControls() {
+      const body = document.getElementById('scene-body');
+      body.innerHTML = '';
+
+      sceneControls.forEach(group => {
+        const secBadge = document.createElement('div');
+        secBadge.className = 'section-name-badge';
+        secBadge.textContent = group.section;
+        body.appendChild(secBadge);
+
+        group.controls.forEach(ctrl => {
+          const grp = document.createElement('div');
+          grp.className = 'ctrl-group';
+
+          const lbl = document.createElement('label');
+          lbl.className = 'ctrl-label';
+          lbl.innerHTML = `${ctrl.label} <span id="sv-${ctrl.key}">${(+sceneValues[ctrl.key]).toFixed(ctrl.step < 0.01 ? 4 : 2)}</span>`;
+
+          const slider = document.createElement('input');
+          slider.type = 'range';
+          slider.className = 'ctrl-slider';
+          slider.min   = ctrl.min;
+          slider.max   = ctrl.max;
+          slider.step  = ctrl.step;
+          slider.value = sceneValues[ctrl.key];
+
+          // Color R/G/B get a live color swatch hint
+          if (ctrl.key.endsWith('R') || ctrl.key.endsWith('G') || ctrl.key.endsWith('B')) {
+            slider.style.accentColor = '#' + ['R','G','B'].map(c => {
+              const base = ctrl.key.slice(0, -1);
+              return Math.round(sceneValues[base + c]).toString(16).padStart(2,'0');
+            }).join('');
+          }
+
+          slider.addEventListener('input', () => {
+            const val = parseFloat(slider.value);
+            sceneValues[ctrl.key] = val;
+            const decimals = ctrl.step < 0.01 ? 4 : 2;
+            document.getElementById(`sv-${ctrl.key}`).textContent = val.toFixed(decimals);
+            applySceneValues();
+          });
+
+          grp.appendChild(lbl);
+          grp.appendChild(slider);
+          body.appendChild(grp);
+        });
+      });
+    }
+
+    buildSceneControls();
+    applySceneValues();
+
+    document.getElementById('btn-scene-reset').addEventListener('click', () => {
+      sceneValues = { ...sceneDefaults };
+      applySceneValues();
+      buildSceneControls();
+    });
+
+    document.getElementById('btn-scene-export').addEventListener('click', () => {
+      const out = JSON.stringify(sceneValues, null, 2);
+      navigator.clipboard.writeText(out).catch(() => {});
+      const btn = document.getElementById('btn-scene-export');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy Values', 1500);
+    });
+
+    // Auto-switch tab to active section while scrolling
+    function syncTabToSection(idx) {
+      if (idx !== activeTabIdx) {
+        activeTabIdx = idx;
+        buildTabs();
+        buildControls();
+      }
+    }
+
+    // SCROLL SECTIONS
+    const sections = document.querySelectorAll('.section');
+    const sectionCount = sections.length;
+
+    const dots = [];
+
+    // DRAG YAW — controlled via per-section keyframe property "yaw" (radians)
+    let dragYaw = 0;
+    let targetDragYaw = 0;
+
+    // SCROLL STATE
+    let scrollY = 0;
+    let targetX = 0, currentX = 0;
+    let targetZ = 0, currentZ = 0;
+
+    let currentCX = -2.61, currentCY = -0.29, currentCZ = 2.3;
+    let targetCX  = -2.61, targetCY  = -0.29, targetCZ  = 2.3;
+    let currentLX = -0.7, currentLY = -0.97, currentLZ = 0.29;
+    let targetLX  = -0.7,  targetLY  = -0.97, targetLZ  = 0.29;
+    let currentFOV = 45, targetFOV = 45;
+
+    // Progress bar
+    const progressBar = document.getElementById('progress-bar');
+
+    // Nav highlight
+    const navLinks = document.querySelectorAll('[data-nav-section]');
+    const sectionIds = ['section-hero','section-overview','section-specs','section-features','section-quote','section-cta'];
+
+    function updateNavHighlight() {
+      const mid = window.innerHeight * 0.45;
+      let current = sectionIds[0];
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= mid) current = id;
+      }
+      navLinks.forEach(a => {
+        a.classList.toggle('nav-active', a.dataset.navSection === current);
+      });
+    }
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    window.addEventListener('scroll', () => {
+      scrollY = window.scrollY;
+      updateNavHighlight();
+    }, { passive: true });
+    updateNavHighlight();
+
+    function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function getSectionScrollData() {
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      const tops = Array.from(sections).map(s => s.offsetTop);
+      const bottoms = tops.map((t, i) => i < tops.length - 1 ? tops[i + 1] : document.body.scrollHeight);
+
+      for (let i = 0; i < tops.length - 1; i++) {
+        if (scrollY < bottoms[i]) {
+          const segLen = bottoms[i] - tops[i];
+          const segProgress = Math.max(0, scrollY - tops[i]);
+          const t = segLen > 0 ? Math.min(segProgress / segLen, 1) : 0;
+          return { sectionIdx: i, sectionT: easeOutCubic(t), sectionProgress: i + t };
+        }
+      }
+      return { sectionIdx: tops.length - 1, sectionT: 1, sectionProgress: tops.length - 1 };
+    }
+
+    function tick() {
+      requestAnimationFrame(tick);
+
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      const scrollFrac = Math.min(scrollY / totalHeight, 1);
+
+      // Progress bar
+      progressBar.style.width = (scrollFrac * 100) + '%';
+
+      // Which section — use real DOM positions
+      const { sectionIdx, sectionT, sectionProgress } = getSectionScrollData();
+
+      const clampedIdx = Math.min(sectionIdx, keyframes.length - 1);
+      const kA = keyframes[clampedIdx];
+      const kB = keyframes[Math.min(clampedIdx + 1, keyframes.length - 1)];
+
+      targetX  = lerp(kA.x,  kB.x,  sectionT);
+      targetZ  = lerp(kA.z,  kB.z,  sectionT);
+      targetCX = lerp(kA.cx, kB.cx, sectionT);
+      targetCY   = lerp(kA.cy, kB.cy, sectionT);
+      targetCZ   = lerp(kA.cz, kB.cz, sectionT);
+      targetLX   = lerp(kA.lx, kB.lx, sectionT);
+      targetLY   = lerp(kA.ly, kB.ly, sectionT);
+      targetLZ   = lerp(kA.lz, kB.lz, sectionT);
+      targetFOV     = lerp(kA.fov, kB.fov, sectionT);
+      targetDragYaw = lerp(kA.yaw, kB.yaw, sectionT);
+
+      // Update dots + sync settings tab
+      const activeDot = Math.round(sectionProgress);
+
+      if (settingsPanel.classList.contains('open')) syncTabToSection(activeDot);
+
+      // Smooth lerp
+      const lerpSpeed = 0.045;
+      if (car) {
+        currentX = lerp(currentX, targetX, lerpSpeed);
+        currentZ = lerp(currentZ, targetZ, lerpSpeed);
+        car.position.x = currentX;
+        car.position.z = currentZ;
+      }
+
+      currentCX = lerp(currentCX, targetCX, lerpSpeed);
+      currentCY = lerp(currentCY, targetCY, lerpSpeed);
+      currentCZ = lerp(currentCZ, targetCZ, lerpSpeed);
+      currentLX = lerp(currentLX, targetLX, lerpSpeed);
+      currentLY = lerp(currentLY, targetLY, lerpSpeed);
+      currentLZ = lerp(currentLZ, targetLZ, lerpSpeed);
+      currentFOV = lerp(currentFOV, targetFOV, lerpSpeed);
+      camera.fov = currentFOV;
+      camera.updateProjectionMatrix();
+
+      // Apply yaw: orbit the camera around the look-at point
+      dragYaw = lerp(dragYaw, targetDragYaw, 0.045);
+      const lookAt = new THREE.Vector3(currentLX, currentLY, currentLZ);
+      const baseOffset = new THREE.Vector3(currentCX - currentLX, currentCY - currentLY, currentCZ - currentLZ);
+      const orbitMat = new THREE.Matrix4().makeRotationY(dragYaw);
+      const rotatedOffset = baseOffset.clone().applyMatrix4(orbitMat);
+      const finalCamPos = lookAt.clone().add(rotatedOffset);
+      camera.position.copy(finalCamPos);
+      camera.lookAt(lookAt);
+
+      // Key light stays at a fixed world-space offset from the car so the
+      // shadow direction never changes regardless of camera yaw.
+      const lightRadius = 12;
+      const LIGHT_ANGLE = Math.PI * 0.18; // fixed azimuth (front-right of car)
+      keyLight.position.set(
+        currentX + Math.sin(LIGHT_ANGLE) * lightRadius,
+        14,
+        currentZ + Math.cos(LIGHT_ANGLE) * lightRadius
+      );
+      keyLightTarget.position.set(currentX, 0, currentZ);
+      keyLightTarget.updateMatrixWorld();
+
+      // Rim light tracks the car — kept high and behind so it never dips below
+      rimLight.position.set(currentX - 4, 3.5, currentZ - 5);
+
+
+
+      renderer.render(scene, camera);
+    }
+
+    tick();
+
+    // RESIZE
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+
+<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

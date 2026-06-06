@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PURÉL — Laundry Ritual</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --off-white: #f5f8fb;
+      --blue-0: #eaf3fb;
+      --blue-1: #d4e9f7;
+      --blue-2: #aed4ef;
+      --blue-3: #6fb3e0;
+      --blue-deep: #2a7ab5;
+      --text-dark: #0d1f2d;
+      --text-mid: #4a6375;
+      --text-light: #8faab9;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--off-white);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(160deg, #ffffff 0%, #e8f4fc 60%, #d2eaf8 100%);
+      padding: 60px 24px;
+    }
+
+    /* radial soft glows */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 30%, rgba(174,212,239,0.38) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 80% 70%, rgba(111,179,224,0.22) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .nav {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px;
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-dark);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links li a {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links li a:hover { color: var(--text-dark); }
+
+    /* ── PRODUCT VISUAL ── */
+    .product-stage {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      margin-bottom: 48px;
+      flex-shrink: 0;
+    }
+
+    /* outer halo ring */
+    .halo {
+      position: absolute;
+      inset: -32px;
+      border-radius: 50%;
+      border: 1px solid rgba(111,179,224,0.25);
+      animation: halo-pulse 4s ease-in-out infinite;
+    }
+
+    .halo-2 {
+      position: absolute;
+      inset: -60px;
+      border-radius: 50%;
+      border: 1px solid rgba(111,179,224,0.12);
+      animation: halo-pulse 4s ease-in-out infinite 0.8s;
+    }
+
+    @keyframes halo-pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.03); }
+    }
+
+    /* bottle shape drawn with CSS */
+    .bottle-wrap {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bottle {
+      position: relative;
+      width: 130px;
+      height: 230px;
+    }
+
+    /* body */
+    .bottle-body {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 185px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(198,231,248,0.85) 50%, rgba(145,205,238,0.75) 100%);
+      border-radius: 32px 32px 28px 28px;
+      border: 1px solid rgba(174,212,239,0.7);
+      box-shadow:
+        inset 6px 10px 24px rgba(255,255,255,0.9),
+        inset -4px -6px 16px rgba(111,179,224,0.25),
+        0 24px 64px rgba(111,179,224,0.30),
+        0 4px 12px rgba(42,122,181,0.12);
+      backdrop-filter: blur(4px);
+      overflow: hidden;
+    }
+
+    /* inner shimmer stripe */
+    .bottle-body::before {
+      content: '';
+      position: absolute;
+      top: 12px; left: 14px;
+      width: 18px;
+      height: 80px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.1));
+      transform: rotate(-8deg);
+    }
+
+    /* liquid fill level */
+    .bottle-liquid {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60%;
+      background: linear-gradient(180deg, rgba(142,202,240,0.35) 0%, rgba(100,175,222,0.55) 100%);
+      border-radius: 0 0 27px 27px;
+    }
+
+    .bottle-liquid::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: rgba(111,179,224,0.5);
+    }
+
+    /* neck */
+    .bottle-neck {
+      position: absolute;
+      bottom: 180px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 52px;
+      height: 36px;
+      background: linear-gradient(135deg, rgba(245,250,255,0.95), rgba(198,231,248,0.8));
+      border-radius: 6px 6px 0 0;
+      border: 1px solid rgba(174,212,239,0.6);
+      border-bottom: none;
+      box-shadow: inset 2px 4px 8px rgba(255,255,255,0.8);
+    }
+
+    /* pump cap */
+    .bottle-cap {
+      position: absolute;
+      bottom: 212px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 18px;
+      background: linear-gradient(135deg, #cde8f6, #a8d4ed);
+      border-radius: 8px;
+      border: 1px solid rgba(111,179,224,0.5);
+      box-shadow: 0 4px 10px rgba(42,122,181,0.18);
+    }
+
+    /* pump nozzle */
+    .bottle-nozzle {
+      position: absolute;
+      bottom: 228px;
+      left: calc(50% + 14px);
+      width: 18px;
+      height: 6px;
+      background: linear-gradient(90deg, #a8d4ed, #88c3e8);
+      border-radius: 4px;
+      border: 1px solid rgba(111,179,224,0.4);
+    }
+
+    /* label area */
+    .bottle-label {
+      position: absolute;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      text-align: center;
+    }
+
+    .label-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dark);
+      letter-spacing: 0.1em;
+      display: block;
+    }
+
+    .label-sub {
+      font-size: 7px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      margin-top: 2px;
+      display: block;
+    }
+
+    .label-line {
+      width: 32px;
+      height: 1px;
+      background: var(--blue-2);
+      margin: 6px auto;
+    }
+
+    /* floating botanical particles */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0;
+      animation: float-up 6s ease-in-out infinite;
+    }
+
+    @keyframes float-up {
+      0% { opacity: 0; transform: translateY(0) scale(0.6); }
+      20% { opacity: 1; }
+      80% { opacity: 0.6; }
+      100% { opacity: 0; transform: translateY(-120px) scale(1.2); }
+    }
+
+    /* petal shapes */
+    .petal {
+      position: absolute;
+      opacity: 0;
+      animation: float-petal 7s ease-in-out infinite;
+    }
+
+    @keyframes float-petal {
+      0% { opacity: 0; transform: translateY(0) rotate(0deg); }
+      15% { opacity: 0.7; }
+      85% { opacity: 0.3; }
+      100% { opacity: 0; transform: translateY(-140px) rotate(360deg); }
+    }
+
+    /* ── COPY BLOCK ── */
+    .copy {
+      position: relative;
+      text-align: center;
+      max-width: 560px;
+      z-index: 2;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--blue-3);
+      margin-bottom: 18px;
+      display: block;
+    }
+
+    .headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 400;
+      line-height: 1.12;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--blue-3);
+    }
+
+    .sub-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(14px, 2.2vw, 18px);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--text-mid);
+      margin-bottom: 28px;
+      display: block;
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--blue-3), transparent);
+      margin: 0 auto 28px;
+    }
+
+    .body-copy {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--text-mid);
+      letter-spacing: 0.02em;
+      max-width: 440px;
+      margin: 0 auto 40px;
+    }
+
+    /* CTA */
+    .cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--white);
+      background: linear-gradient(135deg, var(--blue-deep), var(--blue-3));
+      border: none;
+      padding: 14px 32px;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .btn-ghost {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      background: transparent;
+      border: 1px solid var(--blue-2);
+      padding: 13px 28px;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-ghost:hover { border-color: var(--blue-3); color: var(--text-dark); }
+
+    /* ── INGREDIENTS STRIP ── */
+    .ingredients {
+      width: 100%;
+      background: var(--white);
+      border-top: 1px solid var(--blue-1);
+      border-bottom: 1px solid var(--blue-1);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .ing-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 36px;
+      border-right: 1px solid var(--blue-1);
+      gap: 8px;
+    }
+
+    .ing-item:last-child { border-right: none; }
+
+    .ing-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ing-icon svg { width: 28px; height: 28px; }
+
+    .ing-name {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dark);
+    }
+
+    .ing-desc {
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--text-light);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── SECOND SECTION — FORMULA ── */
+    .formula-section {
+      padding: 120px 48px;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 80px;
+      flex-wrap: wrap;
+    }
+
+    .formula-text {
+      max-width: 400px;
+    }
+
+    .section-eyebrow {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--blue-3);
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+    }
+
+    .section-title em { font-style: italic; color: var(--blue-3); }
+
+    .section-body {
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.9;
+      color: var(--text-mid);
+      margin-bottom: 28px;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--blue-deep);
+      background: var(--blue-0);
+      border: 1px solid var(--blue-1);
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+
+    /* circular diagram */
+    .formula-diagram {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      flex-shrink: 0;
+    }
+
+    .diagram-ring {
+      position: absolute;
+      inset: 0;
+    }
+
+    .diagram-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .diagram-center-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-dark);
+      display: block;
+    }
+
+    .diagram-center-sub {
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+
+    .diagram-node {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transform: translate(-50%, -50%);
+    }
+
+    .diagram-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--blue-3);
+      box-shadow: 0 0 0 3px rgba(111,179,224,0.2);
+    }
+
+    .diagram-node-label {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      white-space: nowrap;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      background: linear-gradient(135deg, #1a5f96, var(--blue-deep), #3a95d5);
+      padding: 56px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 56px;
+      border-right: 1px solid rgba(255,255,255,0.15);
+      gap: 4px;
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      font-weight: 400;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--white);
+      border-top: 1px solid var(--blue-1);
+      padding: 40px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-dark);
+    }
+
+    .footer-tagline {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+
+    .footer-certs {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .cert-badge {
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      border: 1px solid var(--blue-1);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .product-stage {
+      will-change: transform;
+      transition: transform 0.05s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <nav class="nav">
+      <span class="nav-logo">PURÉL</span>
+      <ul class="nav-links">
+        <li><a href="#">Formula</a></li>
+        <li><a href="#">Ritual</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Shop</a></li>
+      </ul>
+    </nav>
+
+    <!-- Bottle -->
+    <div class="product-stage">
+      <div class="halo"></div>
+      <div class="halo-2"></div>
+
+      <!-- Floating particles -->
+      <div class="particle" style="width:5px;height:5px;background:rgba(111,179,224,0.6);top:60%;left:15%;animation-delay:0s;animation-duration:5s;"></div>
+      <div class="particle" style="width:3px;height:3px;background:rgba(174,212,239,0.8);top:70%;left:75%;animation-delay:1.2s;animation-duration:6.5s;"></div>
+      <div class="particle" style="width:6px;height:6px;background:rgba(111,179,224,0.4);top:65%;left:55%;animation-delay:2.5s;animation-duration:5.8s;"></div>
+      <div class="particle" style="width:4px;height:4px;background:rgba(198,231,248,0.9);top:75%;left:35%;animation-delay:0.7s;animation-duration:7s;"></div>
+
+      <!-- Petals (small leaf-like ovals) -->
+      <div class="petal" style="width:10px;height:6px;background:rgba(144,210,190,0.5);border-radius:50%;top:68%;left:20%;animation-delay:1s;animation-duration:6s;"></div>
+      <div class="petal" style="width:8px;height:5px;background:rgba(174,230,210,0.45);border-radius:50%;top:72%;left:65%;animation-delay:3s;animation-duration:7.5s;"></div>
+      <div class="petal" style="width:7px;height:4px;background:rgba(144,210,190,0.4);border-radius:50%;top:66%;left:45%;animation-delay:2s;animation-duration:5.5s;"></div>
+
+      <div class="bottle-wrap">
+        <div class="bottle">
+          <div class="bottle-cap"></div>
+          <div class="bottle-nozzle"></div>
+          <div class="bottle-neck"></div>
+          <div class="bottle-body">
+            <div class="bottle-liquid"></div>
+            <div class="bottle-label">
+              <span class="label-brand">PURÉL</span>
+              <div class="label-line"></div>
+              <span class="label-sub">Wash Serum</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copy -->
+    <div class="copy">
+      <span class="eyebrow">Next-Generation Laundry Ritual</span>
+      <h1 class="headline">Where <em>nature</em><br>meets precision.</h1>
+      <span class="sub-headline">A formula born from the laboratory and the garden.</span>
+      <div class="divider"></div>
+      <p class="body-copy">
+        Infused with cold-pressed botanicals and precision-engineered micro-enzymes, PURÉL treats your fabrics the way fine skincare treats your skin — with intelligence, care, and ceremony.
+      </p>
+      <div class="cta-row">
+        <button class="btn-primary">Discover the formula</button>
+        <button class="btn-ghost">Learn more</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- INGREDIENTS STRIP -->
+  <div class="ingredients">
+    <div class="ing-item">
+      <div class="ing-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 4 C10 8 6 12 6 17 a8 8 0 0 0 16 0 C22 12 18 8 14 4z" stroke="#6fb3e0" stroke-width="1.2" fill="rgba(111,179,224,0.10)"/>
+          <path d="M14 10 L14 22" stroke="#6fb3e0" stroke-width="0.8" stroke-dasharray="2 2"/>
+        </svg>
+      </div>
+      <span class="ing-name">Glacier Water</span>
+      <span class="ing-desc">Ultra-pure base</span>
+    </div>
+    <div class="ing-item">
+      <div class="ing-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="14" cy="14" r="7" stroke="#6fb3e0" stroke-width="1.2" fill="rgba(111,179,224,0.08)"/>
+          <circle cx="14" cy="14" r="3" fill="rgba(111,179,224,0.25)"/>
+          <line x1="14" y1="4" x2="14" y2="7" stroke="#6fb3e0" stroke-width="1"/>
+          <line x1="14" y1="21" x2="14" y2="24" stroke="#6fb3e0" stroke-width="1"/>
+          <line x1="4" y1="14" x2="7" y2="14" stroke="#6fb3e0" stroke-width="1"/>
+          <line x1="21" y1="14" x2="24" y2="14" stroke="#6fb3e0" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="ing-name">Micro-Enzymes</span>
+      <span class="ing-desc">Precision-engineered</span>
+    </div>
+    <div class="ing-item">
+      <div class="ing-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 6 Q18 10 20 14 Q18 20 14 22 Q10 20 8 14 Q10 10 14 6z" stroke="#6fb3e0" stroke-width="1.2" fill="rgba(111,179,224,0.08)"/>
+          <path d="M10 14 Q14 11 18 14" stroke="#6fb3e0" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <span class="ing-name">Iris Extract</span>
+      <span class="ing-desc">Cold-pressed botanical</span>
+    </div>
+    <div class="ing-item">
+      <div class="ing-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="6" width="8" height="16" rx="4" stroke="#6fb3e0" stroke-width="1.2" fill="rgba(111,179,224,0.08)"/>
+          <line x1="14" y1="10" x2="14" y2="18" stroke="#6fb3e0" stroke-width="0.8"/>
+          <line x1="11" y1="14" x2="17" y2="14" stroke="#6fb3e0" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <span class="ing-name">Biotech Complex</span>
+      <span class="ing-desc">Lab-synthesised actives</span>
+    </div>
+    <div class="ing-item">
+      <div class="ing-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 20 Q14 4 20 20" stroke="#6fb3e0" stroke-width="1.2" fill="rgba(111,179,224,0.08)"/>
+          <path d="M10 16 Q14 12 18 16" stroke="#6fb3e0" stroke-width="0.8"/>
+          <path d="M11.5 13 Q14 9 16.5 13" stroke="#6fb3e0" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <span class="ing-name">Cedar Essence</span>
+      <span class="ing-desc">Sustainably sourced</span>
+    </div>
+  </div>
+
+  <!-- FORMULA SECTION -->
+  <section class="formula-section">
+
+    <div class="formula-text">
+      <span class="section-eyebrow">The Science of Clean</span>
+      <h2 class="section-title">Crafted at the<br>intersection of <em>two worlds.</em></h2>
+      <p class="section-body">
+        Our Bio-Fusion Formula™ combines the intelligence of biomimetic technology with the gentle power of certified organic extracts. The result is a laundry ritual that goes beyond clean — it protects fibres, neutralises odours at a molecular level, and leaves a scent as refined as a fine fragrance.
+      </p>
+      <div class="tag-row">
+        <span class="tag">Dermatologically tested</span>
+        <span class="tag">Biodegradable</span>
+        <span class="tag">Fragrance-certified</span>
+        <span class="tag">pH-balanced</span>
+      </div>
+    </div>
+
+    <!-- Diagram -->
+    <div class="formula-diagram">
+      <svg class="diagram-ring" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- outer ring -->
+        <circle cx="140" cy="140" r="120" stroke="#d4e9f7" stroke-width="1"/>
+        <!-- inner ring -->
+        <circle cx="140" cy="140" r="72" stroke="#aed4ef" stroke-width="1" stroke-dasharray="4 6"/>
+        <!-- centre circle -->
+        <circle cx="140" cy="140" r="38" fill="rgba(212,233,247,0.35)" stroke="#aed4ef" stroke-width="1"/>
+        <!-- connector lines -->
+        <line x1="140" y1="68" x2="140" y2="102" stroke="#aed4ef" stroke-width="0.8"/>
+        <line x1="210" y1="107" x2="186" y2="121" stroke="#aed4ef" stroke-width="0.8"/>
+        <line x1="201" y1="192" x2="179" y2="175" stroke="#aed4ef" stroke-width="0.8"/>
+        <line x1="79" y1="192" x2="101" y2="175" stroke="#aed4ef" stroke-width="0.8"/>
+        <line x1="70" y1="107" x2="94" y2="121" stroke="#aed4ef" stroke-width="0.8"/>
+        <!-- dots on outer ring -->
+        <circle cx="140" cy="20" r="4" fill="#6fb3e0"/>
+        <circle cx="246" cy="90" r="4" fill="#6fb3e0"/>
+        <circle cx="218" cy="210" r="4" fill="#6fb3e0"/>
+        <circle cx="62" cy="210" r="4" fill="#6fb3e0"/>
+        <circle cx="34" cy="90" r="4" fill="#6fb3e0"/>
+      </svg>
+
+      <div class="diagram-center">
+        <span class="diagram-center-label">Bio-Fusion™</span>
+        <span class="diagram-center-sub">Formula</span>
+      </div>
+
+      <!-- Labels near dots -->
+      <div class="diagram-node" style="top:5%;left:50%;">
+        <span class="diagram-node-label">Botanical Oils</span>
+      </div>
+      <div class="diagram-node" style="top:27%;left:94%;">
+        <span class="diagram-node-label">Micro-Enzymes</span>
+      </div>
+      <div class="diagram-node" style="top:80%;left:86%;">
+        <span class="diagram-node-label">BioTech Core</span>
+      </div>
+      <div class="diagram-node" style="top:80%;left:18%;">
+        <span class="diagram-node-label">Plant Actives</span>
+      </div>
+      <div class="diagram-node" style="top:27%;left:6%;">
+        <span class="diagram-node-label">Glacier Water</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-number">97%</span>
+      <span class="stat-label">Natural origin</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">3×</span>
+      <span class="stat-label">Enzyme concentration</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">48h</span>
+      <span class="stat-label">Lasting freshness</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">0%</span>
+      <span class="stat-label">Harsh chemicals</span>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span class="footer-logo">PURÉL</span>
+    <span class="footer-tagline">Nature. Precision. Ritual.</span>
+    <div class="footer-certs">
+      <span class="cert-badge">ECOCERT</span>
+      <span class="cert-badge">COSMOS</span>
+      <span class="cert-badge">Vegan Society</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const stage = document.querySelector('.product-stage');
+      let ticking = false;
+
+      function onScroll() {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            const scrollY = window.scrollY;
+            // drifts upward at 30% of scroll speed — subtle, not dramatic
+            const offset = -(scrollY * 0.30);
+            stage.style.transform = `translateY(${offset}px)`;
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+    })();
+  </script>
+</body>
+</html>

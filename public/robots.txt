@@ -1,0 +1,29 @@
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /chat
+Disallow: /images
+Disallow: /videos
+Disallow: /files
+Disallow: /code
+Disallow: /settings
+Disallow: /profile
+Disallow: /notifications
+Disallow: /auth/callback/
+Disallow: /oauth/authorize
+Disallow: /reset-password
+
+Sitemap: https://megsyai.com/sitemap.xml
+Sitemap: https://megsyai.com/sitemap-media.xml
+Sitemap: https://megsyai.com/sitemap-index.xml

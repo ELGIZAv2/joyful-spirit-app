@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velammal Engineering Col — Megsy Templates</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f4f2ee;
+      --card: #eae8e3;
+      --text: #1a1a1a;
+      --text-light: #6b6b6b;
+      --accent: #2563eb;
+      --accent-light: #60a5fa;
+      --white: #ffffff;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+
+    nav.scrolled {
+      background: rgba(244, 242, 238, 0.85);
+      backdrop-filter: blur(20px);
+    }
+
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      color: var(--white);
+      text-transform: uppercase;
+      transition: color 0.4s;
+    }
+
+    nav.scrolled .nav-logo { color: var(--text); }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+      transition: color 0.3s;
+      letter-spacing: 0.3px;
+    }
+
+    nav.scrolled .nav-links a { color: var(--text-light); }
+    .nav-links a:hover { color: var(--white); }
+    nav.scrolled .nav-links a:hover { color: var(--text); }
+
+    .nav-register {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      text-decoration: none;
+      padding: 10px 24px;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 100px;
+      transition: all 0.3s;
+    }
+
+    .nav-register:hover {
+      background: var(--white);
+      color: var(--text);
+    }
+
+    nav.scrolled .nav-register {
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    nav.scrolled .nav-register:hover {
+      background: var(--text);
+      color: var(--white);
+    }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #0a0a1a;
+    }
+
+    #waveCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(60px, 10vw, 140px);
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: 18px;
+      line-height: 1;
+      text-transform: uppercase;
+      mix-blend-mode: difference;
+    }
+
+    .hero-title span {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(60px);
+      animation: letterReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes letterReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-meta {
+      margin-top: 32px;
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .hero-meta span { display: flex; align-items: center; gap: 8px; }
+    .hero-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+
+    .hero-cta {
+      margin-top: 36px;
+      display: inline-block;
+      padding: 14px 40px;
+      background: var(--white);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      border-radius: 100px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(37, 99, 235, 0.3);
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: #ddd;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .stat-item {
+      background: var(--bg);
+      padding: 48px 40px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-top: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    /* SECTIONS */
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #ddd;
+    }
+
+    .section-card {
+      background: var(--card);
+      padding: 64px 56px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.4s;
+    }
+
+    .section-card:hover { background: #e2e0db; }
+
+    .section-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .section-heading {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-light);
+      max-width: 460px;
+    }
+
+    /* EVENTS SECTION */
+    .events-section {
+      padding: 100px 48px;
+    }
+
+    .events-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+
+    .events-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-tab {
+      padding: 8px 20px;
+      border: 1.5px solid #ccc;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-light);
+      transition: all 0.3s;
+    }
+
+    .filter-tab.active, .filter-tab:hover {
+      background: var(--text);
+      color: var(--white);
+      border-color: var(--text);
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .event-card {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s;
+      position: relative;
+    }
+
+    .event-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    }
+
+    .event-card-img {
+      height: 200px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .event-card-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.3), transparent);
+    }
+
+    .event-icon {
+      font-size: 48px;
+      z-index: 1;
+    }
+
+    .event-date-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--white);
+      border-radius: 12px;
+      padding: 8px 14px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .event-date-badge .day {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .event-date-badge .month {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-light);
+      letter-spacing: 1px;
+    }
+
+    .event-card-body {
+      padding: 24px;
+    }
+
+    .event-category {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .event-card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .event-card-desc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-light);
+      margin-bottom: 16px;
+    }
+
+    .event-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .event-location {
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .event-attendees {
+      display: flex;
+      align-items: center;
+    }
+
+    .attendee-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--card);
+      margin-left: -8px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: white;
+    }
+
+    .attendee-dot:first-child { margin-left: 0; }
+
+    /* UPLOAD SECTION */
+    .upload-section {
+      padding: 100px 48px;
+      background: var(--text);
+      color: var(--white);
+    }
+
+    .upload-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .upload-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .upload-heading {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .upload-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255,255,255,0.06);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      background: rgba(37, 99, 235, 0.06);
+    }
+
+    .form-group select option { background: #1a1a1a; color: white; }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .dropzone {
+      border: 2px dashed rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(37, 99, 235, 0.06);
+    }
+
+    .dropzone-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .dropzone-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .dropzone-text strong {
+      color: var(--accent-light);
+    }
+
+    .dropzone input { display: none; }
+
+    .preview-container {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .preview-item {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .submit-btn {
+      padding: 18px 48px;
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      border-radius: 100px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      align-self: center;
+      margin-top: 16px;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(37, 99, 235, 0.4);
+    }
+
+    .submit-btn.loading {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    /* TIMELINE */
+    .timeline-section {
+      padding: 100px 48px;
+    }
+
+    .timeline-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+
+    .timeline-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+    }
+
+    .timeline {
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 24px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #ddd;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 40px;
+      position: relative;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .timeline-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .timeline-dot {
+      width: 50px;
+      min-width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      z-index: 1;
+    }
+
+    .timeline-content {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px 32px;
+      flex: 1;
+    }
+
+    .timeline-date {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .timeline-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .timeline-desc {
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--text);
+      color: var(--white);
+      padding: 64px 48px 32px;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+
+    .footer-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .footer-brand span { color: var(--accent-light); }
+
+    .footer-links {
+      display: flex;
+      gap: 48px;
+    }
+
+    .footer-col h4 {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 16px;
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.3s;
+    }
+
+    .footer-col a:hover { color: var(--white); }
+
+    .footer-bottom {
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal {
+      background: var(--bg);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      padding: 32px 32px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid #ddd;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .modal-close:hover { background: #eee; }
+
+    .modal-body { padding: 24px 32px 32px; }
+
+    .modal-event-img {
+      height: 200px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-event-img::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.25), transparent);
+    }
+
+    .modal-event-category {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .modal-event-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .modal-event-meta {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .modal-event-meta span {
+      font-size: 13px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-event-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-light);
+      margin-bottom: 24px;
+    }
+
+    .modal-register-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .modal-register-btn:hover { opacity: 0.9; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: #1a1a1a;
+      color: white;
+      padding: 16px 28px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { background: #059669; }
+    .toast.error { background: #dc2626; }
+
+    /* SCROLL ANIMATIONS */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .section-grid { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+      .events-section { padding: 64px 24px; }
+      .events-grid { grid-template-columns: 1fr; }
+      .events-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .upload-section { padding: 64px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+      .timeline-section { padding: 64px 24px; }
+      .footer-top { flex-direction: column; gap: 40px; }
+      .footer-links { flex-wrap: wrap; gap: 32px; }
+      .section-card { padding: 48px 32px; }
+      .hero-title { letter-spacing: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="mainNav">
+    <div class="nav-logo">Velammal <span style="color: rgba(255,255,255,0.5)">Events</span></div>
+    <ul class="nav-links">
+      <li><a href="#events">Events</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#upload">Submit</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#upload" class="nav-register">Upload Event</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <canvas id="waveCanvas"></canvas>
+    <div class="hero-content">
+      <h1 class="hero-title" id="heroTitle"></h1>
+      <div class="hero-meta">
+        <span>2026</span>
+        <span class="dot"></span>
+        <span>In Person</span>
+        <span class="dot"></span>
+        <span>Chennai</span>
+        <span class="dot"></span>
+        <span>Campus</span>
+      </div>
+      <a href="#events" class="hero-cta">Explore Events</a>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item fade-up">
+      <div class="stat-number" data-count="120">0</div>
+      <div class="stat-label">Events This Year</div>
+    </div>
+    <div class="stat-item fade-up">
+      <div class="stat-number" data-count="8500">0</div>
+      <div class="stat-label">Students Participating</div>
+    </div>
+    <div class="stat-item fade-up">
+      <div class="stat-number" data-count="45">0</div>
+      <div class="stat-label">Departments Active</div>
+    </div>
+    <div class="stat-item fade-up">
+      <div class="stat-number" data-count="30">0</div>
+      <div class="stat-label">Industry Partners</div>
+    </div>
+  </div>
+
+  <!-- INFO CARDS -->
+  <div class="section-grid">
+    <div class="section-card fade-up">
+      <div class="section-tag">Event Hub</div>
+      <h2 class="section-heading">A single platform,<br>a year's worth of events.</h2>
+      <p class="section-desc">Discover, register, and manage every college event — from technical symposiums to cultural festivals — all in one place.</p>
+    </div>
+    <div class="section-card fade-up">
+      <div class="section-tag">Campus</div>
+      <h2 class="section-heading">Connect at<br>Velammal Campus</h2>
+      <p class="section-desc">Join thousands of students and industry professionals at our state-of-the-art campus facilities for unforgettable experiences.</p>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <section class="events-section" id="events">
+    <div class="events-header fade-up">
+      <h2 class="events-title">Upcoming Events</h2>
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All</button>
+        <button class="filter-tab" data-filter="technical">Technical</button>
+        <button class="filter-tab" data-filter="cultural">Cultural</button>
+        <button class="filter-tab" data-filter="sports">Sports</button>
+        <button class="filter-tab" data-filter="workshop">Workshop</button>
+      </div>
+    </div>
+    <div class="events-grid" id="eventsGrid"></div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="timeline-section" id="timeline">
+    <div class="timeline-header fade-up">
+      <h2>Event Timeline</h2>
+    </div>
+    <div class="timeline" id="timeline-container"></div>
+  </section>
+
+  <!-- UPLOAD -->
+  <section class="upload-section" id="upload">
+    <div class="upload-container">
+      <div class="upload-tag fade-up">Submit an Event</div>
+      <h2 class="upload-heading fade-up">Share your event<br>with the campus</h2>
+      <form class="upload-form" id="eventForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Event Name</label>
+            <input type="text" id="eventName" placeholder="e.g. CodeStorm 2026" required>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="eventCategory" required>
+              <option value="">Select category</option>
+              <option value="technical">Technical</option>
+              <option value="cultural">Cultural</option>
+              <option value="sports">Sports</option>
+              <option value="workshop">Workshop</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="eventDate" required>
+          </div>
+          <div class="form-group">
+            <label>Venue</label>
+            <input type="text" id="eventVenue" placeholder="e.g. Seminar Hall A" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Organizer Name</label>
+            <input type="text" id="eventOrganizer" placeholder="Your name" required>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="eventDept" placeholder="e.g. CSE, ECE, MECH" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="eventDesc" placeholder="Tell us about the event — what to expect, who should attend, prizes, etc." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Event Poster</label>
+          <div class="dropzone" id="dropzone">
+            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-text">Drag and drop or <strong>browse files</strong></div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:8px;">PNG, JPG up to 5MB</div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+          </div>
+          <div class="preview-container" id="previewContainer"></div>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">Publish Event →</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contact">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">Velammal <span>Events</span></div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.35);margin-top:10px;max-width:280px;line-height:1.6;">The official event platform for Velammal Engineering College, Chennai.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="#">Browse Events</a>
+          <a href="#">Submit Event</a>
+          <a href="#">Calendar</a>
+        </div>
+        <div class="footer-col">
+          <h4>College</h4>
+          <a href="#">About VEC</a>
+          <a href="#">Departments</a>
+          <a href="#">Campus Map</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="#">Instagram</a>
+          <a href="#">LinkedIn</a>
+          <a href="#">Email</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Megsy. All rights reserved.</span>
+      <span>Built with Megsy</span>
+    </div>
+  </footer>
+
+  <!-- EVENT MODAL -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="modal-event-category" id="modalCategory"></div>
+          <h2 class="modal-event-title" id="modalTitle"></h2>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-event-img" id="modalImg"></div>
+        <div class="modal-event-meta" id="modalMeta"></div>
+        <p class="modal-event-desc" id="modalDesc"></p>
+        <button class="modal-register-btn" onclick="registerEvent()">Register for Event</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ========== WAVE CANVAS ==========
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, time = 0;
+
+    function resizeCanvas() {
+      W = canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      H = canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    function drawWaves() {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0a0a1a';
+      ctx.fillRect(0, 0, w, h);
+
+      const layers = 12;
+      for (let i = 0; i < layers; i++) {
+        const ratio = i / layers;
+        const alpha = 0.08 + ratio * 0.12;
+        const r = Math.floor(20 + ratio * 60);
+        const g = Math.floor(80 + ratio * 100);
+        const b = Math.floor(200 + ratio * 55);
+
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+
+        for (let x = 0; x <= w; x += 3) {
+          const baseY = h * 0.35 + i * (h * 0.035);
+          const wave1 = Math.sin((x * 0.003) + time * 0.6 + i * 0.5) * (50 + i * 8);
+          const wave2 = Math.sin((x * 0.006) + time * 0.9 + i * 0.3) * (25 + i * 5);
+          const wave3 = Math.cos((x * 0.002) + time * 0.4 + i * 0.8) * (35 + i * 4);
+          const y = baseY + wave1 + wave2 + wave3;
+          ctx.lineTo(x, y);
+        }
+
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        ctx.fill();
+      }
+
+      // brighter highlight wave
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      for (let x = 0; x <= w; x += 2) {
+        const y = h * 0.4 + Math.sin(x * 0.004 + time * 0.7) * 60 + Math.sin(x * 0.008 + time) * 30;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(w, h);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, h * 0.2, 0, h * 0.7);
+      grad.addColorStop(0, 'rgba(96, 165, 250, 0.2)');
+      grad.addColorStop(1, 'rgba(37, 99, 235, 0.02)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      time += 0.012;
+      requestAnimationFrame(drawWaves);
+    }
+
+    drawWaves();
+
+    // ========== HERO TITLE ANIMATION ==========
+    const title = 'EVENTS';
+    const heroTitleEl = document.getElementById('heroTitle');
+    title.split('').forEach((char, i) => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.style.animationDelay = `${0.3 + i * 0.08}s`;
+      heroTitleEl.appendChild(span);
+    });
+
+    // ========== NAV SCROLL ==========
+    window.addEventListener('scroll', () => {
+      document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 80);
+    });
+
+    // ========== SAMPLE EVENTS DATA ==========
+    const gradients = [
+      'linear-gradient(135deg, #2563eb, #7c3aed)',
+      'linear-gradient(135deg, #059669, #2563eb)',
+      'linear-gradient(135deg, #dc2626, #f59e0b)',
+      'linear-gradient(135deg, #7c3aed, #ec4899)',
+      'linear-gradient(135deg, #0891b2, #2563eb)',
+      'linear-gradient(135deg, #ea580c, #dc2626)',
+    ];
+
+    const icons = ['💻', '🎭', '⚽', '🔧', '🎤', '🏆', '🎨', '🚀', '📸', '🤖'];
+
+    let events = [
+      { id: 1, name: 'CodeStorm 2026', category: 'technical', date: '2026-03-15', venue: 'Seminar Hall A', organizer: 'Arjun K.', dept: 'CSE', desc: 'A 24-hour coding marathon where teams of four solve real-world problems. Cash prizes worth ₹50,000 and internship opportunities.', gradient: gradients[0], icon: '💻', attendees: 142 },
+      { id: 2, name: 'Nritya — Dance Fest', category: 'cultural', date: '2026-03-22', venue: 'Open Air Theatre', organizer: 'Priya S.', dept: 'Cultural Club', desc: 'Inter-department dance competition featuring classical, contemporary, and freestyle categories. Celebrity judges and live music.', gradient: gradients[3], icon: '🎭', attendees: 320 },
+      { id: 3, name: 'RoboWars', category: 'technical', date: '2026-04-05', venue: 'Robotics Lab', organizer: 'Vikram R.', dept: 'MECH', desc: 'Build battle robots and compete in an elimination tournament. Weight categories: 5kg and 15kg. Sponsored by TechCorp India.', gradient: gradients[4], icon: '🤖', attendees: 86 },
+      { id: 4, name: 'Sprint Championship', category: 'sports', date: '2026-04-12', venue: 'Sports Ground', organizer: 'Deepak M.', dept: 'Physical Ed.', desc: 'Annual inter-college athletics meet with 100m, 200m, relay, long jump and shot put events. Open to all colleges in Tamil Nadu.', gradient: gradients[2], icon: '🏆', attendees: 250 },
+      { id: 5, name: 'AI/ML Workshop', category: 'workshop', date: '2026-04-18', venue: 'IT Block — Room 302', organizer: 'Dr. Lakshmi V.', dept: 'IT', desc: 'Hands-on workshop covering neural networks, NLP, and computer vision with TensorFlow. Bring your laptop. Certificates provided.', gradient: gradients[1], icon: '🔧', attendees: 95 },
+      { id: 6, name: 'Shutterbugs Photowalk', category: 'cultural', date: '2026-05-01', venue: 'Campus-wide', organizer: 'Sneha P.', dept: 'Photography Club', desc: 'Campus photowalk and competition. Themes: architecture, candid, nature. Best entries exhibited in the college gallery for a month.', gradient: gradients[5], icon: '📸', attendees: 78 },
+    ];
+
+    let nextId = events.length + 1;
+
+    // ========== RENDER EVENTS ==========
+    function renderEvents(filter = 'all') {
+      const grid = document.getElementById('eventsGrid');
+      const filtered = filter === 'all' ? events : events.filter(e => e.category === filter);
+
+      grid.innerHTML = '';
+      filtered.forEach((ev, i) => {
+        const dateObj = new Date(ev.date + 'T00:00:00');
+        const day = dateObj.getDate();
+        const month = dateObj.toLocaleString('en', { month: 'short' }).toUpperCase();
+
+        const colors = ['#2563eb', '#7c3aed', '#059669', '#dc2626', '#ea580c'];
+        const attendeeColors = [colors[i % 5], colors[(i + 1) % 5], colors[(i + 2) % 5]];
+
+        const card = document.createElement('div');
+        card.className = 'event-card fade-up';
+        card.style.transitionDelay = `${i * 0.1}s`;
+        card.onclick = () => openModal(ev);
+        card.innerHTML = `
+          <div class="event-card-img" style="background:${ev.gradient}">
+            <span class="event-icon">${ev.icon}</span>
+            <div class="event-date-badge">
+              <div class="day">${day}</div>
+              <div class="month">${month}</div>
+            </div>
+          </div>
+          <div class="event-card-body">
+            <div class="event-category">${ev.category}</div>
+            <div class="event-card-title">${ev.name}</div>
+            <div class="event-card-desc">${ev.desc.substring(0, 90)}…</div>
+            <div class="event-card-footer">
+              <span class="event-location">📍 ${ev.venue}</span>
+              <div class="event-attendees">
+                ${attendeeColors.map(c => `<div class="attendee-dot" style="background:${c}"></div>`).join('')}
+                <div class="attendee-dot" style="background:#555;font-size:9px;">+${ev.attendees}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      requestAnimationFrame(() => observeAll());
+    }
+
+    // ========== FILTER TABS ==========
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderEvents(tab.dataset.filter);
+      });
+    });
+
+    // ========== TIMELINE ==========
+    function renderTimeline() {
+      const container = document.getElementById('timeline-container');
+      const sorted = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+      container.innerHTML = '';
+
+      sorted.forEach((ev) => {
+        const dateObj = new Date(ev.date + 'T00:00:00');
+        const dateStr = dateObj.toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' });
+
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        item.innerHTML = `
+          <div class="timeline-dot">${ev.icon}</div>
+          <div class="timeline-content">
+            <div class="timeline-date">${dateStr}</div>
+            <div class="timeline-title">${ev.name}</div>
+            <div class="timeline-desc">${ev.desc.substring(0, 120)}…</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // ========== MODAL ==========
+    function openModal(ev) {
+      const dateObj = new Date(ev.date + 'T00:00:00');
+      const dateStr = dateObj.toLocaleDateString('en', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      document.getElementById('modalCategory').textContent = ev.category;
+      document.getElementById('modalTitle').textContent = ev.name;
+      document.getElementById('modalImg').style.background = ev.gradient;
+      document.getElementById('modalImg').innerHTML = `<span style="font-size:56px;z-index:1">${ev.icon}</span>`;
+      document.getElementById('modalMeta').innerHTML = `
+        <span>📅 ${dateStr}</span>
+        <span>📍 ${ev.venue}</span>
+        <span>👤 ${ev.organizer}</span>
+      `;
+      document.getElementById('modalDesc').textContent = ev.desc;
+      document.getElementById('eventModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('eventModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('eventModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('eventModal')) closeModal();
+    });
+
+    function registerEvent() {
+      closeModal();
+      showToast('🎉 Registered successfully!', 'success');
+    }
+
+    // ========== DROPZONE ==========
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    let uploadedFiles = [];
+
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    function handleFiles(files) {
+      [...files].forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        if (file.size > 5 * 1024 * 1024) { showToast('File too large (max 5MB)', 'error'); return; }
+
+        uploadedFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+          div.innerHTML = `
+            <img src="${e.target.result}">
+            <button class="preview-remove" onclick="removePreview(this, ${uploadedFiles.length - 1})">✕</button>
+          `;
+          previewContainer.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removePreview(btn, index) {
+      uploadedFiles.splice(index, 1);
+      btn.parentElement.remove();
+    }
+
+    // ========== FORM SUBMIT ==========
+    document.getElementById('eventForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const btn = document.getElementById('submitBtn');
+      btn.classList.add('loading');
+      btn.textContent = 'Publishing…';
+
+      const name = document.getElementById('eventName').value;
+      const category = document.getElementById('eventCategory').value;
+      const date = document.getElementById('eventDate').value;
+      const venue = document.getElementById('eventVenue').value;
+      const organizer = document.getElementById('eventOrganizer').value;
+      const dept = document.getElementById('eventDept').value;
+      const desc = document.getElementById('eventDesc').value;
+
+      setTimeout(() => {
+        const newEvent = {
+          id: nextId++,
+          name, category, date, venue, organizer, dept, desc,
+          gradient: gradients[Math.floor(Math.random() * gradients.length)],
+          icon: icons[Math.floor(Math.random() * icons.length)],
+          attendees: Math.floor(Math.random() * 100) + 20
+        };
+
+        events.unshift(newEvent);
+        renderEvents(document.querySelector('.filter-tab.active').dataset.filter);
+        renderTimeline();
+
+        btn.classList.remove('loading');
+        btn.textContent = 'Publish Event →';
+
+        e.target.reset();
+        previewContainer.innerHTML = '';
+        uploadedFiles = [];
+
+        showToast('✅ Event published successfully!', 'success');
+
+        document.getElementById('events').scrollIntoView({ behavior: 'smooth' });
+      }, 1500);
+    });
+
+    // ========== TOAST ==========
+    function showToast(message, type = '') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type;
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ========== COUNTER ANIMATION ==========
+    function animateCounters() {
+      document.querySelectorAll('[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        const duration = 2000;
+        const start = performance.now();
+
+        function update(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.floor(eased * target).toLocaleString() + (target >= 100 ? '+' : '+');
+          if (progress < 1) requestAnimationFrame(update);
+        }
+
+        requestAnimationFrame(update);
+      });
+    }
+
+    // ========== SCROLL OBSERVER ==========
+    function observeAll() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+
+            if (entry.target.querySelector('[data-count]')) {
+              animateCounters();
+            }
+          }
+        });
+      }, { threshold: 0.15 });
+
+      document.querySelectorAll('.fade-up, .timeline-item').forEach(el => observer.observe(el));
+    }
+
+    // ========== SMOOTH SCROLL ==========
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // ========== KEYBOARD SHORTCUTS ==========
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // ========== INIT ==========
+    renderEvents();
+    renderTimeline();
+    observeAll();
+  </script>
+<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

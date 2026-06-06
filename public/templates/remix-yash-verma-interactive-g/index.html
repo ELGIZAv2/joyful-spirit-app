@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yash Verma Interactive G — Megsy Templates</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0e0e10;
+      --text: #f0ece6;
+      --muted: rgba(240,236,230,0.5);
+      --accent-pink: #d94f7a;
+      --accent-purple: #8b5cf6;
+      --accent-blue: #4a6cf7;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* Custom Cursor */
+    .cursor-dot {
+      width: 8px; height: 8px;
+      background: var(--text);
+      border-radius: 50%;
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 10000;
+      transition: transform 0.1s ease;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-ring {
+      width: 40px; height: 40px;
+      border: 1.5px solid rgba(240,236,230,0.4);
+      border-radius: 50%;
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 10000;
+      transition: width 0.3s, height 0.3s, border-color 0.3s;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-ring.hovering {
+      width: 60px; height: 60px;
+      border-color: var(--accent-pink);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 24px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      background: rgba(14,14,16,0.3);
+      transition: background 0.3s;
+    }
+
+    .nav-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--text);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .theme-toggle {
+      width: 48px; height: 24px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      justify-content: space-between;
+    }
+
+    .theme-toggle .icon {
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .theme-toggle .knob {
+      position: absolute;
+      width: 18px; height: 18px;
+      background: var(--text);
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: left 0.3s;
+    }
+
+    .theme-toggle.active .knob {
+      left: 27px;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-gradient canvas {
+      width: 100%; height: 100%;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 40px;
+      max-width: 720px;
+      margin-left: 8vw;
+    }
+
+    .hero-content h1 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(22px, 2.8vw, 32px);
+      font-weight: 300;
+      line-height: 1.65;
+      letter-spacing: -0.2px;
+      color: var(--text);
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeUp 1s ease 0.3s forwards;
+    }
+
+    .hero-content h1 strong {
+      font-weight: 500;
+    }
+
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 40px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 1s ease 0.6s forwards;
+      position: relative;
+    }
+
+    .cta-link .arrow {
+      font-size: 20px;
+      transition: transform 0.3s;
+    }
+
+    .cta-link:hover .arrow {
+      transform: translateX(6px);
+    }
+
+    .cta-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 24px; right: 0;
+      height: 1px;
+      background: var(--text);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .cta-link:hover::after {
+      transform: scaleX(1);
+    }
+
+    .scroll-prompt {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      opacity: 0;
+      animation: fadeUp 1s ease 1s forwards;
+    }
+
+    .scroll-prompt .scroll-arrow {
+      animation: bounceDown 2s ease infinite;
+    }
+
+    @keyframes bounceDown {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section Titles */
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      margin-bottom: 60px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px; left: 0;
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+      border-radius: 2px;
+    }
+
+    /* Work Section */
+    .work-section {
+      padding: 120px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+
+    .work-card {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      cursor: pointer;
+      group: true;
+    }
+
+    .work-card .card-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .work-card:hover .card-bg {
+      transform: scale(1.05);
+    }
+
+    .work-card .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 30%, rgba(14,14,16,0.85) 100%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .work-card:hover .card-overlay {
+      opacity: 1;
+    }
+
+    .work-card .card-info {
+      position: absolute;
+      bottom: 24px; left: 24px; right: 24px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.4s ease 0.1s;
+    }
+
+    .work-card:hover .card-info {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .card-info h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card-info p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .card-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Skills */
+    .skills-section {
+      padding: 120px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .skills-marquee {
+      display: flex;
+      gap: 60px;
+      animation: marquee 20s linear infinite;
+      width: max-content;
+    }
+
+    .skills-marquee span {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(40px, 6vw, 80px);
+      font-weight: 700;
+      white-space: nowrap;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(240,236,230,0.2);
+      transition: all 0.3s;
+    }
+
+    .skills-marquee span:hover {
+      -webkit-text-stroke-color: var(--accent-pink);
+      color: rgba(217,79,122,0.1);
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* About */
+    .about-section {
+      padding: 120px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-text p {
+      font-size: 17px;
+      line-height: 1.8;
+      color: rgba(240,236,230,0.75);
+      margin-bottom: 20px;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 30px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.3s;
+    }
+
+    .stat-item:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(139,92,246,0.3);
+      transform: translateY(-4px);
+    }
+
+    .stat-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Testimonials */
+    .testimonials-section {
+      padding: 120px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .testimonial-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 50px;
+      margin-top: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .testimonial-card::before {
+      content: '"';
+      position: absolute;
+      top: 10px; left: 30px;
+      font-size: 120px;
+      font-family: 'Space Grotesk', sans-serif;
+      color: rgba(139,92,246,0.1);
+      line-height: 1;
+    }
+
+    .testimonial-text {
+      font-size: 20px;
+      line-height: 1.7;
+      color: rgba(240,236,230,0.8);
+      font-style: italic;
+      position: relative;
+      z-index: 1;
+    }
+
+    .testimonial-author {
+      margin-top: 30px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .testimonial-role {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .testimonial-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .testimonial-nav button {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .testimonial-nav button.active {
+      background: var(--accent-pink);
+      width: 28px;
+      border-radius: 5px;
+    }
+
+    /* Contact */
+    .contact-section {
+      padding: 120px 40px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .contact-section p {
+      font-size: 17px;
+      color: var(--muted);
+      margin-bottom: 50px;
+      line-height: 1.7;
+    }
+
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 40px;
+      background: transparent;
+      border: 1px solid rgba(240,236,230,0.25);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.4s;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+    }
+
+    .contact-btn:hover {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+      transform: scale(1.04);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 50px;
+    }
+
+    .social-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    .social-links a:hover {
+      color: var(--text);
+    }
+
+    /* Footer */
+    footer {
+      padding: 30px 40px;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(240,236,230,0.25);
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Noise overlay */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      nav { padding: 18px 20px; }
+      .nav-links { gap: 18px; }
+      .nav-links a { font-size: 13px; }
+      .hero-content { margin-left: 0; padding: 0 24px; }
+      .work-grid { grid-template-columns: 1fr; }
+      .about-section { grid-template-columns: 1fr; gap: 50px; }
+      .work-section, .skills-section, .about-section, .testimonials-section, .contact-section { padding: 80px 24px; }
+      .scroll-prompt { right: 24px; bottom: 30px; }
+      .cursor-dot, .cursor-ring { display: none; }
+      .testimonial-card { padding: 30px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav>
+    <div class="nav-logo">Yash Verma</div>
+    <div class="nav-links">
+      <a href="#work">Archive</a>
+      <a href="#about">About</a>
+      <div class="theme-toggle" id="themeToggle">
+        <span class="icon">🌙</span>
+        <span class="icon">☀️</span>
+        <div class="knob"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-gradient">
+      <canvas id="gradientCanvas"></canvas>
+    </div>
+    <div class="hero-content">
+      <h1>Hello, world! I'm <strong>Yash Verma</strong>, a graphic designer specializing in branding, visual identity, and digital experiences. I enjoy crafting meaningful narratives through typography and experimenting with bold aesthetics to tell compelling stories</h1>
+      <a href="#contact" class="cta-link">
+        <span class="arrow">→</span> Get in touch
+      </a>
+    </div>
+    <div class="scroll-prompt">
+      Scroll to discover <span class="scroll-arrow">↓</span>
+    </div>
+  </section>
+
+  <!-- Skills Marquee -->
+  <section class="skills-section">
+    <div class="skills-marquee" id="marquee">
+      <span>Branding</span>
+      <span>•</span>
+      <span>Typography</span>
+      <span>•</span>
+      <span>UI/UX</span>
+      <span>•</span>
+      <span>Illustration</span>
+      <span>•</span>
+      <span>Motion</span>
+      <span>•</span>
+      <span>Print</span>
+      <span>•</span>
+      <span>Branding</span>
+      <span>•</span>
+      <span>Typography</span>
+      <span>•</span>
+      <span>UI/UX</span>
+      <span>•</span>
+      <span>Illustration</span>
+      <span>•</span>
+      <span>Motion</span>
+      <span>•</span>
+      <span>Print</span>
+      <span>•</span>
+    </div>
+  </section>
+
+  <!-- Work -->
+  <section class="work-section" id="work">
+    <div class="reveal">
+      <h2 class="section-title">Selected Work</h2>
+    </div>
+    <div class="work-grid">
+      <div class="work-card reveal" onclick="void(0)">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1a1a2e, #e94560, #0f3460); width:100%; height:100%;"></div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <h3>Lumina Brand Identity</h3>
+          <p>Complete visual identity system for a tech startup</p>
+          <span class="card-tag">Branding</span>
+        </div>
+      </div>
+      <div class="work-card reveal" onclick="void(0)">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2d1b69, #f97316, #0ea5e9); width:100%; height:100%;"></div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <h3>Neonoir Magazine</h3>
+          <p>Editorial design and layout for a digital culture publication</p>
+          <span class="card-tag">Editorial</span>
+        </div>
+      </div>
+      <div class="work-card reveal" onclick="void(0)">
+        <div class="card-bg" style="background: linear-gradient(135deg, #0c0c1d, #7c3aed, #ec4899); width:100%; height:100%;"></div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <h3>Pulse Music Festival</h3>
+          <p>Event branding, posters, and merchandise design</p>
+          <span class="card-tag">Campaign</span>
+        </div>
+      </div>
+      <div class="work-card reveal" onclick="void(0)">
+        <div class="card-bg" style="background: linear-gradient(135deg, #134e4a, #fbbf24, #a78bfa); width:100%; height:100%;"></div>
+        <div class="card-overlay"></div>
+        <div class="card-info">
+          <h3>Verso App Design</h3>
+          <p>UI design and micro-interactions for a wellness platform</p>
+          <span class="card-tag">UI/UX</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="about-section" id="about">
+    <div class="about-text reveal">
+      <h2 class="section-title">About</h2>
+      <p>I'm a graphic designer based in India with a deep passion for visual storytelling. With over 5 years of experience, I've worked with brands ranging from scrappy startups to established enterprises — always bringing the same energy and intentionality.</p>
+      <p>My process blends strategic thinking with an experimental creative approach. I believe great design is invisible — it feels natural, evokes emotion, and drives action without demanding attention.</p>
+    </div>
+    <div class="about-stats reveal">
+      <div class="stat-item">
+        <div class="stat-number" data-target="50">0</div>
+        <div class="stat-label">Projects Delivered</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-target="5">0</div>
+        <div class="stat-label">Years Experience</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-target="30">0</div>
+        <div class="stat-label">Happy Clients</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-target="12">0</div>
+        <div class="stat-label">Awards Won</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials-section reveal" id="testimonials">
+    <h2 class="section-title">Kind Words</h2>
+    <div class="testimonial-card">
+      <p class="testimonial-text" id="testimonialText">Yash transformed our entire brand identity with an incredible eye for detail. His work elevated our company presence and resonated with our audience instantly.</p>
+      <div class="testimonial-author" id="testimonialAuthor">Priya Sharma</div>
+      <div class="testimonial-role" id="testimonialRole">CEO, Lumina Technologies</div>
+    </div>
+    <div class="testimonial-nav" id="testimonialNav">
+      <button class="active" data-index="0"></button>
+      <button data-index="1"></button>
+      <button data-index="2"></button>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="contact-section reveal" id="contact">
+    <h2 class="section-title">Let's Create</h2>
+    <p>Have a project in mind or just want to say hello? I'm always open to discussing new opportunities, creative ideas, or ways to bring your vision to life.</p>
+    <a href="javascript:void(0)" class="contact-btn">
+      Start a Conversation <span>→</span>
+    </a>
+    <div class="social-links">
+      <a href="javascript:void(0)">Dribbble</a>
+      <a href="javascript:void(0)">Behance</a>
+      <a href="javascript:void(0)">Instagram</a>
+      <a href="javascript:void(0)">LinkedIn</a>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2026 Yash Verma. Crafted with intention.
+  </footer>
+
+  <script>
+    // Animated gradient canvas
+    const canvas = document.getElementById('gradientCanvas');
+    const ctx = canvas.getContext('2d');
+    let time = 0;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const gradientColors = [
+      { r: 139, g: 92, b: 246 },
+      { r: 217, g: 79, b: 122 },
+      { r: 74, g: 108, b: 247 },
+      { r: 168, g: 85, b: 200 }
+    ];
+
+    let blobs = gradientColors.map((c, i) => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      color: c,
+      radius: 300 + Math.random() * 200
+    }));
+
+    function drawGradient() {
+      ctx.fillStyle = '#0e0e10';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      blobs.forEach(blob => {
+        blob.x += blob.vx;
+        blob.y += blob.vy;
+        if (blob.x < -200 || blob.x > canvas.width + 200) blob.vx *= -1;
+        if (blob.y < -200 || blob.y > canvas.height + 200) blob.vy *= -1;
+
+        const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.radius);
+        gradient.addColorStop(0, `rgba(${blob.color.r},${blob.color.g},${blob.color.b},0.35)`);
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      });
+
+      time += 0.01;
+      requestAnimationFrame(drawGradient);
+    }
+    drawGradient();
+
+    // Custom cursor
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX;
+      my = e.clientY;
+    });
+
+    function updateCursor() {
+      rx += (mx - rx) * 0.15;
+      ry += (my - ry) * 0.15;
+      dot.style.transform = `translate(${mx - 4}px, ${my - 4}px)`;
+      ring.style.transform = `translate(${rx - 20}px, ${ry - 20}px)`;
+      requestAnimationFrame(updateCursor);
+    }
+    updateCursor();
+
+    document.querySelectorAll('a, button, .work-card, .theme-toggle, .stat-item').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('hovering'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('hovering'));
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Counter animation
+    const statObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const nums = entry.target.querySelectorAll('.stat-number');
+          nums.forEach(num => {
+            const target = parseInt(num.dataset.target);
+            let current = 0;
+            const increment = target / 60;
+            const count = () => {
+              current += increment;
+              if (current < target) {
+                num.textContent = Math.floor(current) + '+';
+                requestAnimationFrame(count);
+              } else {
+                num.textContent = target + '+';
+              }
+            };
+            count();
+          });
+          statObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.about-stats').forEach(el => statObserver.observe(el));
+
+    // Testimonials
+    const testimonials = [
+      { text: "Yash transformed our entire brand identity with an incredible eye for detail. His work elevated our company presence and resonated with our audience instantly.", author: "Priya Sharma", role: "CEO, Lumina Technologies" },
+      { text: "Working with Yash was a breath of fresh air. He understood our vision from day one and delivered designs that surpassed every expectation we had.", author: "Arjun Mehta", role: "Founder, Neonoir Magazine" },
+      { text: "His typographic sensibility and color choices are unmatched. Yash brought a level of sophistication to our event branding that truly stood out.", author: "Sneha Reddy", role: "Creative Director, Pulse Festival" }
+    ];
+
+    let currentTestimonial = 0;
+    const tText = document.getElementById('testimonialText');
+    const tAuthor = document.getElementById('testimonialAuthor');
+    const tRole = document.getElementById('testimonialRole');
+    const tNav = document.getElementById('testimonialNav');
+
+    tNav.addEventListener('click', e => {
+      if (e.target.tagName === 'BUTTON') {
+        const idx = parseInt(e.target.dataset.index);
+        switchTestimonial(idx);
+      }
+    });
+
+    function switchTestimonial(idx) {
+      currentTestimonial = idx;
+      tText.style.opacity = 0;
+      tAuthor.style.opacity = 0;
+      tRole.style.opacity = 0;
+
+      setTimeout(() => {
+        tText.textContent = testimonials[idx].text;
+        tAuthor.textContent = testimonials[idx].author;
+        tRole.textContent = testimonials[idx].role;
+        tText.style.opacity = 1;
+        tAuthor.style.opacity = 1;
+        tRole.style.opacity = 1;
+      }, 300);
+
+      tNav.querySelectorAll('button').forEach((b, i) => {
+        b.classList.toggle('active', i === idx);
+      });
+    }
+
+    // Auto-rotate testimonials
+    setInterval(() => {
+      switchTestimonial((currentTestimonial + 1) % testimonials.length);
+    }, 5000);
+
+    // Add transition for testimonial text
+    [tText, tAuthor, tRole].forEach(el => el.style.transition = 'opacity 0.3s');
+
+    // Theme toggle visual
+    const toggle = document.getElementById('themeToggle');
+    toggle.addEventListener('click', () => {
+      toggle.classList.toggle('active');
+    });
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Parallax on mouse move for hero
+    const heroContent = document.querySelector('.hero-content');
+    document.querySelector('.hero').addEventListener('mousemove', e => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 10;
+      const y = (e.clientY / window.innerHeight - 0.5) * 10;
+      heroContent.style.transform = `translate(${x}px, ${y}px)`;
+    });
+
+    // Interactive gradient follows mouse
+    document.querySelector('.hero').addEventListener('mousemove', e => {
+      if (blobs[0]) {
+        blobs[0].x += (e.clientX - blobs[0].x) * 0.02;
+        blobs[0].y += (e.clientY - blobs[0].y) * 0.02;
+      }
+    });
+  </script>
+<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

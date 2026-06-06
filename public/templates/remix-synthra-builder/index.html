@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synthra — AI Website Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #fafafa;
+      --text-primary: #111;
+      --text-secondary: #555;
+      --text-muted: #999;
+      --accent: #111;
+      --border: #e0e0e0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      background: rgba(250, 250, 250, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .nav-logo {
+      position: absolute;
+      left: 40px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-logo svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 60px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-visual {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 700px;
+      pointer-events: none;
+    }
+
+    .hero-silhouette {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .hero-silhouette canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-left {
+      position: relative;
+      z-index: 2;
+      max-width: 400px;
+    }
+
+    .hero-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+    }
+
+    .hero-headline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 38px;
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--text-primary);
+      margin-bottom: 28px;
+    }
+
+    .hero-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hero-tags span {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-tags span:hover {
+      background: var(--text-primary);
+      color: #fff;
+      border-color: var(--text-primary);
+    }
+
+    .hero-right {
+      position: relative;
+      z-index: 2;
+      text-align: right;
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .scroll-indicator .line {
+      width: 1px;
+      height: 60px;
+      background: var(--text-muted);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-indicator .line::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--text-primary);
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollLine {
+      0% { top: -100%; }
+      50% { top: 100%; }
+      100% { top: 100%; }
+    }
+
+    /* Announcement bar */
+    .announcement {
+      position: fixed;
+      top: 58px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 18px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .announcement .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4CAF50;
+      animation: pulse 2s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Section: How it works */
+    .section {
+      padding: 140px 60px;
+      position: relative;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 60px;
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 60px;
+    }
+
+    .process-item {
+      position: relative;
+    }
+
+    .process-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 72px;
+      font-weight: 300;
+      color: #eee;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+
+    .process-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .process-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    /* Features */
+    .features-section {
+      padding: 100px 60px 140px;
+      background: #fff;
+    }
+
+    .features-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 80px;
+    }
+
+    .features-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 300;
+      line-height: 1.2;
+      max-width: 500px;
+    }
+
+    .features-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 280px;
+      text-align: right;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .feature-card {
+      background: #fff;
+      padding: 50px 40px;
+      position: relative;
+      transition: background 0.4s;
+      cursor: default;
+    }
+
+    .feature-card:hover {
+      background: #f8f8f8;
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feature-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-primary);
+    }
+
+    .feature-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      padding: 160px 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-headline {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 300;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-sub {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    .cta-input-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .cta-input-group input {
+      flex: 1;
+      padding: 16px 24px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border);
+      border-right: none;
+      border-radius: 0;
+      outline: none;
+      background: #fff;
+      color: var(--text-primary);
+      transition: border-color 0.3s;
+    }
+
+    .cta-input-group input:focus {
+      border-color: #999;
+    }
+
+    .cta-input-group input::placeholder {
+      color: #bbb;
+    }
+
+    .cta-input-group button {
+      padding: 16px 32px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      background: var(--text-primary);
+      color: #fff;
+      border: 1px solid var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .cta-input-group button:hover {
+      background: #333;
+      border-color: #333;
+    }
+
+    .cta-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Showcase */
+    .showcase-section {
+      padding: 100px 60px 140px;
+      background: #fff;
+    }
+
+    .showcase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 60px;
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .showcase-card {
+      position: relative;
+      aspect-ratio: 4/3;
+      background: #f2f2f2;
+      overflow: hidden;
+      cursor: pointer;
+      group: true;
+    }
+
+    .showcase-card .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background 0.4s;
+      display: flex;
+      align-items: flex-end;
+      padding: 24px;
+    }
+
+    .showcase-card:hover .overlay {
+      background: rgba(0,0,0,0.6);
+    }
+
+    .showcase-card .overlay-text {
+      color: #fff;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s;
+    }
+
+    .showcase-card:hover .overlay-text {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .overlay-text h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .overlay-text p {
+      font-size: 12px;
+      opacity: 0.7;
+      font-weight: 300;
+    }
+
+    .showcase-card canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Footer */
+    footer {
+      padding: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-left {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+    }
+
+    .footer-links a {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-right {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Stats Section */
+    .stats-section {
+      padding: 0 60px 100px;
+      background: var(--bg);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border);
+    }
+
+    .stat-item {
+      padding: 40px 36px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 40px;
+      font-weight: 300;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      font-weight: 400;
+    }
+
+    /* Testimonials */
+    .testimonials-section {
+      padding-bottom: 120px;
+      background: var(--bg);
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-top: 48px;
+    }
+
+    .testimonial-card {
+      background: var(--bg);
+      padding: 48px 40px;
+    }
+
+    .testimonial-text {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      font-weight: 300;
+      font-style: italic;
+      margin-bottom: 32px;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .author-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .author-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+
+    .author-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* Pricing */
+    .pricing-section {
+      padding: 120px 60px;
+      background: #fff;
+    }
+
+    .pricing-header {
+      margin-bottom: 64px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      max-width: 820px;
+    }
+
+    .pricing-card {
+      background: #fff;
+      padding: 52px 44px;
+    }
+
+    .pricing-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .soon-badge {
+      background: #111;
+      color: #fff;
+      font-size: 9px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pricing-price {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 52px;
+      font-weight: 300;
+      line-height: 1;
+      margin-bottom: 14px;
+      color: var(--text-primary);
+    }
+
+    .pricing-price span {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    .pricing-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      font-weight: 300;
+    }
+
+    .pricing-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pricing-list li {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pricing-list li::before {
+      content: '';
+      width: 16px;
+      height: 1px;
+      background: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    /* FAQ */
+    .faq-section {
+      padding: 120px 60px;
+      background: var(--bg);
+    }
+
+    .faq-section .section-label {
+      margin-bottom: 48px;
+    }
+
+    .faq-list {
+      max-width: 760px;
+    }
+
+    .faq-item {
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .faq-item:last-child {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-q {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      padding: 22px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-primary);
+      user-select: none;
+    }
+
+    .faq-icon {
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--text-muted);
+      transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
+
+    .faq-a {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      font-weight: 300;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding-bottom 0.4s ease;
+      padding-bottom: 0;
+    }
+
+    .faq-item.open .faq-a {
+      max-height: 200px;
+      padding-bottom: 22px;
+    }
+
+    /* Animations */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero { padding: 0 30px 60px; flex-direction: column; align-items: flex-start; }
+      .hero-visual { width: 400px; height: 500px; }
+      .hero-headline { font-size: 28px; }
+      .hero-right { display: none; }
+      .section { padding: 80px 30px; }
+      .process-grid { grid-template-columns: 1fr; gap: 40px; }
+      .features-section { padding: 80px 30px; }
+      .features-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .features-title { font-size: 30px; }
+      .features-subtitle { text-align: left; }
+      .features-grid { grid-template-columns: 1fr; }
+      .stats-section { padding: 0 30px 60px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+      .cta-section { padding: 100px 30px; }
+      .cta-headline { font-size: 32px; }
+      .showcase-section { padding: 80px 30px; }
+      .showcase-grid { grid-template-columns: 1fr; }
+      .testimonials-section { padding: 0 0 80px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .testimonials-section .section-label { padding: 80px 30px 0; }
+      .pricing-section { padding: 80px 30px; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 100%; }
+      .faq-section { padding: 80px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-visual">
+      <div class="hero-silhouette">
+        <canvas id="heroCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="hero-left">
+      <div class="hero-brand">synthra</div>
+      <h1 class="hero-headline">Websites built<br>by intelligence,<br>not effort.</h1>
+  
+    </div>
+
+    <div class="hero-right">
+      <div class="scroll-indicator">
+        <div class="line"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-item fade-in">
+        <div class="stat-number">2.4M+</div>
+        <div class="stat-label">Websites Created</div>
+      </div>
+      <div class="stat-item fade-in">
+        <div class="stat-number">98ms</div>
+        <div class="stat-label">Average Load Time</div>
+      </div>
+      <div class="stat-item fade-in">
+        <div class="stat-number">190+</div>
+        <div class="stat-label">Countries Served</div>
+      </div>
+      <div class="stat-item fade-in">
+        <div class="stat-number">∞</div>
+        <div class="stat-label">Sites Per Account</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section class="section">
+    <div class="section-label fade-in">How It Works</div>
+    <div class="process-grid">
+      <div class="process-item fade-in">
+        <div class="process-number">01</div>
+        <h3 class="process-title">Describe</h3>
+        <p class="process-desc">Tell the AI what you need — a portfolio, a store, a blog, anything. Use plain language. No design skills required.</p>
+      </div>
+      <div class="process-item fade-in">
+        <div class="process-number">02</div>
+        <h3 class="process-title">Generate</h3>
+        <p class="process-desc">Our neural engine constructs a full website in seconds — layout, typography, images, animations, and responsive design included.</p>
+      </div>
+      <div class="process-item fade-in">
+        <div class="process-number">03</div>
+        <h3 class="process-title">Publish</h3>
+        <p class="process-desc">One click to deploy. Your site goes live instantly on a global CDN with a custom domain. No hosting hassle, ever.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section">
+    <div class="features-header fade-in">
+      <h2 class="features-title">Everything you need.<br>Nothing you don't.</h2>
+      <p class="features-subtitle">Every feature works together seamlessly. No plugins, no add-ons, no complexity.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3>Unlimited Sites</h3>
+        <p>Create as many websites as you want. There are no limits, no caps, and no tiers. Build one site or a thousand.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <h3>Instant Deploy</h3>
+        <p>Your website is live the moment you finish. Global edge deployment ensures fast load times anywhere on earth.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </div>
+        <h3>Full Customization</h3>
+        <p>Edit anything after generation — colors, fonts, layout, content. AI suggestions adapt to your changes in real time.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </div>
+        <h3>Custom Domains</h3>
+        <p>Connect your own domain or use a free synthra.site subdomain. SSL certificates are automatic and always on.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase -->
+  <section class="showcase-section">
+    <div class="showcase-header fade-in">
+      <div>
+        <div class="section-label" style="margin-bottom:12px;">Built with Synthra</div>
+        <h2 class="features-title">Real sites.<br>Made in seconds.</h2>
+      </div>
+    </div>
+    <div class="showcase-grid">
+      <div class="showcase-card fade-in">
+        <canvas class="showcase-canvas" data-type="0"></canvas>
+        <div class="overlay">
+          <div class="overlay-text">
+            <h4>Arch Studio</h4>
+            <p>Architecture Portfolio</p>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-card fade-in">
+        <canvas class="showcase-canvas" data-type="1"></canvas>
+        <div class="overlay">
+          <div class="overlay-text">
+            <h4>Bloom Café</h4>
+            <p>Restaurant & Menu</p>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-card fade-in">
+        <canvas class="showcase-canvas" data-type="2"></canvas>
+        <div class="overlay">
+          <div class="overlay-text">
+            <h4>Drift Journal</h4>
+            <p>Personal Blog</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials-section">
+    <div class="section-label fade-in" style="padding: 0 60px; padding-top: 120px;">What People Say</div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card fade-in">
+        <p class="testimonial-text">"I launched my entire portfolio in less than four minutes. The AI understood exactly what I was going for — clean, minimal, architectural."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:#e8e0d8;"></div>
+          <div>
+            <div class="author-name">Leila Osman</div>
+            <div class="author-role">Architect, Berlin</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in">
+        <p class="testimonial-text">"We replaced our entire agency website stack with Synthra. The speed of iteration is unlike anything we've used before."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:#d8e0e8;"></div>
+          <div>
+            <div class="author-name">Marcus Trell</div>
+            <div class="author-role">Creative Director, Oslo</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card fade-in">
+        <p class="testimonial-text">"My restaurant's website went live the same afternoon I had the idea. Customers now book directly through it. It paid for itself — except it's free."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:#e8e8d8;"></div>
+          <div>
+            <div class="author-name">Hana Fujita</div>
+            <div class="author-role">Restaurant Owner, Kyoto</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing / Plans -->
+  <section class="pricing-section">
+    <div class="pricing-header fade-in">
+      <div class="section-label" style="margin-bottom: 16px;">Simple Pricing</div>
+      <h2 class="features-title">One plan.<br>Completely free.</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card pricing-free fade-in">
+        <div class="pricing-label">Free</div>
+        <div class="pricing-price">$0<span>/mo</span></div>
+        <div class="pricing-desc">Everything. No limits. No catch.</div>
+        <ul class="pricing-list">
+          <li>Unlimited websites</li>
+          <li>Custom domain support</li>
+          <li>Global CDN deployment</li>
+          <li>SSL certificates included</li>
+          <li>AI generation — always on</li>
+          <li>Real-time editing</li>
+          <li>Analytics dashboard</li>
+        </ul>
+      </div>
+      <div class="pricing-card pricing-pro fade-in">
+        <div class="pricing-label">Pro <span class="soon-badge">Soon</span></div>
+        <div class="pricing-price">$12<span>/mo</span></div>
+        <div class="pricing-desc">For teams and power users.</div>
+        <ul class="pricing-list">
+          <li>Everything in Free</li>
+          <li>Team collaboration</li>
+          <li>Priority rendering</li>
+          <li>White-label export</li>
+          <li>Advanced analytics</li>
+          <li>Dedicated support</li>
+          <li>API access</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="section-label fade-in">Frequently Asked</div>
+    <div class="faq-list">
+      <div class="faq-item fade-in" onclick="toggleFaq(this)">
+        <div class="faq-q">Is it really free forever?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Yes. The core product — unlimited websites, AI generation, global deployment — is and will always be free. We believe creation should be accessible to everyone.</div>
+      </div>
+      <div class="faq-item fade-in" onclick="toggleFaq(this)">
+        <div class="faq-q">Do I need to know how to code?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Not at all. Describe what you want in plain language and Synthra builds it. If you do know how to code, you can also dive into the generated source at any time.</div>
+      </div>
+      <div class="faq-item fade-in" onclick="toggleFaq(this)">
+        <div class="faq-q">Can I connect my own domain?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Absolutely. Point your DNS to our servers and your site is live on your domain within minutes. SSL is provisioned automatically at no extra cost.</div>
+      </div>
+      <div class="faq-item fade-in" onclick="toggleFaq(this)">
+        <div class="faq-q">How fast does the AI generate a website?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Most websites are generated and live in under 30 seconds. Complex multi-page builds with custom animations may take up to 90 seconds.</div>
+      </div>
+      <div class="faq-item fade-in" onclick="toggleFaq(this)">
+        <div class="faq-q">Can I edit the site after it's generated?<span class="faq-icon">+</span></div>
+        <div class="faq-a">Yes — every element is editable. Use our visual editor, re-prompt the AI to refine sections, or export and edit the raw HTML/CSS/JS directly.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2 class="cta-headline fade-in">Start building.<br>Completely free.<br>Forever.</h2>
+    <p class="cta-sub fade-in">No credit card. No trial. No catch.</p>
+    <div class="cta-input-group fade-in">
+      <input type="text" placeholder="Describe your website..." id="promptInput">
+      <button onclick="handleGenerate()">Generate</button>
+    </div>
+    <p class="cta-note fade-in">Your site will be live in under 30 seconds</p>
+  </section>
+
+
+
+  <script>
+    // Hero Canvas - Silhouette rendering
+    function initHeroCanvas() {
+      const canvas = document.getElementById('heroCanvas');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+
+      function resize() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        ctx.scale(dpr, dpr);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let mouseX = 0.5, mouseY = 0.5;
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX / window.innerWidth;
+        mouseY = e.clientY / window.innerHeight;
+      });
+
+      function drawSilhouette(time) {
+        const w = canvas.width / dpr;
+        const h = canvas.height / dpr;
+        ctx.clearRect(0, 0, w, h);
+
+        const cx = w * 0.5 + (mouseX - 0.5) * 20;
+        const cy = h * 0.42 + (mouseY - 0.5) * 10;
+
+        // Head silhouette using bezier curves
+        const scale = Math.min(w, h) * 0.0038;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale, scale);
+
+        // Shadow / glow
+        const grad = ctx.createRadialGradient(0, 20, 10, 0, 20, 160);
+        grad.addColorStop(0, 'rgba(60, 40, 30, 0.25)');
+        grad.addColorStop(0.6, 'rgba(60, 40, 30, 0.06)');
+        grad.addColorStop(1, 'rgba(60, 40, 30, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 20, 160, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Head shape - profile facing left
+        ctx.beginPath();
+        ctx.moveTo(20, -90);
+        // top of head
+        ctx.bezierCurveTo(-30, -110, -70, -85, -75, -50);
+        // forehead
+        ctx.bezierCurveTo(-80, -20, -78, 0, -65, 15);
+        // brow
+        ctx.bezierCurveTo(-60, 22, -58, 28, -62, 32);
+        // nose bridge
+        ctx.bezierCurveTo(-68, 40, -75, 48, -72, 55);
+        // nose tip
+        ctx.bezierCurveTo(-70, 58, -62, 56, -60, 52);
+        // upper lip
+        ctx.bezierCurveTo(-55, 58, -52, 60, -50, 62);
+        // lips
+        ctx.bezierCurveTo(-48, 64, -50, 68, -52, 70);
+        // chin
+        ctx.bezierCurveTo(-48, 78, -38, 88, -20, 92);
+        // jawline
+        ctx.bezierCurveTo(-5, 95, 15, 90, 25, 80);
+        // neck back
+        ctx.bezierCurveTo(30, 75, 32, 60, 35, 110);
+        // shoulder area
+        ctx.bezierCurveTo(38, 130, 10, 135, -10, 140);
+        ctx.bezierCurveTo(-35, 145, -55, 138, -50, 130);
+        // neck front
+        ctx.bezierCurveTo(-45, 120, -35, 105, -32, 95);
+        ctx.bezierCurveTo(-25, 110, -10, 130, -20, 140);
+        ctx.lineTo(40, 140);
+        ctx.lineTo(40, 110);
+        ctx.bezierCurveTo(38, 60, 40, 10, 45, -30);
+        // back of head
+        ctx.bezierCurveTo(48, -55, 45, -80, 20, -90);
+        ctx.closePath();
+
+        const headGrad = ctx.createLinearGradient(-80, -110, 50, 140);
+        headGrad.addColorStop(0, '#3a2a20');
+        headGrad.addColorStop(0.3, '#2e1f16');
+        headGrad.addColorStop(0.6, '#4a3528');
+        headGrad.addColorStop(1, '#3a2a20');
+        ctx.fillStyle = headGrad;
+        ctx.fill();
+
+        // Subtle light on the edge
+        const t = time * 0.001;
+        const lightX = Math.sin(t * 0.5) * 10;
+        const lightGrad = ctx.createRadialGradient(-70 + lightX, 0, 5, -70 + lightX, 0, 60);
+        lightGrad.addColorStop(0, 'rgba(180, 140, 110, 0.12)');
+        lightGrad.addColorStop(1, 'rgba(180, 140, 110, 0)');
+        ctx.fillStyle = lightGrad;
+        ctx.fill();
+
+        ctx.restore();
+
+        // Floating particles
+        for (let i = 0; i < 15; i++) {
+          const px = w * 0.3 + Math.sin(t + i * 2.1) * w * 0.25;
+          const py = h * 0.2 + Math.cos(t * 0.7 + i * 1.7) * h * 0.3;
+          const size = 1 + Math.sin(t + i) * 0.5;
+          const alpha = 0.08 + Math.sin(t * 0.5 + i) * 0.04;
+          ctx.beginPath();
+          ctx.arc(px, py, size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0,0,0,${alpha})`;
+          ctx.fill();
+        }
+
+        requestAnimationFrame(drawSilhouette);
+      }
+
+      requestAnimationFrame(drawSilhouette);
+    }
+
+    // Showcase cards - abstract generative art
+    function initShowcaseCanvases() {
+      document.querySelectorAll('.showcase-canvas').forEach(canvas => {
+        const type = parseInt(canvas.dataset.type);
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        const w = rect.width;
+        const h = rect.height;
+
+        if (type === 0) {
+          // Geometric architecture
+          ctx.fillStyle = '#f0ede8';
+          ctx.fillRect(0, 0, w, h);
+          for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = `rgba(30,25,20,${0.04 + i * 0.02})`;
+            const bw = 30 + Math.random() * 60;
+            const bh = 60 + Math.random() * 120;
+            const bx = 20 + i * (w / 9);
+            const by = h - bh - 20 - Math.random() * 40;
+            ctx.fillRect(bx, by, bw, bh);
+          }
+          ctx.fillStyle = 'rgba(180,160,140,0.3)';
+          ctx.fillRect(0, h - 20, w, 20);
+        } else if (type === 1) {
+          // Warm organic shapes
+          ctx.fillStyle = '#faf5ef';
+          ctx.fillRect(0, 0, w, h);
+          const colors = ['rgba(200,120,80,0.15)', 'rgba(180,160,100,0.12)', 'rgba(120,80,60,0.1)'];
+          for (let i = 0; i < 12; i++) {
+            ctx.beginPath();
+            ctx.arc(
+              w * 0.2 + Math.random() * w * 0.6,
+              h * 0.2 + Math.random() * h * 0.6,
+              20 + Math.random() * 50,
+              0, Math.PI * 2
+            );
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.fill();
+          }
+        } else {
+          // Minimal lines
+          ctx.fillStyle = '#f5f5f5';
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 20; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 30 + i * (h / 22));
+            ctx.lineTo(w, 30 + i * (h / 22) + (Math.random() - 0.5) * 20);
+            ctx.stroke();
+          }
+          // Text blocks
+          for (let i = 0; i < 6; i++) {
+            ctx.fillStyle = `rgba(0,0,0,${0.06 + Math.random() * 0.06})`;
+            ctx.fillRect(30, 40 + i * 38, 60 + Math.random() * 100, 8);
+          }
+        }
+      });
+    }
+
+    // Scroll animations
+    function initScrollAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    }
+
+    // Generate button handler
+    function handleGenerate() {
+      const input = document.getElementById('promptInput');
+      const btn = input.nextElementSibling;
+      if (!input.value.trim()) {
+        input.style.borderColor = '#e44';
+        setTimeout(() => input.style.borderColor = '#e0e0e0', 1500);
+        return;
+      }
+      btn.textContent = 'Building...';
+      btn.style.background = '#555';
+      setTimeout(() => {
+        btn.textContent = 'Live ✓';
+        btn.style.background = '#2a7a2a';
+        setTimeout(() => {
+          btn.textContent = 'Generate';
+          btn.style.background = '#111';
+          input.value = '';
+        }, 2500);
+      }, 2000);
+    }
+
+    // Enter key on input
+    document.getElementById('promptInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleGenerate();
+    });
+
+    // FAQ toggle
+    function toggleFaq(item) {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // Init
+    initHeroCanvas();
+    initShowcaseCanvases();
+    initScrollAnimations();
+  </script>
+</body>
+</html>
