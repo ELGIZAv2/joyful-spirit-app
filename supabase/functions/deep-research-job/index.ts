@@ -41,17 +41,25 @@ const SELF_URL = `${SUPABASE_URL}/functions/v1/deep-research-job`;
  * the response body — only the request being accepted matters.
  */
 async function selfInvoke(action: string, payload: Record<string, unknown>) {
-  try {
-    await fetch(SELF_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${SERVICE_ROLE}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ action, __internal: SERVICE_ROLE, ...payload }),
-    });
-  } catch (e) {
-    console.warn("[selfInvoke] failed", action, e);
+  const delayMs = Number((payload as any)?.delayMs ?? 0);
+  const doFetch = async () => {
+    try {
+      await fetch(SELF_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SERVICE_ROLE}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action, __internal: SERVICE_ROLE, ...payload }),
+      });
+    } catch (e) {
+      console.warn("[selfInvoke] failed", action, e);
+    }
+  };
+  if (delayMs > 0) {
+    wait((async () => { await new Promise((r) => setTimeout(r, delayMs)); await doFetch(); })());
+  } else {
+    await doFetch();
   }
 }
 
