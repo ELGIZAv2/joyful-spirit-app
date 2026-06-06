@@ -421,6 +421,8 @@ const ChatPage = () => {
   const [selectedModel, setSelectedModel] = useState<AgentModel | null>(null);
   const [chatModelSheetOpen, setChatModelSheetOpen] = useState(false);
   const [tierMenuOpen, setTierMenuOpen] = useState(false);
+  const [researchDepth, setResearchDepth] = useState<"lite" | "medium" | "max">("medium");
+  const [researchDepthOpen, setResearchDepthOpen] = useState(false);
   const [chatModel, setChatModel] = useState<{ id: string; name: string }>({ id: "google/gemini-2.5-flash-lite-preview-09-2025", name: "Megsy V1" });
   const [selectedAgent, setSelectedAgent] = useState<AgentDef | null>(null);
   const [userName, setUserName] = useState<string>("");
