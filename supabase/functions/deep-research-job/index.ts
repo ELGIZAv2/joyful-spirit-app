@@ -378,8 +378,12 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
     .slice(0, 80_000);
   const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
 
-  const body = await llmText(
-    `You are writing ONE section of a MASSIVE long-form research report.
+  let body = "";
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt < 2 && !body; attempt++) {
+    try {
+      body = await llmText(
+        `You are writing ONE section of a MASSIVE long-form research report.
 Write ${wordTarget} words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
 Rules:
 - Start the section with: ## ${sec.heading}
@@ -388,9 +392,20 @@ Rules:
 - Do NOT write an intro/outro for the whole report — just this section. Do NOT add "## Sources".
 - Be specific, concrete, example-rich. No filler. No restating the heading in a bland topic sentence.
 - Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
-    `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
-    0.4,
-  );
+        `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
+        0.4,
+      );
+    } catch (e) {
+      lastErr = e;
+      console.warn("[write_section] attempt failed", sectionIndex, attempt, (e as Error)?.message);
+      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
+  if (!body || body.trim().length < 100) {
+    // Stub so finalize is never blocked by one broken section.
+    body = `## ${sec.heading}\n\n_(تعذّر توليد هذا القسم بالكامل — ${(lastErr as Error)?.message || "خطأ مؤقت"}.)_\n\n` +
+      sec.bullets.map((b) => `- ${b}`).join("\n");
+  }
 
   // Re-fetch latest sections array (other concurrent writers may have updated it) and merge.
   const { data: cur } = await admin.from("research_jobs").select("report_sections, outline").eq("id", jobId).maybeSingle();
@@ -398,7 +413,7 @@ Rules:
   const outlineLen = Array.isArray((cur as any)?.outline) ? (cur as any).outline.length : outline.length;
   while (latest.length < outlineLen) latest.push("");
   latest[sectionIndex] = (body || "").trim();
-  const done = latest.filter((t) => t && t.length > 100).length;
+  const done = latest.filter((t) => t && t.length > 50).length;
 
   await patchJob(jobId, {
     report_sections: latest,
