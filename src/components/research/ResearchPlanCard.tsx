@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, FileText, BarChart3, Clock, Loader2, ChevronDown } from "lucide-react";
+import { Search, FileText, BarChart3, Clock, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export interface ResearchPlan {
@@ -20,6 +20,7 @@ interface Props {
 const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdit, loading }: Props) => {
   const [starting, setStarting] = useState(false);
   const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [showMore, setShowMore] = useState(false);
   const steps = (plan.steps || []).map((s) => s.trim()).filter(Boolean);
   const goal = (plan.goal || "").trim();
   if (!goal && steps.length === 0) return null;
@@ -70,30 +71,40 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
           </h3>
         )}
 
-        <ul className="space-y-2" dir={isRtl ? "rtl" : "ltr"}>
+        <ul className="space-y-5" dir={isRtl ? "rtl" : "ltr"}>
           {phases.map((phase, idx) => {
             const Icon = phase.icon;
             const open = openIdx === idx;
+            const visibleItems = open && !showMore ? phase.items.slice(0, 2) : phase.items;
+            const hidden = phase.items.length - visibleItems.length;
             return (
-              <li key={idx} className="rounded-2xl border border-border/40 bg-background/40">
+              <li key={idx}>
                 <button
                   type="button"
-                  onClick={() => setOpenIdx(open ? null : idx)}
-                  className="flex w-full items-center gap-3 px-3.5 py-3 text-start"
+                  onClick={() => { setOpenIdx(open ? null : idx); setShowMore(false); }}
+                  className="flex w-full items-center gap-3 text-start"
                 >
-                  <Icon className="h-4 w-4 shrink-0 text-foreground/70" />
-                  <span className="flex-1 text-sm font-medium text-foreground">{phase.title}</span>
-                  <span className="text-[11px] text-muted-foreground">{phase.items.length}</span>
-                  <ChevronDown className={`h-4 w-4 text-foreground/50 transition-transform ${open ? "rotate-180" : ""}`} />
+                  <Icon className="h-[18px] w-[18px] shrink-0 text-foreground/80" />
+                  <span className="flex-1 text-[15px] font-semibold text-foreground">{phase.title}</span>
                 </button>
-                {open && (
-                  <ol className="space-y-2.5 px-3.5 pb-3.5 pt-1">
-                    {phase.items.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-foreground/85">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/40" />
-                        <span>{step}</span>
+                {open && phase.items.length > 0 && (
+                  <ol className={`mt-3 space-y-2 ${isRtl ? "pr-7" : "pl-7"} text-[13px] leading-[1.85] text-foreground/80`}>
+                    {visibleItems.map((step, i) => (
+                      <li key={i}>
+                        <span className="text-foreground/60">({i + 1})</span> {step}
                       </li>
                     ))}
+                    {hidden > 0 && (
+                      <li>
+                        <button
+                          type="button"
+                          onClick={() => setShowMore(true)}
+                          className="text-foreground/60 hover:text-foreground transition-colors"
+                        >
+                          {isRtl ? "المزيد" : "More"}
+                        </button>
+                      </li>
+                    )}
                   </ol>
                 )}
               </li>
@@ -104,7 +115,7 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
         {awaitingApproval && (
           <div className="mt-5 pt-4 border-t border-border/40 flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="w-3.5 h-3.5" />
-            <span>Ready in a few minutes</span>
+            <span>{isRtl ? "سيكون جاهزاً خلال دقائق قليلة" : "Ready in a few minutes"}</span>
           </div>
         )}
 
@@ -116,7 +127,7 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
               disabled={loading || starting}
               className="inline-flex items-center justify-center px-5 h-10 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
-              {(loading || starting) ? <Loader2 className="w-4 h-4 animate-spin" /> : "Start research"}
+              {(loading || starting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (isRtl ? "بدء البحث" : "Start research")}
             </button>
             <button
               type="button"
@@ -124,7 +135,7 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
               disabled={loading}
               className="text-sm text-foreground/80 hover:text-foreground transition-colors"
             >
-              Edit plan
+              {isRtl ? "تعديل الخطة" : "Edit plan"}
             </button>
           </div>
         )}
