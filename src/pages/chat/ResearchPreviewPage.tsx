@@ -185,6 +185,32 @@ const ResearchPreviewPage = () => {
   const tocItems = useMemo(() => extractToc(cleanReport), [cleanReport]);
   const [tocOpen, setTocOpen] = useState(false);
 
+  // Tag rendered headings with ids so anchor navigation works on every viewport.
+  useEffect(() => {
+    if (!data || tocItems.length === 0) return;
+    const run = () => {
+      const headings = document.querySelectorAll<HTMLElement>(
+        "article h2, article h3, .prose h2, .prose h3"
+      );
+      let i = 0;
+      headings.forEach((h) => {
+        const txt = h.textContent?.trim();
+        if (!txt) return;
+        const item = tocItems[i];
+        if (!item) return;
+        const probe = item.text.replace(/\s+/g, " ").slice(0, 24);
+        if (txt.replace(/\s+/g, " ").startsWith(probe)) {
+          h.id = item.id;
+          h.style.scrollMarginTop = "80px";
+          i++;
+        }
+      });
+    };
+    const t1 = setTimeout(run, 100);
+    const t2 = setTimeout(run, 600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [data, tocItems]);
+
   // Auto-trigger PDF download when navigated with autoDownload flag.
   useEffect(() => {
     if (!autoDownload || !data || autoDownloadRef.current) return;
