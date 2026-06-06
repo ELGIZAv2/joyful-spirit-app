@@ -366,14 +366,66 @@ const ResearchPreviewPage = () => {
             <ArrowLeft className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
           </button>
           <div className="flex-1" />
-          <button
-            onClick={handleShare}
-            disabled={sharing}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition disabled:opacity-50"
-            aria-label="Share"
-          >
-            {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
-          </button>
+          {tocItems.length >= 2 && (
+            <Sheet open={tocOpen} onOpenChange={setTocOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+                  aria-label={isRtl ? "المحتويات" : "Contents"}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side={isRtl ? "right" : "left"} className="w-80" dir={isRtl ? "rtl" : "ltr"}>
+                <SheetHeader>
+                  <SheetTitle>{isRtl ? "المحتويات" : "Contents"}</SheetTitle>
+                </SheetHeader>
+                <ul className="mt-4 space-y-1 overflow-y-auto pb-8 text-sm">
+                  {tocItems.map((it) => (
+                    <li key={it.id} className={it.level === 3 ? (isRtl ? "pr-3" : "pl-3") : ""}>
+                      <a
+                        href={`#${it.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTocOpen(false);
+                          setTimeout(() => {
+                            document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }, 150);
+                        }}
+                        className="block truncate rounded px-2 py-1.5 text-foreground/70 hover:bg-foreground/5 hover:text-foreground transition"
+                      >
+                        {it.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </SheetContent>
+            </Sheet>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+                aria-label={isRtl ? "خيارات" : "Options"}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={isRtl ? "start" : "end"} dir={isRtl ? "rtl" : "ltr"} className="w-56">
+              <DropdownMenuItem onClick={handleCopy}>
+                <Copy className="h-4 w-4" />
+                <span>{isRtl ? "نسخ المحتوى" : "Copy"}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleNativeShare}>
+                <Share2 className="h-4 w-4" />
+                <span>{isRtl ? "مشاركة" : "Share"}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDriveUpload}>
+                <CloudUpload className="h-4 w-4" />
+                <span>{isRtl ? "حفظ في Google Drive" : "Save to Google Drive"}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
