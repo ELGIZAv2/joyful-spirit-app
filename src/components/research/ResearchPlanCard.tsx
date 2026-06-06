@@ -15,9 +15,27 @@ interface Props {
   onStart?: (editedSteps?: string[]) => void;
   onEdit?: () => void;
   loading?: boolean;
+  editing?: boolean;
+  feedback?: string;
+  onFeedbackChange?: (value: string) => void;
+  onSubmitEdit?: () => void;
+  onCancelEdit?: () => void;
 }
 
-const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdit, loading }: Props) => {
+const ResearchPlanCard = ({
+  plan,
+  intro,
+  ready,
+  awaitingApproval,
+  onStart,
+  onEdit,
+  loading,
+  editing,
+  feedback,
+  onFeedbackChange,
+  onSubmitEdit,
+  onCancelEdit,
+}: Props) => {
   const [starting, setStarting] = useState(false);
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   const [showMore, setShowMore] = useState(false);
@@ -110,14 +128,14 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
           })}
         </ul>
 
-        {awaitingApproval && (
+        {awaitingApproval && !editing && (
           <div className="mt-5 pt-4 border-t border-border/40 flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="w-3.5 h-3.5" />
             <span>{isRtl ? "سيكون جاهزاً خلال دقائق قليلة" : "Ready in a few minutes"}</span>
           </div>
         )}
 
-        {awaitingApproval && (
+        {awaitingApproval && !editing && (
           <div className="mt-4 flex items-center gap-3">
             <button
               type="button"
@@ -135,6 +153,37 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
             >
               {isRtl ? "تعديل الخطة" : "Edit plan"}
             </button>
+          </div>
+        )}
+
+        {editing && (
+          <div className="mt-5 pt-4 border-t border-border/40 space-y-3">
+            <textarea
+              value={feedback || ""}
+              onChange={(e) => onFeedbackChange?.(e.target.value)}
+              placeholder={isRtl ? "كيف تريد تعديل الخطة؟" : "How should I adjust the plan?"}
+              rows={3}
+              dir="auto"
+              className="w-full rounded-xl border border-border/40 bg-background/60 p-3 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onSubmitEdit}
+                disabled={loading || !(feedback || "").trim()}
+                className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isRtl ? "إعادة إنشاء الخطة" : "Regenerate plan")}
+              </button>
+              <button
+                type="button"
+                onClick={onCancelEdit}
+                disabled={loading}
+                className="text-sm text-foreground/70 hover:text-foreground transition-colors"
+              >
+                {isRtl ? "إلغاء" : "Cancel"}
+              </button>
+            </div>
           </div>
         )}
       </div>

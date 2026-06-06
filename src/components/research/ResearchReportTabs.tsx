@@ -18,27 +18,32 @@ interface Props {
 }
 
 const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, reportTitle }: Props) => {
-  const [unused, setUnused] = useState<Src[]>([]);
   const [thinking, setThinking] = useState<string>("");
+  const [jobSources, setJobSources] = useState<Src[]>([]);
 
   useEffect(() => {
     if (!conversationId) return;
     (async () => {
       const { data } = await supabase
         .from("research_jobs")
-        .select("unused_sources, thinking")
+        .select("sources, thinking")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (data) {
-        setUnused(((data.unused_sources as any) || []) as Src[]);
+        const srcs = ((data.sources as any) || []) as Src[];
+        setJobSources(srcs.filter((s) => s && s.url));
         setThinking((data.thinking as string) || "");
       }
     })();
   }, [conversationId]);
 
-  const used: Src[] = reportSources.map((u) => ({ url: u }));
+  // Prefer URLs cited in the report; fall back to the job's source list so
+  // we always have something to show when the markdown didn't include them.
+  const used: Src[] = (reportSources.length > 0
+    ? reportSources.map((u) => ({ url: u }))
+    : jobSources);
 
   const getHost = (u: string) => {
     try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; }
@@ -86,15 +91,6 @@ const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, 
           </AccordionTrigger>
           <AccordionContent className="pb-2">
             <SourceList items={used} />
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="unused" className="border-b-0">
-          <AccordionTrigger className="rounded-2xl px-3 py-3 text-base font-semibold text-foreground/90 hover:no-underline">
-            {isRtl ? "المصادر التي تمت قراءتها بدون أن يتم استخدامها" : "Sources read but not cited"}
-          </AccordionTrigger>
-          <AccordionContent className="pb-2">
-            <SourceList items={unused} />
           </AccordionContent>
         </AccordionItem>
 
