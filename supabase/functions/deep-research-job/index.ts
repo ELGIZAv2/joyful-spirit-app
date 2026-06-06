@@ -91,6 +91,7 @@ async function llmText(systemPrompt: string, userPrompt: string, temperature = 0
           { role: "user", content: userPrompt },
         ],
         temperature,
+        max_tokens: 8000,
       }),
     });
     const json = await res.json();
