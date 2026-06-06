@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
-import { subscribeToResearchJob, approveResearchPlan, updateResearchPlan, type ResearchJob } from "@/lib/deepResearchJob";
+import { subscribeToResearchJob, approveResearchPlan, updateResearchPlan, tickResearchJob, type ResearchJob } from "@/lib/deepResearchJob";
 import ResearchPlanCard from "@/components/research/ResearchPlanCard";
 import DeepResearchCard from "@/components/chat/DeepResearchCard";
 import { saveResearch } from "@/lib/researchPersistence";
@@ -25,6 +25,23 @@ const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0 }: Props) => {
     const unsub = subscribeToResearchJob(jobId, (j) => setJob(j));
     return () => unsub();
   }, [jobId]);
+
+  useEffect(() => {
+    if (!job || job.status !== "synthesizing") return;
+    const lastUpdate = new Date(job.updated_at).getTime();
+    if (Number.isNaN(lastUpdate) || Date.now() - lastUpdate < 45_000) return;
+
+    let stopped = false;
+    const runTick = () => {
+      if (!stopped) tickResearchJob(jobId).catch(() => {});
+    };
+    runTick();
+    const id = window.setInterval(runTick, 30_000);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [job, jobId]);
 
   // Persist final report to research_reports so the preview page can open it via sessionKey.
   useEffect(() => {
