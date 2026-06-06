@@ -651,6 +651,9 @@ async function runFullPipeline(jobId: string) {
       selfInvoke("write_section", { jobId, sectionIndex: i });
       if (i % 4 === 3) await new Promise((r) => setTimeout(r, 300));
     }
+
+    // Watchdog: in ~90s, re-dispatch any still-empty sections; after 3 rounds force-finalize.
+    selfInvoke("watchdog", { jobId, round: 0, delayMs: 90_000 });
   } catch (e) {
     const finishedAt = Date.now();
     await patchJob(jobId, {
