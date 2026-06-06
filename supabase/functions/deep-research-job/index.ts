@@ -12,6 +12,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getLLM, ROUTER_MODELS } from "../_shared/llm-router.ts";
+import { withKeyRotation } from "../_shared/key-pool.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
