@@ -327,28 +327,39 @@ Requirements:
     );
   }
 
-  // Phase 2: write each section as a long, standalone deep-dive.
-  const parts: string[] = [];
-  for (let i = 0; i < sectionPlan.length; i++) {
-    const sec = sectionPlan[i];
-    const prior = parts.slice(-2).join("\n\n").slice(0, 4000);
+  // Phase 2: write all sections in parallel (with bounded concurrency) so we
+  // don't exceed the edge function wall-time budget on long reports.
+  const plan = sectionPlan.slice(0, 12);
+  const writeOne = async (sec: { heading: string; bullets: string[] }, i: number) => {
     const body = await llmText(
       `You are writing ONE section of a very long-form research report.
-Write 700-1100 words of dense, specific Markdown for the section heading provided.
+Write 600-900 words of dense, specific Markdown for the section heading provided.
 Rules:
 - Start the section with: ## ${sec.heading}
 - Use ### sub-headings, tight bullets, and a markdown table if it helps comparison/numbers.
 - Inline numeric citations like [1], [2] mapping to the provided source list (only cite when the fact comes from the context).
-- Do NOT repeat content already written in prior sections.
 - Do NOT write an intro/outro for the whole report — just the section.
 - Do NOT write a Sources section. Do NOT invent numbers.
 - Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
-      `Overall topic: ${query}\nSection ${i + 1} of ${sectionPlan.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}\n\nRecently written (avoid repeating):\n${prior}`,
+      `Overall topic: ${query}\nSection ${i + 1} of ${plan.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
       0.35,
     );
-    if (body && body.trim()) parts.push(body.trim());
-  }
-  return parts.join("\n\n");
+    return (body || "").trim();
+  };
+  // Bounded concurrency of 4 to avoid rate-limit spikes while staying fast.
+  const parts: string[] = new Array(plan.length).fill("");
+  const concurrency = 4;
+  let cursor = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, plan.length) }, async () => {
+      while (true) {
+        const i = cursor++;
+        if (i >= plan.length) break;
+        try { parts[i] = await writeOne(plan[i], i); } catch { parts[i] = ""; }
+      }
+    }),
+  );
+  return parts.filter(Boolean).join("\n\n");
 }
 
 // ---- Critic agent: writes the AI's internal thinking summary ----
