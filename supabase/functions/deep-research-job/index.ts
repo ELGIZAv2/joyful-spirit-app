@@ -671,9 +671,20 @@ async function runFullPipeline(jobId: string) {
 
     // Build the section outline (one LLM call, fast).
     const jobDepth: "lite" | "medium" | "max" = ((job as any)?.depth || "medium");
-    const outline = await buildOutline(query, language, allSources, excerpts, jobDepth);
+    let outline = await buildOutline(query, language, allSources, excerpts, jobDepth);
     if (outline.length === 0) {
-      throw new Error("outline_failed");
+      // Fallback outline so the job never dies on a transient LLM failure.
+      console.warn("[research] outline LLM failed — using fallback skeleton");
+      const baseCount = jobDepth === "lite" ? 6 : jobDepth === "max" ? 18 : 10;
+      outline = Array.from({ length: baseCount }, (_, i) => ({
+        heading: `${query} — Part ${i + 1}`,
+        bullets: [
+          "Overview and context",
+          "Key facts and data",
+          "Examples and case studies",
+          "Implications and takeaways",
+        ],
+      }));
     }
 
     // Persist outline + excerpts + empty sections slots. Each section will be
