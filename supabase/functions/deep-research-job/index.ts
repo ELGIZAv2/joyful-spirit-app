@@ -577,6 +577,11 @@ async function tickJob(jobId: string) {
   }
   if ((job as any).awaiting_approval) return { ok: true, status: "awaiting_approval" };
 
+  if ((job as any).status === "queued" || (job as any).status === "searching") {
+    await runFullPipeline(jobId);
+    return { ok: true, status: "searching" };
+  }
+
   const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
   const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
   if ((job as any).status === "synthesizing" && outline.length > 0) {
