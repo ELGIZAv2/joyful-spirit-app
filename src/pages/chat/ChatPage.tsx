@@ -4795,8 +4795,8 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                   onSend={handleSend}
                   onCancel={handleCancel}
                   onPlusClick={() => { if (!plusMenuOpen) setPlusView("main"); setPlusMenuOpen(!plusMenuOpen); }}
-                  disabled={isLoading || !!remoteAiBusy}
-                  isLoading={isLoading}
+                  disabled={isLoading || !!remoteAiBusy || !!activeResearchJobId}
+                  isLoading={isLoading || !!activeResearchJobId}
                   pendingQuestions={pendingQuestions}
                   onQuestionAnswer={handleQuestionAnswer}
                   onQuestionSkip={handleQuestionSkip}
