@@ -530,10 +530,10 @@ const PricingPage = () => {
                         className="font-black leading-none"
                         style={{ fontSize: "clamp(2.25rem, 4.5vw, 3rem)" }}
                       >
-                        ${price}
+                        {price.toLocaleString("en-US")}
                       </span>
                       <span className="text-sm font-semibold" style={{ color: p.subText }}>
-                        /{isYearly ? "year" : "month"}
+                        ج.م / {isYearly ? "سنة" : "شهر"}
                       </span>
                     </div>
                     {credits && (
