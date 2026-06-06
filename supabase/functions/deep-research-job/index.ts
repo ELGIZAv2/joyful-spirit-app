@@ -683,11 +683,13 @@ Deno.serve(async (req) => {
 
     const language: string | null = body?.language || null;
     const conversationId: string | null = body?.conversationId || null;
+    const depthRaw: string = (body?.depth || "medium").toString().toLowerCase();
+    const depth: "lite" | "medium" | "max" = (["lite","medium","max"].includes(depthRaw) ? depthRaw : "medium") as any;
     const planOnly = action === "plan"; // if true, stop after planning
 
     const { data: inserted, error: insErr } = await admin.from("research_jobs").insert({
       user_id: user.id, conversation_id: conversationId, query, language,
-      status: "queued", progress: 0, stage: "Queued",
+      status: "queued", progress: 0, stage: "Queued", depth,
     }).select("id").single();
 
     if (insErr || !inserted) return json({ error: insErr?.message || "insert_failed" }, 500);
