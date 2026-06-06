@@ -731,7 +731,7 @@ Deno.serve(async (req) => {
 
     // ── Internal self-invocations (service-role authenticated). Bypass user auth.
     if (
-      (action === "write_section" || action === "finalize" || action === "watchdog") &&
+      (action === "write_section" || action === "finalize" || action === "watchdog" || action === "tick") &&
       body?.__internal === SERVICE_ROLE &&
       body?.jobId
     ) {
@@ -741,6 +741,8 @@ Deno.serve(async (req) => {
         wait(writeSectionAndSave(String(body.jobId), idx));
       } else if (action === "finalize") {
         wait(finalizeReport(String(body.jobId)));
+      } else if (action === "tick") {
+        wait(tickJob(String(body.jobId)));
       } else {
         wait(watchdog(String(body.jobId), Number(body?.round ?? 0)));
       }
@@ -765,6 +767,13 @@ Deno.serve(async (req) => {
         .update({ status: "cancelled", stage: "Cancelled", finished_at: new Date().toISOString() })
         .eq("id", body.jobId).eq("user_id", user.id);
       return json({ success: true });
+    }
+
+    if (action === "tick" && body?.jobId) {
+      const { data: job } = await admin.from("research_jobs").select("id").eq("id", body.jobId).eq("user_id", user.id).maybeSingle();
+      if (!job) return json({ error: "not_found" }, 404);
+      wait(tickJob(String(body.jobId)));
+      return json({ success: true, jobId: body.jobId });
     }
 
     // approve: continue an awaiting_approval job (optionally with edited plan)
