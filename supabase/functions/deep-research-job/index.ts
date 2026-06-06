@@ -699,7 +699,7 @@ Deno.serve(async (req) => {
 
     // ── Internal self-invocations (service-role authenticated). Bypass user auth.
     if (
-      (action === "write_section" || action === "finalize") &&
+      (action === "write_section" || action === "finalize" || action === "watchdog") &&
       body?.__internal === SERVICE_ROLE &&
       body?.jobId
     ) {
@@ -707,8 +707,10 @@ Deno.serve(async (req) => {
         const idx = Number(body?.sectionIndex ?? -1);
         if (idx < 0) return json({ error: "bad_index" }, 400);
         wait(writeSectionAndSave(String(body.jobId), idx));
-      } else {
+      } else if (action === "finalize") {
         wait(finalizeReport(String(body.jobId)));
+      } else {
+        wait(watchdog(String(body.jobId), Number(body?.round ?? 0)));
       }
       return json({ accepted: true });
     }
