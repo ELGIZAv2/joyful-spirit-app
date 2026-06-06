@@ -318,7 +318,13 @@ async function buildOutline(
   language: string | null,
   sources: Source[],
   excerpts: { url: string; text: string }[],
+  depth: "lite" | "medium" | "max" = "medium",
 ): Promise<OutlineSection[]> {
+  const cfg = depth === "lite"
+    ? { min: 5, max: 7, words: "3,000+", bullets: "3-5" }
+    : depth === "max"
+    ? { min: 18, max: 24, words: "30,000+", bullets: "6-10" }
+    : { min: 10, max: 14, words: "12,000+", bullets: "5-8" };
   const context = excerpts
     .filter((e) => e.text)
     .map((e, i) => `### Source ${i + 1}: ${e.url}\n${e.text}`)
@@ -327,16 +333,16 @@ async function buildOutline(
   const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
   type Outline = { sections: OutlineSection[] };
   const outline = await llmJSON<Outline>(
-    `You are the lead editor of a MASSIVE long-form research report (target 20,000+ words total).
+    `You are the lead editor of a long-form research report (target ${cfg.words} words total).
 Return JSON: { "sections": [{ "heading": "...", "bullets": ["...","..."] }, ...] }.
 Requirements:
-- 14 to 20 H2 sections covering background, history, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, real-world examples, controversies, future outlook, practical takeaways, FAQs.
-- Each section has 5-9 specific bullets describing exactly what that section must cover (very concrete, not generic).
+- ${cfg.min} to ${cfg.max} H2 sections covering background, history, key concepts, deep technical/strategic angles, comparisons, case studies, data/numbers, real-world examples, controversies, future outlook, practical takeaways, FAQs.
+- Each section has ${cfg.bullets} specific bullets describing exactly what that section must cover (very concrete, not generic).
 - Avoid generic headings. Tailor every heading to the topic.
 - Match the user's exact language AND dialect. Language hint: ${language || "auto-detect"}.`,
     `Topic: ${query}\n\nSource list:\n${sourceList}\n\nContext (truncated):\n${context.slice(0, 30_000)}`,
   );
-  const plan = (outline?.sections || []).slice(0, 20).filter((s) => s?.heading);
+  const plan = (outline?.sections || []).slice(0, cfg.max).filter((s) => s?.heading);
   return plan;
 }
 
