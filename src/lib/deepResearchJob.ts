@@ -112,7 +112,10 @@ export async function getResearchJob(jobId: string): Promise<ResearchJob | null>
 }
 
 export function subscribeToResearchJob(jobId: string, onUpdate: (job: ResearchJob) => void): () => void {
-  const channel = supabase.channel(`research_job_${jobId}`).on(
+  // Unique channel name per subscription to avoid "cannot add callbacks after subscribe()"
+  // when the same jobId is subscribed multiple times (e.g. effect re-runs).
+  const channelName = `research_job_${jobId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const channel = supabase.channel(channelName).on(
     "postgres_changes",
     { event: "*", schema: "public", table: "research_jobs", filter: `id=eq.${jobId}` },
     (payload) => {
