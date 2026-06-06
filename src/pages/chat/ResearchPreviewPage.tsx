@@ -192,23 +192,20 @@ const ResearchPreviewPage = () => {
       const headings = document.querySelectorAll<HTMLElement>(
         "article h2, article h3, .prose h2, .prose h3"
       );
-      let i = 0;
-      headings.forEach((h) => {
-        const txt = h.textContent?.trim();
-        if (!txt) return;
-        const item = tocItems[i];
-        if (!item) return;
-        const probe = item.text.replace(/\s+/g, " ").slice(0, 24);
-        if (txt.replace(/\s+/g, " ").startsWith(probe)) {
-          h.id = item.id;
-          h.style.scrollMarginTop = "80px";
-          i++;
-        }
-      });
+      // Assign sequentially in document order — keeps anchors stable even when
+      // the rendered text doesn't exactly match the markdown source (numbering,
+      // emojis, slight reformatting, etc.).
+      const usable = Array.from(headings).filter((h) => (h.textContent || "").trim().length > 0);
+      const len = Math.min(usable.length, tocItems.length);
+      for (let i = 0; i < len; i++) {
+        usable[i].id = tocItems[i].id;
+        usable[i].style.scrollMarginTop = "88px";
+      }
     };
     const t1 = setTimeout(run, 100);
     const t2 = setTimeout(run, 600);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t3 = setTimeout(run, 1500);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [data, tocItems]);
 
   // Auto-trigger PDF download when navigated with autoDownload flag.
@@ -335,14 +332,14 @@ const ResearchPreviewPage = () => {
   const handleNativeShare = async () => {
     const shareData = { title: data.query, text: data.query, url: window.location.href };
     try {
-      if (navigator.share) {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share(shareData);
-      } else {
-        setShareOpen(true);
+        return;
       }
-    } catch {
-      /* user cancelled */
+    } catch (e: any) {
+      if (e?.name === "AbortError") return;
     }
+    setShareOpen(true);
   };
 
   const handleDriveUpload = async () => {
@@ -358,13 +355,14 @@ const ResearchPreviewPage = () => {
       if (error) throw error;
       if ((res as any)?.needs_connect) {
         toast.info(isRtl ? "يلزم ربط Google Drive أولاً" : "Connect Google Drive first", { id: t });
-        window.location.href = "/integrations?connect=google_drive";
+        navigate("/settings/integrations?connect=google_drive");
         return;
       }
       toast.success(isRtl ? "تم الرفع إلى Drive" : "Uploaded to Drive", { id: t });
     } catch (e) {
-      console.error(e);
-      toast.error(isRtl ? "فشل الرفع" : "Upload failed", { id: t });
+      console.error("[drive-upload]", e);
+      const msg = (e as any)?.message || (isRtl ? "فشل الرفع" : "Upload failed");
+      toast.error(msg, { id: t });
     }
   };
 
