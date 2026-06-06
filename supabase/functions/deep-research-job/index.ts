@@ -41,17 +41,25 @@ const SELF_URL = `${SUPABASE_URL}/functions/v1/deep-research-job`;
  * the response body — only the request being accepted matters.
  */
 async function selfInvoke(action: string, payload: Record<string, unknown>) {
-  try {
-    await fetch(SELF_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${SERVICE_ROLE}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ action, __internal: SERVICE_ROLE, ...payload }),
-    });
-  } catch (e) {
-    console.warn("[selfInvoke] failed", action, e);
+  const delayMs = Number((payload as any)?.delayMs ?? 0);
+  const doFetch = async () => {
+    try {
+      await fetch(SELF_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SERVICE_ROLE}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action, __internal: SERVICE_ROLE, ...payload }),
+      });
+    } catch (e) {
+      console.warn("[selfInvoke] failed", action, e);
+    }
+  };
+  if (delayMs > 0) {
+    wait((async () => { await new Promise((r) => setTimeout(r, delayMs)); await doFetch(); })());
+  } else {
+    await doFetch();
   }
 }
 
@@ -378,8 +386,12 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
     .slice(0, 80_000);
   const sourceList = sources.map((s, i) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n");
 
-  const body = await llmText(
-    `You are writing ONE section of a MASSIVE long-form research report.
+  let body = "";
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt < 2 && !body; attempt++) {
+    try {
+      body = await llmText(
+        `You are writing ONE section of a MASSIVE long-form research report.
 Write ${wordTarget} words of dense, deeply-specific Markdown for the section heading provided. This must be substantive book-chapter quality.
 Rules:
 - Start the section with: ## ${sec.heading}
@@ -388,9 +400,20 @@ Rules:
 - Do NOT write an intro/outro for the whole report — just this section. Do NOT add "## Sources".
 - Be specific, concrete, example-rich. No filler. No restating the heading in a bland topic sentence.
 - Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
-    `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
-    0.4,
-  );
+        `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
+        0.4,
+      );
+    } catch (e) {
+      lastErr = e;
+      console.warn("[write_section] attempt failed", sectionIndex, attempt, (e as Error)?.message);
+      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
+  if (!body || body.trim().length < 100) {
+    // Stub so finalize is never blocked by one broken section.
+    body = `## ${sec.heading}\n\n_(تعذّر توليد هذا القسم بالكامل — ${(lastErr as Error)?.message || "خطأ مؤقت"}.)_\n\n` +
+      sec.bullets.map((b) => `- ${b}`).join("\n");
+  }
 
   // Re-fetch latest sections array (other concurrent writers may have updated it) and merge.
   const { data: cur } = await admin.from("research_jobs").select("report_sections, outline").eq("id", jobId).maybeSingle();
@@ -398,7 +421,7 @@ Rules:
   const outlineLen = Array.isArray((cur as any)?.outline) ? (cur as any).outline.length : outline.length;
   while (latest.length < outlineLen) latest.push("");
   latest[sectionIndex] = (body || "").trim();
-  const done = latest.filter((t) => t && t.length > 100).length;
+  const done = latest.filter((t) => t && t.length > 50).length;
 
   await patchJob(jobId, {
     report_sections: latest,
@@ -419,7 +442,7 @@ async function maybeFinalize(jobId: string) {
   if ((job as any).status === "succeeded" || (job as any).status === "failed") return;
   const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
   const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
-  const completed = sections.filter((t) => t && t.length > 100).length;
+  const completed = sections.filter((t) => t && t.length > 50).length;
   if (outline.length === 0 || completed < outline.length) return;
   // Atomically claim finalize: only continue if status is still synthesizing.
   const { data: claimed } = await admin
@@ -431,6 +454,56 @@ async function maybeFinalize(jobId: string) {
     .maybeSingle();
   if (!claimed) return; // someone else is finalizing
   selfInvoke("finalize", { jobId });
+}
+
+/**
+ * Watchdog: re-dispatches any still-empty sections, then schedules itself again.
+ * After `maxRounds` rounds, force-finalizes with whatever sections exist (stubbing the rest).
+ */
+async function watchdog(jobId: string, round: number) {
+  const { data: job } = await admin
+    .from("research_jobs")
+    .select("status, outline, report_sections")
+    .eq("id", jobId)
+    .maybeSingle();
+  if (!job) return;
+  if ((job as any).status === "succeeded" || (job as any).status === "failed" || (job as any).status === "cancelled") return;
+
+  const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
+  const sections: string[] = Array.isArray((job as any).report_sections) ? (job as any).report_sections : [];
+  const missing: number[] = [];
+  for (let i = 0; i < outline.length; i++) {
+    if (!sections[i] || sections[i].trim().length < 50) missing.push(i);
+  }
+
+  if (missing.length === 0) {
+    await maybeFinalize(jobId);
+    return;
+  }
+
+  const MAX_ROUNDS = 3;
+  if (round >= MAX_ROUNDS) {
+    // Force-stub remaining sections and finalize.
+    const latest = [...sections];
+    while (latest.length < outline.length) latest.push("");
+    for (const i of missing) {
+      const sec = outline[i];
+      latest[i] = `## ${sec.heading}\n\n_(تعذّر توليد هذا القسم بعد عدة محاولات.)_\n\n` +
+        (sec.bullets || []).map((b) => `- ${b}`).join("\n");
+    }
+    await patchJob(jobId, { report_sections: latest, stage: "Force-finalizing" });
+    await maybeFinalize(jobId);
+    return;
+  }
+
+  // Re-dispatch missing sections.
+  for (const i of missing) {
+    selfInvoke("write_section", { jobId, sectionIndex: i });
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  await patchJob(jobId, { stage: `Retrying ${missing.length} section(s) (round ${round + 1})` });
+  // Schedule next watchdog round in ~90s.
+  selfInvoke("watchdog", { jobId, round: round + 1, delayMs: 90_000 });
 }
 
 async function finalizeReport(jobId: string) {
@@ -578,6 +651,9 @@ async function runFullPipeline(jobId: string) {
       selfInvoke("write_section", { jobId, sectionIndex: i });
       if (i % 4 === 3) await new Promise((r) => setTimeout(r, 300));
     }
+
+    // Watchdog: in ~90s, re-dispatch any still-empty sections; after 3 rounds force-finalize.
+    selfInvoke("watchdog", { jobId, round: 0, delayMs: 90_000 });
   } catch (e) {
     const finishedAt = Date.now();
     await patchJob(jobId, {
@@ -626,7 +702,7 @@ Deno.serve(async (req) => {
 
     // ── Internal self-invocations (service-role authenticated). Bypass user auth.
     if (
-      (action === "write_section" || action === "finalize") &&
+      (action === "write_section" || action === "finalize" || action === "watchdog") &&
       body?.__internal === SERVICE_ROLE &&
       body?.jobId
     ) {
@@ -634,8 +710,10 @@ Deno.serve(async (req) => {
         const idx = Number(body?.sectionIndex ?? -1);
         if (idx < 0) return json({ error: "bad_index" }, 400);
         wait(writeSectionAndSave(String(body.jobId), idx));
-      } else {
+      } else if (action === "finalize") {
         wait(finalizeReport(String(body.jobId)));
+      } else {
+        wait(watchdog(String(body.jobId), Number(body?.round ?? 0)));
       }
       return json({ accepted: true });
     }

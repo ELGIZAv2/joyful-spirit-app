@@ -71,10 +71,10 @@ const PLANS: PlanCardConfig[] = [
     bg: "#2563EB",
     text: "#FFFFFF",
     subText: "rgba(255,255,255,0.78)",
-    monthlyPrice: 25,
-    yearlyPrice: 250,
+    monthlyPrice: 1250,
+    yearlyPrice: 12500,
     monthlyCredits: "100 MC / month",
-    yearlyCredits: "Save $50 + 200 bonus MC",
+    yearlyCredits: "وفّر 2,500 ج.م + 200 MC هدية",
     features: [
       "Unlimited chat — Megsy AI",
       "Images, Slides, Docs, Deep Research & Code Builder — unlimited 7 days / month",
@@ -95,10 +95,10 @@ const PLANS: PlanCardConfig[] = [
     bg: "#7C3AED",
     text: "#FFFFFF",
     subText: "rgba(255,255,255,0.82)",
-    monthlyPrice: 50,
-    yearlyPrice: 500,
+    monthlyPrice: 2500,
+    yearlyPrice: 25000,
     monthlyCredits: "250 MC / month",
-    yearlyCredits: "Save $100 + 500 bonus MC",
+    yearlyCredits: "وفّر 5,000 ج.م + 500 MC هدية",
     features: [
       "Unlimited chat — Megsy AI",
       "Images, Slides, Docs, Deep Research & Code Builder — unlimited 15 days / month",
@@ -124,10 +124,10 @@ const PLANS: PlanCardConfig[] = [
     bg: "#D97706",
     text: "#FFFFFF",
     subText: "rgba(255,255,255,0.82)",
-    monthlyPrice: 125,
-    yearlyPrice: 1250,
+    monthlyPrice: 6250,
+    yearlyPrice: 62500,
     monthlyCredits: "600 MC / month",
-    yearlyCredits: "Save $250 + 1,200 bonus MC",
+    yearlyCredits: "وفّر 12,500 ج.م + 1,200 MC هدية",
     features: [
       "Unlimited chat — Megsy AI",
       "Images, Slides, Docs, Deep Research & Code Builder — unlimited all month",
@@ -530,10 +530,10 @@ const PricingPage = () => {
                         className="font-black leading-none"
                         style={{ fontSize: "clamp(2.25rem, 4.5vw, 3rem)" }}
                       >
-                        ${price}
+                        {price.toLocaleString("en-US")}
                       </span>
                       <span className="text-sm font-semibold" style={{ color: p.subText }}>
-                        /{isYearly ? "year" : "month"}
+                        ج.م / {isYearly ? "سنة" : "شهر"}
                       </span>
                     </div>
                     {credits && (
