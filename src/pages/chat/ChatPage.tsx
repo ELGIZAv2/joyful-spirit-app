@@ -2003,10 +2003,19 @@ const ChatPage = () => {
       try {
         const cid = conversationId || (await conversationPromise);
         if (!cid) throw new Error("No conversation id for deep research");
+        // Detect language from the user's query (Arabic script → "ar"),
+        // otherwise fall back to browser locale. This ensures the plan AND
+        // report are written in the same language the user wrote in.
+        const hasArabic = /[\u0600-\u06FF\u0750-\u077F]/.test(userInput);
+        const detectedLang = hasArabic
+          ? "ar"
+          : typeof navigator !== "undefined"
+          ? navigator.language
+          : null;
         const jobId = await planResearchJob({
           query: userInput,
           conversationId: cid,
-          language: typeof navigator !== "undefined" ? navigator.language : null,
+          language: detectedLang,
         });
         const assistantClientId = `assistant-${localTurnId}`;
         // Optimistic message
