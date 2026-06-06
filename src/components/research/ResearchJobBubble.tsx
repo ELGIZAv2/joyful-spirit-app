@@ -28,12 +28,12 @@ const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0 }: Props) => {
 
   useEffect(() => {
     if (!job || job.status !== "synthesizing") return;
-    const lastUpdate = new Date(job.updated_at).getTime();
-    if (Number.isNaN(lastUpdate) || Date.now() - lastUpdate < 45_000) return;
-
     let stopped = false;
     const runTick = () => {
-      if (!stopped) tickResearchJob(jobId).catch(() => {});
+      const lastUpdate = new Date(job.updated_at).getTime();
+      if (!stopped && !Number.isNaN(lastUpdate) && Date.now() - lastUpdate >= 45_000) {
+        tickResearchJob(jobId).catch(() => {});
+      }
     };
     runTick();
     const id = window.setInterval(runTick, 30_000);
