@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Brain, ExternalLink, FileText, BookOpen, CloudUpload, Loader2 } from "lucide-react";
+import { Brain, ExternalLink, FileText, BookOpen } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 type Src = { url: string; title?: string };
 
@@ -23,7 +22,6 @@ const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, 
   const [open, setOpen] = useState<null | "used" | "unused" | "thinking">(null);
   const [unused, setUnused] = useState<Src[]>([]);
   const [thinking, setThinking] = useState<string>("");
-  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!conversationId) return;
@@ -44,32 +42,6 @@ const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, 
 
   const used: Src[] = reportSources.map((u) => ({ url: u }));
 
-  const exportToDrive = async () => {
-    if (exporting) return;
-    setExporting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("pipedream-connect", {
-        body: {
-          action: "google_drive_upload",
-          filename: `${reportTitle.slice(0, 80) || "research"}.md`,
-          content: reportText,
-        },
-      });
-      if (error) throw error;
-      if ((data as any)?.needs_connect) {
-        toast.info(isRtl ? "يلزم ربط Google Drive أولاً" : "Connect Google Drive first");
-        window.location.href = "/integrations?connect=google_drive";
-        return;
-      }
-      toast.success(isRtl ? "تم الرفع إلى Drive" : "Uploaded to Drive");
-    } catch (e) {
-      console.error(e);
-      toast.error(isRtl ? "فشل الرفع" : "Upload failed");
-    } finally {
-      setExporting(false);
-    }
-  };
-
   const btnCls =
     "flex items-center gap-2 rounded-full border border-foreground/10 bg-background/60 px-4 py-2 text-sm text-foreground/85 hover:bg-foreground/5 transition";
 
@@ -88,10 +60,6 @@ const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, 
           <button className={btnCls} onClick={() => setOpen("thinking")}>
             <Brain className="h-4 w-4" />
             {isRtl ? "تفكير الذكاء الاصطناعي" : "AI thinking"}
-          </button>
-          <button className={btnCls} onClick={exportToDrive} disabled={exporting}>
-            {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CloudUpload className="h-4 w-4" />}
-            {isRtl ? "حفظ في Google Drive" : "Save to Google Drive"}
           </button>
         </div>
       </div>

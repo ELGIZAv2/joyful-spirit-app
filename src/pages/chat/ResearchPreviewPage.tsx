@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Download, Loader2, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Share2, MoreHorizontal, List, Copy, CloudUpload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { detectResearchReportDirection, normalizeResearchReport } from "@/lib/normalizeResearchReport";
 import { toast } from "sonner";
@@ -13,7 +13,20 @@ import {
 import ResearchArticleTemplate from "@/components/research/ResearchArticleTemplate";
 import ShareDialog from "@/components/research/ShareDialog";
 import ResearchReportTabs from "@/components/research/ResearchReportTabs";
-import ResearchToc from "@/components/research/ResearchToc";
+import ResearchToc, { extractToc } from "@/components/research/ResearchToc";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const ResearchPreviewPage = () => {
   const navigate = useNavigate();
@@ -282,6 +295,54 @@ const ResearchPreviewPage = () => {
 
   const handleShare = () => setShareOpen(true);
 
+  const tocItems = useMemo(() => extractToc(cleanReport), [cleanReport]);
+  const [tocOpen, setTocOpen] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(cleanReport);
+      toast.success(isRtl ? "تم نسخ المحتوى" : "Copied");
+    } catch {
+      toast.error(isRtl ? "تعذر النسخ" : "Copy failed");
+    }
+  };
+
+  const handleNativeShare = async () => {
+    const shareData = { title: data.query, text: data.query, url: window.location.href };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        setShareOpen(true);
+      }
+    } catch {
+      /* user cancelled */
+    }
+  };
+
+  const handleDriveUpload = async () => {
+    const t = toast.loading(isRtl ? "جارٍ الرفع إلى Drive…" : "Uploading to Drive…");
+    try {
+      const { data: res, error } = await supabase.functions.invoke("pipedream-connect", {
+        body: {
+          action: "google_drive_upload",
+          filename: `${(data.query || "research").slice(0, 80)}.md`,
+          content: cleanReport,
+        },
+      });
+      if (error) throw error;
+      if ((res as any)?.needs_connect) {
+        toast.info(isRtl ? "يلزم ربط Google Drive أولاً" : "Connect Google Drive first", { id: t });
+        window.location.href = "/integrations?connect=google_drive";
+        return;
+      }
+      toast.success(isRtl ? "تم الرفع إلى Drive" : "Uploaded to Drive", { id: t });
+    } catch (e) {
+      console.error(e);
+      toast.error(isRtl ? "فشل الرفع" : "Upload failed", { id: t });
+    }
+  };
+
   return (
     <div className="min-h-[100dvh] bg-background text-foreground" dir={isRtl ? "rtl" : "ltr"}>
       <ScrollProgress />
@@ -305,14 +366,66 @@ const ResearchPreviewPage = () => {
             <ArrowLeft className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
           </button>
           <div className="flex-1" />
-          <button
-            onClick={handleShare}
-            disabled={sharing}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition disabled:opacity-50"
-            aria-label="Share"
-          >
-            {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
-          </button>
+          {tocItems.length >= 2 && (
+            <Sheet open={tocOpen} onOpenChange={setTocOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+                  aria-label={isRtl ? "المحتويات" : "Contents"}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side={isRtl ? "right" : "left"} className="w-80" dir={isRtl ? "rtl" : "ltr"}>
+                <SheetHeader>
+                  <SheetTitle>{isRtl ? "المحتويات" : "Contents"}</SheetTitle>
+                </SheetHeader>
+                <ul className="mt-4 space-y-1 overflow-y-auto pb-8 text-sm">
+                  {tocItems.map((it) => (
+                    <li key={it.id} className={it.level === 3 ? (isRtl ? "pr-3" : "pl-3") : ""}>
+                      <a
+                        href={`#${it.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setTocOpen(false);
+                          setTimeout(() => {
+                            document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          }, 150);
+                        }}
+                        className="block truncate rounded px-2 py-1.5 text-foreground/70 hover:bg-foreground/5 hover:text-foreground transition"
+                      >
+                        {it.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </SheetContent>
+            </Sheet>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 hover:bg-foreground/5 transition"
+                aria-label={isRtl ? "خيارات" : "Options"}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={isRtl ? "start" : "end"} className="w-56">
+              <DropdownMenuItem onClick={handleCopy}>
+                <Copy className="h-4 w-4" />
+                <span>{isRtl ? "نسخ المحتوى" : "Copy"}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleNativeShare}>
+                <Share2 className="h-4 w-4" />
+                <span>{isRtl ? "مشاركة" : "Share"}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDriveUpload}>
+                <CloudUpload className="h-4 w-4" />
+                <span>{isRtl ? "حفظ في Google Drive" : "Save to Google Drive"}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
