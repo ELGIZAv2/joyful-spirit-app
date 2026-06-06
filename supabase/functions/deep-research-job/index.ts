@@ -33,6 +33,28 @@ const admin = createClient(SUPABASE_URL, SERVICE_ROLE, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
+const SELF_URL = `${SUPABASE_URL}/functions/v1/deep-research-job`;
+
+/**
+ * Fire-and-forget self invocation. Each call runs in its own edge function
+ * runtime instance so the 150s CPU budget resets per section. We do NOT await
+ * the response body — only the request being accepted matters.
+ */
+async function selfInvoke(action: string, payload: Record<string, unknown>) {
+  try {
+    await fetch(SELF_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${SERVICE_ROLE}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action, __internal: SERVICE_ROLE, ...payload }),
+    });
+  } catch (e) {
+    console.warn("[selfInvoke] failed", action, e);
+  }
+}
+
 type JobPatch = Record<string, unknown>;
 
 async function patchJob(jobId: string, patch: JobPatch) {
