@@ -108,7 +108,7 @@ async function llmJSON<T = unknown>(systemPrompt: string, userPrompt: string): P
   }
 }
 
-async function llmText(systemPrompt: string, userPrompt: string, temperature = 0.4): Promise<string> {
+async function llmText(systemPrompt: string, userPrompt: string, temperature = 0.4, maxTokens = 3000): Promise<string> {
   const router = await getLLM();
   if (!router) return "";
   try {
@@ -122,7 +122,7 @@ async function llmText(systemPrompt: string, userPrompt: string, temperature = 0
           { role: "user", content: userPrompt },
         ],
         temperature,
-        max_tokens: 8000,
+        max_tokens: maxTokens,
       }),
     });
     const json = await res.json();
@@ -377,7 +377,8 @@ async function writeSectionAndSave(jobId: string, sectionIndex: number) {
   const language: string | null = job.language;
   const query: string = job.plan_goal || job.query;
   const depth: "lite" | "medium" | "max" = ((job as any).depth || "medium");
-  const wordTarget = depth === "lite" ? "600-900" : depth === "max" ? "2000-3000" : "1500-2500";
+  const wordTarget = depth === "lite" ? "350-600" : depth === "max" ? "900-1300" : "650-900";
+  const maxTokens = depth === "lite" ? 1800 : depth === "max" ? 4200 : 2800;
 
   const context = excerpts
     .filter((e) => e.text)
@@ -402,6 +403,7 @@ Rules:
 - Match the user's exact language and dialect. Language hint: ${language || "auto-detect"}.`,
         `Overall topic: ${query}\nSection ${sectionIndex + 1} of ${outline.length}: ${sec.heading}\nKey points to cover:\n- ${sec.bullets.join("\n- ")}\n\nSource list:\n${sourceList}\n\nExtracted context:\n${context}`,
         0.4,
+        maxTokens,
       );
     } catch (e) {
       lastErr = e;
