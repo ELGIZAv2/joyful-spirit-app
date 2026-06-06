@@ -156,8 +156,42 @@ Make every sentence sound human, varied, and tailored to THIS specific topic —
 // ---- Serper search ----
 type Source = { title: string; url: string; snippet?: string; query?: string };
 
+function stripHtml(value: string): string {
+  return String(value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function wikipediaSearch(q: string): Promise<{ organic: Source[]; images: string[] }> {
+  const lang = /[\u0600-\u06FF\u0750-\u077F]/.test(q) ? "ar" : "en";
+  try {
+    const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=8&format=json`;
+    const res = await fetch(url, { headers: { "User-Agent": "MegsyResearch/1.0" } });
+    const json = await res.json();
+    const organic: Source[] = (json?.query?.search || []).slice(0, 8).map((item: any) => {
+      const title = String(item?.title || q);
+      return {
+        title,
+        url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`,
+        snippet: stripHtml(String(item?.snippet || "")),
+        query: q,
+      };
+    });
+    return { organic, images: [] };
+  } catch {
+    return { organic: [], images: [] };
+  }
+}
+
 async function serperSearch(q: string, includeImages: boolean): Promise<{ organic: Source[]; images: string[] }> {
-  if (!SERPER_API_KEY) return { organic: [], images: [] };
+  if (!SERPER_API_KEY) return wikipediaSearch(q);
   try {
     const promises: Promise<any>[] = [
       fetch("https://google.serper.dev/search", {
@@ -182,9 +216,10 @@ async function serperSearch(q: string, includeImages: boolean): Promise<{ organi
     const images: string[] = includeImages
       ? (img?.images || []).slice(0, 6).map((i: any) => i.imageUrl).filter(Boolean)
       : [];
+    if (organic.length === 0) return wikipediaSearch(q);
     return { organic, images };
   } catch {
-    return { organic: [], images: [] };
+    return wikipediaSearch(q);
   }
 }
 
@@ -212,7 +247,13 @@ async function extractPage(url: string): Promise<string> {
       return (json?.data?.markdown || json?.markdown || "").slice(0, 8000);
     } catch { /* ignore */ }
   }
-  return "";
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "MegsyResearch/1.0" } });
+    const html = await res.text();
+    return stripHtml(html).slice(0, 8000);
+  } catch {
+    return "";
+  }
 }
 
 // ---- Analyst agent: writes the report ----
