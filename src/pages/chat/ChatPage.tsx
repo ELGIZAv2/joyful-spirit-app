@@ -2037,6 +2037,7 @@ const ChatPage = () => {
           language: detectedLang,
           depth: researchDepth,
         });
+        setActiveResearchJobId(jobId);
         const assistantClientId = `assistant-${localTurnId}`;
         // Optimistic message
         setMessages((prev) => [
