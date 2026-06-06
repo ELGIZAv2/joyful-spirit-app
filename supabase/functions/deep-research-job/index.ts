@@ -627,6 +627,25 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body?.action || "start";
 
+    // ── Internal self-invocations (service-role authenticated). ─────────────
+    if (
+      (action === "write_section" || action === "finalize") &&
+      body?.__internal === SERVICE_ROLE &&
+      body?.jobId
+    ) {
+      if (action === "write_section") {
+        const idx = Number(body?.sectionIndex ?? -1);
+        if (idx < 0) return json({ error: "bad_index" }, 400);
+        wait(writeSectionAndSave(String(body.jobId), idx));
+      } else {
+        wait(finalizeReport(String(body.jobId)));
+      }
+      return json({ accepted: true });
+    }
+
+    const authHeaderOk = (req.headers.get("Authorization") || "").length > 0;
+    if (!authHeaderOk) return json({ error: "auth_required" }, 401);
+
     if (action === "cancel" && body?.jobId) {
       await admin.from("research_jobs")
         .update({ status: "cancelled", stage: "Cancelled", finished_at: new Date().toISOString() })
