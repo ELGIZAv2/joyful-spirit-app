@@ -2090,6 +2090,7 @@ const ChatPage = () => {
       background: false,
       onJobStart: isDeepResearch ? (jobId) => {
         deepResearchJobId = jobId;
+        setActiveResearchJobId(jobId);
         const cid = backgroundCid || conversationId;
         if (!cid) {
           console.warn("[research] job started without conversationId — resume will not work");
