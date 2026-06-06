@@ -62,7 +62,7 @@ const ResearchPlanCard = ({ plan, intro, ready, awaitingApproval, onStart, onEdi
       <div className="rounded-3xl border border-border/40 bg-card/60 backdrop-blur-sm p-5">
         {goal && (
           <h3 className="text-base font-semibold text-foreground leading-snug mb-4">
-            {goal}
+            {isRtl ? "بحث وتحليل وإعداد تقرير" : "Search, analyze, and prepare report"}
           </h3>
         )}
 
