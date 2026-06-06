@@ -295,6 +295,54 @@ const ResearchPreviewPage = () => {
 
   const handleShare = () => setShareOpen(true);
 
+  const tocItems = useMemo(() => extractToc(cleanReport), [cleanReport]);
+  const [tocOpen, setTocOpen] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(cleanReport);
+      toast.success(isRtl ? "تم نسخ المحتوى" : "Copied");
+    } catch {
+      toast.error(isRtl ? "تعذر النسخ" : "Copy failed");
+    }
+  };
+
+  const handleNativeShare = async () => {
+    const shareData = { title: data.query, text: data.query, url: window.location.href };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        setShareOpen(true);
+      }
+    } catch {
+      /* user cancelled */
+    }
+  };
+
+  const handleDriveUpload = async () => {
+    const t = toast.loading(isRtl ? "جارٍ الرفع إلى Drive…" : "Uploading to Drive…");
+    try {
+      const { data: res, error } = await supabase.functions.invoke("pipedream-connect", {
+        body: {
+          action: "google_drive_upload",
+          filename: `${(data.query || "research").slice(0, 80)}.md`,
+          content: cleanReport,
+        },
+      });
+      if (error) throw error;
+      if ((res as any)?.needs_connect) {
+        toast.info(isRtl ? "يلزم ربط Google Drive أولاً" : "Connect Google Drive first", { id: t });
+        window.location.href = "/integrations?connect=google_drive";
+        return;
+      }
+      toast.success(isRtl ? "تم الرفع إلى Drive" : "Uploaded to Drive", { id: t });
+    } catch (e) {
+      console.error(e);
+      toast.error(isRtl ? "فشل الرفع" : "Upload failed", { id: t });
+    }
+  };
+
   return (
     <div className="min-h-[100dvh] bg-background text-foreground" dir={isRtl ? "rtl" : "ltr"}>
       <ScrollProgress />
