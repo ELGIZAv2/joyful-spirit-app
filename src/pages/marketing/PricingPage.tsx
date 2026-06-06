@@ -74,7 +74,7 @@ const PLANS: PlanCardConfig[] = [
     monthlyPrice: 1250,
     yearlyPrice: 12500,
     monthlyCredits: "100 MC / month",
-    yearlyCredits: "وفّر 2,500 ج.م + 200 MC هدية",
+    yearlyCredits: "Save 2,500 EGP + 200 MC bonus",
     features: [
       "Unlimited chat — Megsy AI",
       "Images, Slides, Docs, Deep Research & Code Builder — unlimited 7 days / month",
@@ -98,7 +98,7 @@ const PLANS: PlanCardConfig[] = [
     monthlyPrice: 2500,
     yearlyPrice: 25000,
     monthlyCredits: "250 MC / month",
-    yearlyCredits: "وفّر 5,000 ج.م + 500 MC هدية",
+    yearlyCredits: "Save 5,000 EGP + 500 MC bonus",
     features: [
       "Unlimited chat — Megsy AI",
       "Images, Slides, Docs, Deep Research & Code Builder — unlimited 15 days / month",
@@ -127,7 +127,7 @@ const PLANS: PlanCardConfig[] = [
     monthlyPrice: 6250,
     yearlyPrice: 62500,
     monthlyCredits: "600 MC / month",
-    yearlyCredits: "وفّر 12,500 ج.م + 1,200 MC هدية",
+    yearlyCredits: "Save 12,500 EGP + 1,200 MC bonus",
     features: [
       "Unlimited chat — Megsy AI",
       "Images, Slides, Docs, Deep Research & Code Builder — unlimited all month",
@@ -530,10 +530,10 @@ const PricingPage = () => {
                         className="font-black leading-none"
                         style={{ fontSize: "clamp(2.25rem, 4.5vw, 3rem)" }}
                       >
-                        {price.toLocaleString("en-US")}
+                      {price.toLocaleString("en-US")}
                       </span>
                       <span className="text-sm font-semibold" style={{ color: p.subText }}>
-                        ج.م / {isYearly ? "سنة" : "شهر"}
+                        EGP / {isYearly ? "year" : "month"}
                       </span>
                     </div>
                     {credits && (
@@ -671,12 +671,22 @@ const PricingPage = () => {
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-muted-foreground">
-          Still have questions?{" "}
-          <a href="mailto:support@megsyai.com" className="font-semibold text-foreground hover:underline">
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 text-sm">
+          <a href="mailto:support@megsyai.com" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
             support@megsyai.com
           </a>
-        </p>
+          <span className="hidden sm:inline text-border/80" aria-hidden>·</span>
+          <a href="tel:+201098821812" className="inline-flex items-center gap-2 font-medium text-foreground hover:underline transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            +20 109 882 1812
+          </a>
+          <span className="hidden sm:inline text-border/80" aria-hidden>·</span>
+          <a href="/refund" onClick={(e) => { e.preventDefault(); navigate("/refund"); }} className="inline-flex items-center gap-2 font-medium text-foreground hover:underline transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+            Refund Policy
+          </a>
+        </div>
       </section>
 
       {/* Footer */}
