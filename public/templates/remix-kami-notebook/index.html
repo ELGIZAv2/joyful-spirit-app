@@ -1,0 +1,3351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kami Notebook</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* === NOTEBOOK APP STYLES === */
+        .notebook-app {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: var(--zinc-950);
+            overflow: hidden;
+        }
+        .notebook-app.active {
+            display: block;
+        }
+        .notebook-app::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 40%, rgba(90,74,56,0.07) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .notebook-app::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Desk surface */
+        .desk-surface {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1800px;
+            perspective-origin: 50% 42%;
+        }
+
+        /* God rays */
+        .god-rays {
+            position: absolute;
+            top: -20%;
+            left: 30%;
+            width: 40%;
+            height: 80%;
+            background: conic-gradient(from 180deg at 50% 0%, transparent 40%, rgba(180,160,130,0.015) 45%, transparent 50%, rgba(180,160,130,0.02) 55%, transparent 60%);
+            filter: blur(30px);
+            pointer-events: none;
+            animation: rays-drift 12s ease-in-out infinite alternate;
+        }
+        @keyframes rays-drift {
+            0% { transform: translateX(-5%) rotate(-2deg); opacity: 0.6; }
+            100% { transform: translateX(5%) rotate(2deg); opacity: 1; }
+        }
+
+        /* App nav */
+        .app-nav {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            padding: 1.8rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .app-nav > * { pointer-events: auto; }
+        .app-logo {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            color: rgba(180,160,130,0.35);
+            text-transform: uppercase;
+        }
+        .app-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .app-btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--zinc-500);
+            background: none;
+            border: 1px solid var(--zinc-800);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .app-btn:hover {
+            color: var(--zinc-300);
+            border-color: var(--zinc-600);
+        }
+        .app-btn.active-tool {
+            color: var(--leather-light);
+            border-color: var(--leather-dark);
+            background: rgba(90,74,56,0.1);
+        }
+        .app-back {
+            width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--zinc-600);
+            transition: color 0.3s ease;
+        }
+        .app-back:hover { color: var(--zinc-300); }
+
+        /* Page counter */
+        .page-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: var(--zinc-600);
+            z-index: 100;
+            text-transform: uppercase;
+        }
+
+        /* Book container */
+        .book-container {
+            transform-style: preserve-3d;
+            width: 640px;
+            height: 460px;
+            position: relative;
+            transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* Cover */
+        .book-cover-front {
+            position: absolute;
+            inset: 0;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 50;
+            cursor: pointer;
+        }
+        .book-cover-front.open {
+            transform: rotateY(-160deg);
+            pointer-events: none;
+        }
+        .cover-face-front {
+            position: absolute;
+            inset: 0;
+            border-radius: 3px 10px 10px 3px;
+            background: linear-gradient(160deg, #5a4a38 0%, #4a3c2e 40%, #3d3128 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 30px 80px rgba(0,0,0,0.3),
+                        inset 0 1px 0 rgba(255,255,255,0.06), inset -2px 0 8px rgba(0,0,0,0.15);
+            backface-visibility: hidden;
+            transform: translateZ(6px);
+        }
+        .cover-face-front::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='l'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.4' numOctaves='6' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)'/%3E%3C/svg%3E");
+            opacity: 0.08;
+            mix-blend-mode: overlay;
+        }
+        .cover-face-back {
+            position: absolute;
+            inset: 0;
+            border-radius: 3px 10px 10px 3px;
+            background: linear-gradient(160deg, #3d3128 0%, #352b22 100%);
+            backface-visibility: hidden;
+            transform: translateZ(5px) rotateY(180deg);
+        }
+        .cover-emboss {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) translateZ(8px);
+            text-align: center;
+            backface-visibility: hidden;
+        }
+        .cover-emboss-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            color: rgba(180,160,130,0.4);
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+        .cover-emboss-rule {
+            width: 50px; height: 0.5px;
+            background: rgba(180,160,130,0.2);
+            margin: 1.2rem auto;
+        }
+        .cover-emboss-sub {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.4em;
+            color: rgba(180,160,130,0.25);
+        }
+
+        /* Spine */
+        .book-spine {
+            position: absolute;
+            left: 0; top: 0;
+            width: 16px; height: 100%;
+            background: linear-gradient(90deg, #251f19, #3d3128, #2e251e);
+            transform: rotateY(-90deg) translateZ(0px);
+            transform-origin: left center;
+            border-radius: 3px 0 0 3px;
+        }
+
+        /* Back cover */
+        .book-cover-back {
+            position: absolute;
+            inset: 0;
+            border-radius: 3px 10px 10px 3px;
+            background: linear-gradient(160deg, #4a3c2e 0%, #3d3128 100%);
+            transform: translateZ(-6px);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Pages */
+        .book-pages-block {
+            position: absolute;
+            inset: 6px;
+            right: 4px;
+            transform: translateZ(0px);
+            transform-style: preserve-3d;
+            pointer-events: none;
+        }
+        .book-page {
+            position: absolute;
+            inset: 0;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+            pointer-events: auto;
+        }
+        .book-page.turning {
+            transition: transform 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .book-page.turned {
+            transform: rotateY(-160deg);
+        }
+
+        .page-face {
+            position: absolute;
+            inset: 0;
+            border-radius: 2px 6px 6px 2px;
+            padding: 2.5rem 2.8rem;
+            backface-visibility: hidden;
+            overflow: hidden;
+        }
+        .page-front {
+            background: linear-gradient(to right, #ede8df 0%, #f5f0e8 4%, #f5f0e8 100%);
+            transform: translateZ(0.5px);
+            box-shadow: inset -8px 0 15px rgba(0,0,0,0.02), inset 4px 0 8px rgba(0,0,0,0.015);
+        }
+        .page-back {
+            background: linear-gradient(to left, #ede8df 0%, #f5f0e8 4%, #f5f0e8 100%);
+            transform: translateZ(-0.5px) rotateY(180deg);
+            box-shadow: inset 8px 0 15px rgba(0,0,0,0.02);
+        }
+
+        /* Page ruled lines */
+        .page-ruled {
+            position: absolute;
+            top: 3.5rem; left: 2.8rem; right: 2.8rem; bottom: 2.5rem;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 27px,
+                rgba(0,0,0,0.035) 27px,
+                rgba(0,0,0,0.035) 28px
+            );
+            pointer-events: none;
+        }
+        .page-margin {
+            position: absolute;
+            top: 0; bottom: 0;
+            left: 4.5rem;
+            width: 1px;
+            background: rgba(180,80,80,0.06);
+            pointer-events: none;
+        }
+
+        /* Page number */
+        .page-num {
+            position: absolute;
+            bottom: 1rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            color: rgba(0,0,0,0.15);
+            letter-spacing: 0.1em;
+        }
+        .page-front .page-num { right: 1.5rem; }
+        .page-back .page-num { left: 1.5rem; }
+
+        /* Page edge stack */
+        .page-edges {
+            position: absolute;
+            right: -2px;
+            top: 6px; bottom: 6px;
+            width: 8px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #f5f0e8 0px, #f5f0e8 1.5px,
+                #e8e0d4 1.5px, #e8e0d4 2px
+            );
+            border-radius: 0 3px 3px 0;
+            transform: translateZ(0px);
+            box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+        }
+
+        /* Writing area */
+        .page-content-area {
+            position: absolute;
+            top: 3.5rem; left: 4.8rem; right: 2.8rem; bottom: 2.5rem;
+            line-height: 28px;
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.05rem;
+            font-weight: 300;
+            color: #2c2825;
+            caret-color: var(--leather);
+        }
+        .page-content-area:focus {
+            outline: none;
+        }
+        .page-content-area[contenteditable="true"] {
+            cursor: text;
+        }
+        .page-content-area::before {
+            content: attr(data-placeholder);
+            position: absolute;
+            top: 0; left: 0;
+            color: rgba(0,0,0,0.12);
+            font-style: italic;
+            pointer-events: none;
+        }
+        .page-content-area:not(:empty)::before {
+            display: none;
+        }
+
+        /* Drawing canvas */
+        .page-draw-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .page-draw-canvas.drawing-active {
+            pointer-events: auto;
+            cursor: crosshair;
+        }
+
+        /* Turn zones */
+        .turn-zone {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 80px;
+            z-index: 60;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .turn-zone:hover { opacity: 1; }
+        .turn-zone-next {
+            right: 0;
+            background: linear-gradient(to left, rgba(0,0,0,0.03), transparent);
+        }
+        .turn-zone-prev {
+            left: 0;
+            background: linear-gradient(to right, rgba(0,0,0,0.03), transparent);
+        }
+        .turn-zone-icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: rgba(0,0,0,0.12);
+        }
+        .turn-zone-next .turn-zone-icon { right: 12px; }
+        .turn-zone-prev .turn-zone-icon { left: 12px; }
+
+        /* Pen tool indicator */
+        .pen-cursor {
+            position: fixed;
+            width: 4px; height: 4px;
+            background: var(--leather);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001;
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 0 6px rgba(139,115,85,0.3);
+        }
+        .pen-cursor.visible { opacity: 1; }
+
+        /* === WORKSHOP HAND-TRACKING MODE === */
+        .workshop-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 20000;
+            background: var(--zinc-950);
+            overflow: hidden;
+        }
+        .workshop-overlay.active { display: block; }
+        .workshop-overlay::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 99;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='wn'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23wn)'/%3E%3C/svg%3E");
+        }
+
+        .workshop-god-rays {
+            position: absolute;
+            top: -30%;
+            left: 25%;
+            width: 50%;
+            height: 90%;
+            background: conic-gradient(from 180deg at 50% 0%, transparent 38%, rgba(180,160,130,0.012) 44%, transparent 50%, rgba(180,160,130,0.016) 56%, transparent 62%);
+            filter: blur(40px);
+            pointer-events: none;
+            animation: rays-drift 12s ease-in-out infinite alternate;
+        }
+
+        /* Webcam ghost feed */
+        .workshop-cam-container {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 180px;
+            height: 135px;
+            border-radius: 4px;
+            overflow: hidden;
+            z-index: 50;
+            border: 1px solid rgba(180,160,130,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            opacity: 0.5;
+            transition: opacity 0.4s ease;
+        }
+        .workshop-cam-container:hover { opacity: 0.85; }
+        .workshop-cam-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            filter: grayscale(0.7) brightness(0.6) contrast(1.3);
+        }
+        .workshop-cam-label {
+            position: absolute;
+            bottom: 6px; left: 8px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.45rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(180,160,130,0.4);
+        }
+
+        /* Main drawing canvas area */
+        .workshop-desk {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1600px;
+        }
+        .workshop-canvas-frame {
+            position: relative;
+            width: 760px;
+            height: 500px;
+            transform: rotateX(4deg);
+            transform-style: preserve-3d;
+            border-radius: 4px 10px 10px 4px;
+            box-shadow: 0 8px 50px rgba(0,0,0,0.5), 0 30px 80px rgba(0,0,0,0.3);
+        }
+        .workshop-page-bg {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(to right, #e8e0d4 0%, #f5f0e8 3%, #f5f0e8 97%, #ede8df 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), inset -4px 0 12px rgba(0,0,0,0.015);
+        }
+        .workshop-page-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' seed='8'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E");
+            opacity: 0.035;
+            mix-blend-mode: multiply;
+        }
+        .workshop-ruled-lines {
+            position: absolute;
+            top: 3rem; left: 5rem; right: 3rem; bottom: 3rem;
+            background: repeating-linear-gradient(to bottom, transparent 0px, transparent 27px, rgba(0,0,0,0.035) 27px, rgba(0,0,0,0.035) 28px);
+            pointer-events: none;
+        }
+        .workshop-margin-line {
+            position: absolute;
+            top: 0; bottom: 0; left: 4.5rem;
+            width: 1px;
+            background: rgba(180,80,80,0.06);
+            pointer-events: none;
+        }
+        .workshop-draw-canvas {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 5;
+            cursor: crosshair;
+        }
+
+        /* Hand skeleton overlay on canvas */
+        .workshop-hand-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        /* Page number on canvas */
+        .workshop-page-num {
+            position: absolute;
+            bottom: 1rem;
+            right: 1.8rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            color: rgba(0,0,0,0.12);
+            letter-spacing: 0.1em;
+            z-index: 7;
+            pointer-events: none;
+        }
+
+        /* Workshop nav */
+        .workshop-nav {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+        .workshop-nav > * { pointer-events: auto; }
+        .workshop-nav-logo {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            color: rgba(180,160,130,0.3);
+            text-transform: uppercase;
+        }
+        .workshop-nav-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.45rem;
+            letter-spacing: 0.12em;
+            color: rgba(180,160,130,0.18);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        /* Workshop toolbar (floating, etched feel) */
+        .workshop-toolbar {
+            position: absolute;
+            left: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 100;
+            background: rgba(24,24,27,0.85);
+            border: 1px solid rgba(180,160,130,0.06);
+            border-radius: 6px;
+            padding: 6px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+        }
+        .toolbar-section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.4rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: rgba(180,160,130,0.2);
+            padding: 6px 8px 3px;
+        }
+        .toolbar-divider {
+            height: 1px;
+            background: rgba(180,160,130,0.06);
+            margin: 4px 6px;
+        }
+        .toolbar-btn {
+            width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: var(--zinc-500);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 0.75rem;
+            position: relative;
+        }
+        .toolbar-btn:hover {
+            background: rgba(180,160,130,0.06);
+            color: var(--zinc-300);
+            border-color: rgba(180,160,130,0.08);
+        }
+        .toolbar-btn.active {
+            background: rgba(90,74,56,0.15);
+            color: var(--leather-light);
+            border-color: rgba(180,160,130,0.12);
+            box-shadow: 0 0 8px rgba(90,74,56,0.1);
+        }
+        .toolbar-btn-label {
+            position: absolute;
+            left: calc(100% + 10px);
+            white-space: nowrap;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.45rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--zinc-500);
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .toolbar-btn:hover .toolbar-btn-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Brush size indicator */
+        .toolbar-size-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 6px 4px;
+        }
+        .size-dot {
+            border-radius: 50%;
+            background: var(--zinc-600);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .size-dot:hover { background: var(--zinc-400); }
+        .size-dot.active {
+            background: var(--leather-light);
+            border-color: rgba(180,160,130,0.3);
+            box-shadow: 0 0 6px rgba(90,74,56,0.2);
+        }
+
+        /* Color swatches */
+        .toolbar-color-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 4px 4px;
+            justify-content: center;
+        }
+        .color-swatch {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .color-swatch:hover {
+            transform: scale(1.15);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .color-swatch.active {
+            border-color: rgba(255,255,255,0.35);
+            box-shadow: 0 0 8px rgba(180,160,130,0.2);
+            transform: scale(1.15);
+        }
+
+        /* Page navigation (bottom) */
+        .workshop-page-nav {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            z-index: 100;
+        }
+        .ws-page-btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--zinc-600);
+            background: none;
+            border: 1px solid var(--zinc-800);
+            padding: 0.45rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .ws-page-btn:hover {
+            color: var(--zinc-300);
+            border-color: var(--zinc-600);
+        }
+        .ws-page-btn:disabled {
+            opacity: 0.25;
+            cursor: default;
+            pointer-events: none;
+        }
+        .ws-page-info {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            color: var(--zinc-600);
+            text-transform: uppercase;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Hand tracking status */
+        .ws-hand-status {
+            position: absolute;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--zinc-600);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: color 0.4s ease;
+        }
+        .ws-hand-status.tracking { color: rgba(180,160,130,0.5); }
+        .ws-hand-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--zinc-700);
+            transition: all 0.4s ease;
+        }
+        .ws-hand-status.tracking .ws-hand-dot {
+            background: var(--leather-light);
+            box-shadow: 0 0 8px rgba(180,160,130,0.3);
+        }
+
+        /* Gesture hint overlay */
+        .ws-gesture-hints {
+            position: absolute;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 2.5rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
+        }
+        .ws-gesture-hints.visible { opacity: 1; }
+        .ws-gesture-hint {
+            text-align: center;
+        }
+        .ws-gesture-hint-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.4rem;
+            opacity: 0.5;
+        }
+        .ws-gesture-hint-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.4rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--zinc-600);
+        }
+
+        /* Workshop close button */
+        .workshop-close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 2rem;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--zinc-600);
+            background: none;
+            border: 1px solid var(--zinc-800);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .workshop-close-btn:hover {
+            color: var(--zinc-300);
+            border-color: var(--zinc-600);
+        }
+
+        /* Finger-tip ink dot (follows index finger) */
+        .ws-finger-cursor {
+            position: absolute;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.15s ease, width 0.15s ease, height 0.15s ease;
+        }
+        .ws-finger-cursor.visible {
+            opacity: 0.8;
+        }
+        .ws-finger-cursor.drawing-now {
+            opacity: 1;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* Fallback mouse mode indicator */
+        .ws-mouse-fallback {
+            position: absolute;
+            bottom: 6.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.42rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--zinc-700);
+            z-index: 100;
+            text-align: center;
+        }
+        .ws-mouse-fallback a {
+            color: var(--leather-light);
+            opacity: 0.5;
+            cursor: pointer;
+            text-decoration: none;
+            border-bottom: 0.5px solid rgba(180,160,130,0.2);
+            transition: opacity 0.3s;
+        }
+        .ws-mouse-fallback a:hover { opacity: 0.8; }
+
+        /* Desk shadow under book */
+        .desk-shadow {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 40px;
+            background: radial-gradient(ellipse, rgba(0,0,0,0.25) 0%, transparent 70%);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        /* Hint text */
+        .open-hint {
+            position: absolute;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: var(--zinc-600);
+            text-transform: uppercase;
+            opacity: 0;
+            animation: hint-pulse 3s ease-in-out 1.5s infinite;
+            z-index: 100;
+            transition: opacity 0.6s ease;
+        }
+        @keyframes hint-pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.7; }
+        }
+        .open-hint.hidden { display: none; }
+
+        /* Page flutter effect during turn */
+        @keyframes page-flutter {
+            0% { transform: rotateY(0deg); }
+            25% { transform: rotateY(-40deg) rotateZ(0.5deg); }
+            50% { transform: rotateY(-90deg) rotateZ(-0.3deg); }
+            75% { transform: rotateY(-130deg) rotateZ(0.2deg); }
+            100% { transform: rotateY(-160deg) rotateZ(0deg); }
+        }
+        .book-page.fluttering {
+            animation: page-flutter 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+        @keyframes page-flutter-back {
+            0% { transform: rotateY(-160deg) rotateZ(0deg); }
+            25% { transform: rotateY(-120deg) rotateZ(-0.4deg); }
+            50% { transform: rotateY(-70deg) rotateZ(0.3deg); }
+            75% { transform: rotateY(-30deg) rotateZ(-0.2deg); }
+            100% { transform: rotateY(0deg) rotateZ(0deg); }
+        }
+        .book-page.fluttering-back {
+            animation: page-flutter-back 0.9s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        /* Subtle desk dust particles */
+        .desk-dust {
+            position: absolute;
+            width: 1.5px; height: 1.5px;
+            background: rgba(180,160,130,0.15);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: desk-dust-float linear infinite;
+        }
+        @keyframes desk-dust-float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            15% { opacity: 0.5; }
+            85% { opacity: 0.5; }
+            100% { transform: translateY(-120px) translateX(30px); opacity: 0; }
+        }
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --zinc-950: #09090b;
+            --zinc-900: #18181b;
+            --zinc-800: #27272a;
+            --zinc-700: #3f3f46;
+            --zinc-600: #52525b;
+            --zinc-500: #71717a;
+            --zinc-400: #a1a1aa;
+            --zinc-300: #d4d4d8;
+            --zinc-200: #e4e4e7;
+            --slate-100: #f1f5f9;
+            --warm-50: #faf8f5;
+            --warm-100: #f0ece4;
+            --warm-200: #e2ddd3;
+            --leather: #8b7355;
+            --leather-dark: #6b5840;
+            --leather-light: #a89070;
+            --parchment: #f5f0e8;
+            --ink: #2c2825;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--warm-50);
+            color: var(--ink);
+            font-family: 'Crimson Pro', Georgia, serif;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* Grain overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            mix-blend-mode: difference;
+        }
+
+        .nav-logo {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            color: var(--warm-50);
+            text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .nav-link {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--warm-50);
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-link:hover {
+            opacity: 0.6;
+        }
+
+        .nav-menu {
+            width: 22px;
+            height: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-menu:hover {
+            opacity: 0.6;
+        }
+
+        .nav-menu span {
+            display: block;
+            width: 100%;
+            height: 1.5px;
+            background: var(--warm-50);
+            border-radius: 1px;
+        }
+
+        /* Hero section */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+        }
+
+        .hero-visual {
+            position: relative;
+            background: var(--zinc-800);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #3a322a 0%, #5c4f3f 30%, #7a6b55 50%, #5c4f3f 70%, #3a322a 100%);
+            opacity: 0.9;
+        }
+
+        /* 3D Notebook in hero */
+        .notebook-scene {
+            position: relative;
+            z-index: 2;
+            perspective: 1200px;
+            width: 320px;
+            height: 420px;
+        }
+
+        .notebook-3d {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transform: rotateY(-12deg) rotateX(4deg);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: grab;
+        }
+
+        .notebook-3d:hover {
+            transform: rotateY(-6deg) rotateX(2deg);
+        }
+
+        .notebook-3d:active {
+            cursor: grabbing;
+        }
+
+        .notebook-cover {
+            position: absolute;
+            inset: 0;
+            border-radius: 4px 12px 12px 4px;
+            background: linear-gradient(160deg, #5a4a38 0%, #4a3c2e 40%, #3d3128 100%);
+            box-shadow:
+                0 2px 8px rgba(0,0,0,0.3),
+                0 20px 60px rgba(0,0,0,0.25),
+                inset 0 1px 0 rgba(255,255,255,0.06),
+                inset -2px 0 8px rgba(0,0,0,0.15);
+            transform: translateZ(8px);
+            backface-visibility: hidden;
+        }
+
+        .notebook-cover::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.4' numOctaves='6' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)'/%3E%3C/svg%3E");
+            opacity: 0.08;
+            mix-blend-mode: overlay;
+        }
+
+        .notebook-spine {
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 16px;
+            height: 100%;
+            background: linear-gradient(90deg, #2e251e, #3d3128, #2e251e);
+            transform: rotateY(-90deg) translateZ(0px);
+            transform-origin: right center;
+            border-radius: 4px 0 0 4px;
+        }
+
+        .notebook-emboss {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(10px);
+            text-align: center;
+        }
+
+        .notebook-emboss-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            letter-spacing: 0.25em;
+            color: rgba(180, 160, 130, 0.45);
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .notebook-emboss-line {
+            width: 60px;
+            height: 0.5px;
+            background: rgba(180, 160, 130, 0.2);
+            margin: 1rem auto;
+        }
+
+        .notebook-emboss-year {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.4em;
+            color: rgba(180, 160, 130, 0.3);
+        }
+
+        /* Page edges */
+        .notebook-pages {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            bottom: 8px;
+            width: 6px;
+            background: repeating-linear-gradient(
+                to bottom,
+                var(--parchment) 0px,
+                var(--parchment) 1.5px,
+                #e0d8cc 1.5px,
+                #e0d8cc 2px
+            );
+            transform: translateZ(4px);
+            border-radius: 0 2px 2px 0;
+            box-shadow: 1px 0 3px rgba(0,0,0,0.1);
+        }
+
+        /* Floating atmosphere elements */
+        .dust-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(200, 180, 150, 0.25);
+            border-radius: 50%;
+            animation: dust-float linear infinite;
+        }
+
+        @keyframes dust-float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-200px) translateX(40px); opacity: 0; }
+        }
+
+        /* Hero content */
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 6rem 4.5rem;
+            background: var(--warm-50);
+            position: relative;
+        }
+
+        .hero-content::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, var(--warm-200), transparent);
+        }
+
+        .hero-eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--zinc-500);
+            margin-bottom: 3rem;
+        }
+
+        .hero-description {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.15rem;
+            font-weight: 300;
+            line-height: 1.85;
+            color: var(--zinc-700);
+            max-width: 380px;
+            margin-bottom: 3rem;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ink);
+            text-decoration: none;
+            padding-bottom: 4px;
+            border-bottom: 1.5px solid var(--ink);
+            transition: all 0.4s ease;
+            align-self: flex-start;
+        }
+
+        .hero-cta:hover {
+            letter-spacing: 0.28em;
+            border-color: var(--leather);
+            color: var(--leather-dark);
+        }
+
+        /* Tagline bar */
+        .tagline-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem 3rem;
+            z-index: 10;
+        }
+
+        .tagline {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1.4rem, 3vw, 2.2rem);
+            font-weight: 400;
+            letter-spacing: 0.04em;
+            color: var(--ink);
+        }
+
+        /* Features section */
+        .features {
+            padding: 10rem 3rem;
+            background: var(--zinc-950);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(90, 74, 56, 0.08) 0%, transparent 70%);
+        }
+
+        .features-header {
+            max-width: 500px;
+            margin-bottom: 8rem;
+            position: relative;
+        }
+
+        .features-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--zinc-600);
+            margin-bottom: 2rem;
+        }
+
+        .features-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            font-weight: 400;
+            color: var(--zinc-300);
+            line-height: 1.4;
+            letter-spacing: 0.02em;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--zinc-800);
+            position: relative;
+        }
+
+        .feature-cell {
+            background: var(--zinc-950);
+            padding: 3.5rem 2.5rem;
+            transition: background 0.6s ease;
+            cursor: default;
+        }
+
+        .feature-cell:hover {
+            background: rgba(39, 39, 42, 0.4);
+        }
+
+        .feature-index {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--leather-light);
+            letter-spacing: 0.15em;
+            margin-bottom: 2rem;
+            opacity: 0.7;
+        }
+
+        .feature-name {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: var(--zinc-200);
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.02em;
+        }
+
+        .feature-desc {
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.75;
+            color: var(--zinc-500);
+        }
+
+        /* Ritual section */
+        .ritual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 80vh;
+        }
+
+        .ritual-visual {
+            background: linear-gradient(160deg, #3a322a 0%, #2e251e 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .ritual-visual::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 60% 40%, rgba(180, 160, 130, 0.06) 0%, transparent 60%);
+        }
+
+        /* Animated open notebook */
+        .open-notebook {
+            perspective: 1000px;
+            width: 340px;
+            height: 240px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .open-page-left, .open-page-right {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: var(--parchment);
+        }
+
+        .open-page-left {
+            left: 0;
+            border-radius: 4px 0 0 4px;
+            transform-origin: right center;
+            transform: rotateY(8deg);
+            box-shadow: inset -10px 0 20px rgba(0,0,0,0.04), -4px 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .open-page-right {
+            right: 0;
+            border-radius: 0 4px 4px 0;
+            transform-origin: left center;
+            transform: rotateY(-8deg);
+            box-shadow: inset 10px 0 20px rgba(0,0,0,0.04), 4px 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .page-lines {
+            position: absolute;
+            top: 30px;
+            left: 24px;
+            right: 24px;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .page-line {
+            height: 0.5px;
+            background: rgba(0,0,0,0.06);
+            border-radius: 1px;
+        }
+
+        .page-line.written {
+            background: rgba(44, 40, 37, 0.12);
+        }
+
+        .page-line.short {
+            width: 65%;
+        }
+
+        .ritual-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 6rem 4.5rem;
+            background: var(--warm-50);
+            position: relative;
+        }
+
+        .ritual-content::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, var(--warm-200), transparent);
+        }
+
+        .ritual-step {
+            margin-bottom: 3rem;
+            padding-left: 0;
+            position: relative;
+        }
+
+        .ritual-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .ritual-step-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            color: var(--leather);
+            margin-bottom: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .ritual-step-title {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.35rem;
+            font-weight: 400;
+            color: var(--ink);
+            margin-bottom: 0.6rem;
+        }
+
+        .ritual-step-desc {
+            font-family: 'Crimson Pro', serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.75;
+            color: var(--zinc-500);
+            max-width: 340px;
+        }
+
+        /* Closing section */
+        .closing {
+            padding: 10rem 3rem;
+            text-align: center;
+            background: var(--warm-50);
+            position: relative;
+        }
+
+        .closing-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 400;
+            color: var(--ink);
+            margin-bottom: 2rem;
+            letter-spacing: 0.04em;
+        }
+
+        .closing-sub {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.15rem;
+            font-weight: 300;
+            color: var(--zinc-500);
+            max-width: 440px;
+            margin: 0 auto 3.5rem;
+            line-height: 1.8;
+        }
+
+        .closing-cta {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--warm-50);
+            background: var(--ink);
+            text-decoration: none;
+            padding: 1.1rem 3rem;
+            transition: all 0.4s ease;
+        }
+
+        .closing-cta:hover {
+            background: var(--leather-dark);
+            letter-spacing: 0.25em;
+        }
+
+        /* Workshop entry button next to main CTA */
+        .closing-workshop-cta {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--zinc-500);
+            background: none;
+            text-decoration: none;
+            padding: 1.1rem 3rem;
+            border: 1px solid var(--warm-200);
+            transition: all 0.4s ease;
+            margin-left: 1.5rem;
+            cursor: pointer;
+        }
+        .closing-workshop-cta:hover {
+            color: var(--leather-dark);
+            border-color: var(--leather);
+            letter-spacing: 0.25em;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--warm-200);
+            background: var(--warm-50);
+        }
+
+        .footer-logo {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            color: var(--zinc-500);
+            text-transform: uppercase;
+        }
+
+        .footer-copy {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.55rem;
+            letter-spacing: 0.1em;
+            color: var(--zinc-400);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Entrance animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            nav {
+                padding: 1.5rem 2rem;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .hero-visual {
+                height: 70vh;
+            }
+
+            .hero-content {
+                padding: 4rem 2rem;
+            }
+
+            .tagline-bar {
+                position: relative;
+                padding: 2rem;
+                background: var(--warm-50);
+            }
+
+            .features {
+                padding: 6rem 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ritual {
+                grid-template-columns: 1fr;
+            }
+
+            .ritual-visual {
+                height: 50vh;
+            }
+
+            .ritual-content {
+                padding: 4rem 2rem;
+            }
+
+            .closing {
+                padding: 6rem 2rem;
+            }
+
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-visual" id="heroVisual">
+            <div class="notebook-scene">
+                <div class="notebook-3d" id="notebook3d">
+                    <div class="notebook-cover">
+                        <div class="notebook-emboss">
+                            <div class="notebook-emboss-title">Kami</div>
+                            <div class="notebook-emboss-line"></div>
+                            <div class="notebook-emboss-year">MMXXVI</div>
+                        </div>
+                    </div>
+                    <div class="notebook-spine"></div>
+                    <div class="notebook-pages"></div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-eyebrow">Digital Tactility — Est. 2026</div>
+            <p class="hero-description">
+                A journal that feels like leather under your fingertips. Kami Notebook restores the physical ritual of writing to the digital world — every page turn, every ink stroke carries weight and intention.
+            </p>
+
+        </div>
+    </section>
+
+    <!-- Tagline -->
+    <div class="tagline-bar">
+        <h1 class="tagline">Write. Turn. Breathe. Reflect.</h1>
+    </div>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="features-header reveal">
+            <div class="features-label">Philosophy</div>
+            <h2 class="features-title">Crafted for those who believe thinking deserves a surface worthy of the thought.</h2>
+        </div>
+        <div class="features-grid">
+            <div class="feature-cell reveal">
+                <div class="feature-index">01</div>
+                <div class="feature-name">Leather-bound 3D</div>
+                <div class="feature-desc">A notebook rendered in three dimensions. Rotate, hold, and feel the heft of your own digital codex through CSS-driven physicality.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">02</div>
+                <div class="feature-name">Page Turning</div>
+                <div class="feature-desc">Gesture-driven page turns with paper weight, shadow, and sound. Each flip is a moment of transition, not a click.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">03</div>
+                <div class="feature-name">Atmospheric Ink</div>
+                <div class="feature-desc">Write with ink that bleeds subtly into parchment. Typography that honors the slowness of handwriting in a digital medium.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">04</div>
+                <div class="feature-name">Sound Design</div>
+                <div class="feature-desc">Paper slides, leather creaks, and quiet chimes. Every interaction carries an acoustic signature that grounds you in the moment.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">05</div>
+                <div class="feature-name">Library Shelf</div>
+                <div class="feature-desc">Your notebooks rest on a shelf. Reach for one, pull it forward, feel its spine. A spatial interface for memory.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">06</div>
+                <div class="feature-name">Fog & Grain</div>
+                <div class="feature-desc">Every scene is wrapped in atmospheric fog, god rays, and film grain. Your writing space is a place, not a page.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ritual -->
+    <section class="ritual">
+        <div class="ritual-visual">
+            <div class="open-notebook">
+                <div class="open-page-left">
+                    <div class="page-lines">
+                        <div class="page-line written"></div>
+                        <div class="page-line written"></div>
+                        <div class="page-line written short"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line written"></div>
+                        <div class="page-line written"></div>
+                        <div class="page-line written short"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                    </div>
+                </div>
+                <div class="open-page-right">
+                    <div class="page-lines">
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                        <div class="page-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ritual-content">
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">STEP 01</div>
+                <div class="ritual-step-title">Open the cover</div>
+                <div class="ritual-step-desc">Drag the leather cover open. Feel the resistance, hear the spine creak. This is not instant — it is intentional.</div>
+            </div>
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">STEP 02</div>
+                <div class="ritual-step-title">Find your page</div>
+                <div class="ritual-step-desc">Swipe through pages with momentum. Each page has weight, each carries the ghost of previous entries.</div>
+            </div>
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">STEP 03</div>
+                <div class="ritual-step-title">Write with presence</div>
+                <div class="ritual-step-desc">Ink flows onto parchment. No distractions, no toolbars. Just your thoughts meeting the surface.</div>
+            </div>
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">STEP 04</div>
+                <div class="ritual-step-title">Close and shelve</div>
+                <div class="ritual-step-desc">When finished, close the cover. Place it back on the shelf. The ritual is complete until you return.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Materials Section -->
+    <section class="features" style="background: var(--warm-50);">
+        <div class="features-header reveal">
+            <div class="features-label">Materials</div>
+            <h2 class="features-title" style="color: var(--ink);">Every detail is a deliberate choice. Every surface has memory.</h2>
+        </div>
+        <div class="features-grid" style="background: var(--warm-200);">
+            <div class="feature-cell reveal" style="background: var(--warm-50);">
+                <div class="feature-index" style="color: var(--leather);">A</div>
+                <div class="feature-name" style="color: var(--ink);">Full-Grain Leather Cover</div>
+                <div class="feature-desc">Rendered with procedural turbulence shaders that simulate the natural grain and oils of aged full-grain leather. No two notebooks look exactly the same.</div>
+            </div>
+            <div class="feature-cell reveal" style="background: var(--warm-50);">
+                <div class="feature-index" style="color: var(--leather);">B</div>
+                <div class="feature-name" style="color: var(--ink);">Cold-Press Parchment</div>
+                <div class="feature-desc">Pages are rendered as cold-press paper — off-white, faintly textured, with subtle tooth. Ink pools into it naturally, never appearing flat or digital.</div>
+            </div>
+            <div class="feature-cell reveal" style="background: var(--warm-50);">
+                <div class="feature-index" style="color: var(--leather);">C</div>
+                <div class="feature-name" style="color: var(--ink);">Hand-Sewn Binding</div>
+                <div class="feature-desc">The spine is shaped with depth and stitching detail. When you open the cover, it resists — like a notebook that has never been touched before.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section class="ritual" style="min-height: 60vh;">
+        <div class="ritual-content" style="background: var(--zinc-950); border-left: none;">
+            <div class="ritual-step reveal" style="border-bottom: 1px solid rgba(180,160,130,0.06); padding-bottom: 3rem;">
+                <div class="ritual-step-num" style="color: var(--leather-light);">TYPE</div>
+                <div class="ritual-step-title" style="color: var(--zinc-200); font-size: 1.6rem;">Crimson Pro · 300 weight</div>
+                <div class="ritual-step-desc" style="color: var(--zinc-500);">The text face. A contemporary interpretation of old-style serifs, optimized for long-form reading. At 300 weight it carries the lightness of a careful hand.</div>
+            </div>
+            <div class="ritual-step reveal" style="border-bottom: 1px solid rgba(180,160,130,0.06); padding-bottom: 3rem;">
+                <div class="ritual-step-num" style="color: var(--leather-light);">DISPLAY</div>
+                <div class="ritual-step-title" style="color: var(--zinc-200); font-size: 1.6rem;">Cinzel Decorative · 400</div>
+                <div class="ritual-step-desc" style="color: var(--zinc-500);">Used for titles, embossing, and moments of ceremony. Rooted in ancient Roman inscriptions — for thoughts that deserve to be carved.</div>
+            </div>
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num" style="color: var(--leather-light);">MONO</div>
+                <div class="ritual-step-title" style="color: var(--zinc-200); font-size: 1.6rem;">Space Mono · Labels</div>
+                <div class="ritual-step-desc" style="color: var(--zinc-500);">Page numbers, metadata, timestamps. A monospaced workhorse that brings quiet technical precision to the periphery of every page.</div>
+            </div>
+        </div>
+        <div class="ritual-visual" style="background: linear-gradient(160deg, #1a1814 0%, #0d0b09 100%);">
+            <div style="padding: 4rem; position: relative; z-index: 2;">
+                <div style="font-family: 'Cinzel Decorative', serif; font-size: 2rem; color: rgba(180,160,130,0.35); letter-spacing: 0.15em; margin-bottom: 2rem; line-height: 1.4;">The Art<br>of Writing</div>
+                <div style="font-family: 'Crimson Pro', serif; font-size: 1.1rem; font-weight: 300; color: rgba(180,160,130,0.2); line-height: 2; max-width: 260px;">In the silence between words, the page breathes. It is patient. It holds what you give it without judgment.</div>
+                <div style="margin-top: 2.5rem; font-family: 'Space Mono', monospace; font-size: 0.5rem; letter-spacing: 0.3em; color: rgba(180,160,130,0.12); text-transform: uppercase;">p. 001 — 024</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specifications Section -->
+    <section class="features">
+        <div class="features-header reveal">
+            <div class="features-label">Specifications</div>
+            <h2 class="features-title">Built with obsessive precision. Tested against the weight of real thought.</h2>
+        </div>
+        <div class="features-grid">
+            <div class="feature-cell reveal">
+                <div class="feature-index">—</div>
+                <div class="feature-name">24 Pages</div>
+                <div class="feature-desc">Twelve physical leaves, twenty-four writable surfaces. Each page persists across sessions, holding your text and ink exactly where you left it.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">—</div>
+                <div class="feature-name">Dual Input Modes</div>
+                <div class="feature-desc">Type in Crimson Pro directly onto ruled parchment, or switch to ink mode and draw with your cursor. Both feel distinct; both feel right.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">—</div>
+                <div class="feature-name">3D CSS Transforms</div>
+                <div class="feature-desc">No WebGL required. Pure CSS perspective with preserve-3d, backface-visibility, and hardware-accelerated transitions at 60fps on any modern device.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">—</div>
+                <div class="feature-name">Web Audio Engine</div>
+                <div class="feature-desc">All sounds are synthesized in real time using the Web Audio API — leather creaks, paper slides, ink scratches. Nothing is pre-recorded; everything responds to you.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">—</div>
+                <div class="feature-name">Hand Workshop</div>
+                <div class="feature-desc">An optional mode powered by MediaPipe that lets your bare index finger draw directly onto the canvas. Point to draw, spread two to erase, swipe to turn pages.</div>
+            </div>
+            <div class="feature-cell reveal">
+                <div class="feature-index">—</div>
+                <div class="feature-name">Atmospheric Rendering</div>
+                <div class="feature-desc">God rays, film grain, desk dust particles, and radial fog. The environment exists between your words, not as decoration, but as context.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quote / Interlude Section -->
+    <section style="padding: 10rem 3rem; background: var(--warm-50); text-align: center; position: relative; overflow: hidden;">
+        <div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(139,115,85,0.04) 0%, transparent 70%); pointer-events: none;"></div>
+        <div class="reveal" style="font-family: 'Cinzel Decorative', serif; font-size: clamp(1.2rem, 2.5vw, 1.8rem); color: var(--ink); max-width: 700px; margin: 0 auto; line-height: 1.8; letter-spacing: 0.03em; position: relative; z-index: 1;">
+            "A notebook is not a repository of facts.<br>It is a map of attention."
+        </div>
+        <div class="reveal" style="margin-top: 2.5rem; font-family: 'Space Mono', monospace; font-size: 0.5rem; letter-spacing: 0.3em; color: var(--zinc-400); text-transform: uppercase;">Kami — Design Philosophy</div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="ritual">
+        <div class="ritual-visual" style="background: linear-gradient(160deg, #2a231c 0%, #1e1a15 100%);">
+            <div style="position: relative; z-index: 2; width: 280px;">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(180,160,130,0.2), transparent);"></div>
+                    <div style="font-family: 'Space Mono', monospace; font-size: 0.45rem; letter-spacing: 0.25em; color: rgba(180,160,130,0.25); text-transform: uppercase; text-align: center;">Design System</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div style="background: rgba(90,74,56,0.15); border: 1px solid rgba(180,160,130,0.06); padding: 16px 12px; border-radius: 2px;">
+                            <div style="width: 24px; height: 24px; background: #5a4a38; border-radius: 50%; margin-bottom: 10px;"></div>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 0.4rem; color: rgba(180,160,130,0.3); letter-spacing: 0.1em;">LEATHER</div>
+                        </div>
+                        <div style="background: rgba(245,240,232,0.05); border: 1px solid rgba(180,160,130,0.06); padding: 16px 12px; border-radius: 2px;">
+                            <div style="width: 24px; height: 24px; background: #f5f0e8; border-radius: 50%; margin-bottom: 10px;"></div>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 0.4rem; color: rgba(180,160,130,0.3); letter-spacing: 0.1em;">PARCHMENT</div>
+                        </div>
+                        <div style="background: rgba(9,9,11,0.4); border: 1px solid rgba(180,160,130,0.06); padding: 16px 12px; border-radius: 2px;">
+                            <div style="width: 24px; height: 24px; background: #09090b; border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; margin-bottom: 10px;"></div>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 0.4rem; color: rgba(180,160,130,0.3); letter-spacing: 0.1em;">DESK DARK</div>
+                        </div>
+                        <div style="background: rgba(44,40,37,0.15); border: 1px solid rgba(180,160,130,0.06); padding: 16px 12px; border-radius: 2px;">
+                            <div style="width: 24px; height: 24px; background: #2c2825; border-radius: 50%; margin-bottom: 10px;"></div>
+                            <div style="font-family: 'Space Mono', monospace; font-size: 0.4rem; color: rgba(180,160,130,0.3); letter-spacing: 0.1em;">INK</div>
+                        </div>
+                    </div>
+                    <div style="height: 1px; background: linear-gradient(to right, transparent, rgba(180,160,130,0.2), transparent);"></div>
+                </div>
+            </div>
+        </div>
+        <div class="ritual-content">
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">INTENTION</div>
+                <div class="ritual-step-title">Designed against speed</div>
+                <div class="ritual-step-desc">Every animation takes exactly as long as it needs to. Cover opens over 1.2 seconds. Pages turn in 0.9. Nothing snaps. Nothing rushes.</div>
+            </div>
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">PALETTE</div>
+                <div class="ritual-step-title">Four colors. No more.</div>
+                <div class="ritual-step-desc">Leather brown, parchment ivory, desk black, and ink charcoal. The entire visual language lives within these four tones and their transparencies.</div>
+            </div>
+            <div class="ritual-step reveal">
+                <div class="ritual-step-num">SOUND</div>
+                <div class="ritual-step-title">Synthesized, not sampled</div>
+                <div class="ritual-step-desc">All acoustic signatures are generated in real time. A sawtooth oscillator slowed to 30Hz becomes a leather creak. Band-filtered noise becomes pen on paper.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Closing -->
+    <section class="closing">
+        <h2 class="closing-title reveal">Your thoughts<br>deserve weight.</h2>
+        <p class="closing-sub reveal">Kami Notebook transforms digital journaling from a utility into a ritual. A space where every word matters because the medium demands your attention.</p>
+
+    </section>
+
+
+
+    <!-- WORKSHOP HAND-TRACKING MODE -->
+    <div class="workshop-overlay" id="workshopOverlay">
+        <div class="workshop-god-rays"></div>
+
+        <div class="workshop-nav">
+            <div>
+                <div class="workshop-nav-logo">Kami</div>
+                <div class="workshop-nav-tag">Workshop · Hand Canvas</div>
+            </div>
+        </div>
+
+        <button class="workshop-close-btn" id="wsClose">↩ Return</button>
+
+        <div class="ws-hand-status" id="wsHandStatus">
+            <div class="ws-hand-dot"></div>
+            <span id="wsHandLabel">Initializing camera…</span>
+        </div>
+
+        <div class="workshop-desk">
+            <div class="workshop-canvas-frame" id="wsCanvasFrame">
+                <div class="workshop-page-bg"></div>
+                <div class="workshop-ruled-lines"></div>
+                <div class="workshop-margin-line"></div>
+                <canvas class="workshop-draw-canvas" id="wsDrawCanvas"></canvas>
+                <canvas class="workshop-hand-overlay" id="wsHandCanvas"></canvas>
+                <div class="workshop-page-num" id="wsPageNum">1</div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="workshop-toolbar" id="wsToolbar">
+            <div class="toolbar-section-label">Tool</div>
+            <button class="toolbar-btn active" id="wsBtnPen" title="Pen">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span class="toolbar-btn-label">Pen</span>
+            </button>
+            <button class="toolbar-btn" id="wsBtnBrush" title="Brush">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 114.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 00-3-3.02z"/></svg>
+                <span class="toolbar-btn-label">Brush</span>
+            </button>
+            <button class="toolbar-btn" id="wsBtnEraser" title="Eraser">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 20H7L3 16l9-9 8 8-4 4z"/><path d="M6 11l4-4"/></svg>
+                <span class="toolbar-btn-label">Eraser</span>
+            </button>
+
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-section-label">Size</div>
+            <div class="toolbar-size-row" id="wsSizeRow">
+                <div class="size-dot" data-size="1.5" style="width:5px;height:5px;"></div>
+                <div class="size-dot active" data-size="2.5" style="width:8px;height:8px;"></div>
+                <div class="size-dot" data-size="5" style="width:11px;height:11px;"></div>
+                <div class="size-dot" data-size="10" style="width:14px;height:14px;"></div>
+            </div>
+
+            <div class="toolbar-divider"></div>
+            <div class="toolbar-section-label">Ink</div>
+            <div class="toolbar-color-row" id="wsColorRow">
+                <div class="color-swatch active" data-color="rgba(44,40,37,0.85)" style="background:#2c2825;"></div>
+                <div class="color-swatch" data-color="rgba(100,70,40,0.8)" style="background:#64462a;"></div>
+                <div class="color-swatch" data-color="rgba(50,60,80,0.75)" style="background:#323c50;"></div>
+                <div class="color-swatch" data-color="rgba(120,35,30,0.7)" style="background:#78231e;"></div>
+                <div class="color-swatch" data-color="rgba(30,75,50,0.7)" style="background:#1e4b32;"></div>
+                <div class="color-swatch" data-color="rgba(90,74,56,0.5)" style="background:#5a4a38;"></div>
+            </div>
+
+            <div class="toolbar-divider"></div>
+            <button class="toolbar-btn" id="wsBtnClear" title="Clear page">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+                <span class="toolbar-btn-label">Clear</span>
+            </button>
+        </div>
+
+        <!-- Page navigation -->
+        <div class="workshop-page-nav">
+            <button class="ws-page-btn" id="wsPagePrev" disabled>◂ Prev</button>
+            <div class="ws-page-info" id="wsPageInfo">Page 1 of 24</div>
+            <button class="ws-page-btn" id="wsPageNext">Next ▸</button>
+        </div>
+
+        <!-- Gesture hints (shown briefly) -->
+        <div class="ws-gesture-hints" id="wsGestureHints">
+            <div class="ws-gesture-hint">
+                <div class="ws-gesture-hint-icon">☝️</div>
+                <div class="ws-gesture-hint-label">Point to draw</div>
+            </div>
+            <div class="ws-gesture-hint">
+                <div class="ws-gesture-hint-icon">✌️</div>
+                <div class="ws-gesture-hint-label">Two fingers — erase</div>
+            </div>
+            <div class="ws-gesture-hint">
+                <div class="ws-gesture-hint-icon">🤚</div>
+                <div class="ws-gesture-hint-label">Open palm — pause</div>
+            </div>
+            <div class="ws-gesture-hint">
+                <div class="ws-gesture-hint-icon">👈</div>
+                <div class="ws-gesture-hint-label">Swipe — turn page</div>
+            </div>
+        </div>
+
+        <div class="ws-mouse-fallback" id="wsMouseFallback" style="display:none;">
+            Camera unavailable — using mouse input · <a id="wsRetryCamera" href="javascript:void(0)">retry camera</a>
+        </div>
+
+        <!-- Webcam preview -->
+        <div class="workshop-cam-container" id="wsCamContainer" style="display:none;">
+            <video id="wsCamVideo" autoplay playsinline muted></video>
+            <div class="workshop-cam-label">Hand Tracking</div>
+        </div>
+
+        <!-- Finger cursor -->
+        <div class="ws-finger-cursor" id="wsFingerCursor"></div>
+    </div>
+
+    <!-- NOTEBOOK APP -->
+    <div class="notebook-app" id="notebookApp">
+        <div class="god-rays"></div>
+        <div class="app-nav">
+            <div class="app-logo">Kami</div>
+            <div class="app-controls">
+                <button class="app-btn" id="btnPen" title="Pen tool">✦ Pen</button>
+                <button class="app-btn" id="btnErase" title="Erase drawings">✕ Clear</button>
+                <button class="app-btn" id="btnClose" title="Close notebook">↩ Close</button>
+            </div>
+            <!-- settings button removed -->
+        </div>
+        <div class="desk-surface" id="deskSurface">
+            <div class="book-container" id="bookContainer">
+                <div class="book-cover-back"></div>
+                <div class="book-spine"></div>
+                <div class="page-edges" id="pageEdges"></div>
+                <div class="book-pages-block" id="bookPagesBlock">
+                    <!-- Pages are generated by JS -->
+                </div>
+                <div class="book-cover-front" id="bookCoverFront">
+                    <div class="cover-face-front">
+                        <div class="cover-emboss">
+                            <div class="cover-emboss-title">Kami</div>
+                            <div class="cover-emboss-rule"></div>
+                            <div class="cover-emboss-sub">MMXXVI</div>
+                        </div>
+                    </div>
+                    <div class="cover-face-back"></div>
+                </div>
+                <!-- Turn zones (visible when book is open) -->
+                <div class="turn-zone turn-zone-prev" id="turnPrev" style="display:none;">
+                    <div class="turn-zone-icon">◂</div>
+                </div>
+                <div class="turn-zone turn-zone-next" id="turnNext" style="display:none;">
+                    <div class="turn-zone-icon">▸</div>
+                </div>
+                <div class="desk-shadow"></div>
+            </div>
+        </div>
+        <div class="open-hint" id="openHint">Click the cover to open</div>
+        <div class="page-indicator" id="pageIndicator"></div>
+        <div class="pen-cursor" id="penCursor"></div>
+    </div>
+
+    <script>
+        // =============================================
+        // KAMI NOTEBOOK — Interactive 3D Journal
+        // =============================================
+
+        // === SOUND ENGINE (Web Audio API synthesized sounds) ===
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        function ensureAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            const ctx = ensureAudio();
+            const now = ctx.currentTime;
+
+            if (type === 'page-turn') {
+                // Paper slide + flutter
+                const bufferSize = ctx.sampleRate * 0.4;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    const t = i / bufferSize;
+                    const env = Math.sin(t * Math.PI) * (1 - t * 0.6);
+                    data[i] = (Math.random() * 2 - 1) * env * 0.04;
+                }
+                const src = ctx.createBufferSource();
+                src.buffer = buffer;
+                const hp = ctx.createBiquadFilter();
+                hp.type = 'highpass'; hp.frequency.value = 2000;
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass'; lp.frequency.value = 6000;
+                src.connect(hp).connect(lp).connect(ctx.destination);
+                src.start(now);
+            }
+            else if (type === 'cover-open') {
+                // Leather creak
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.5);
+                gain.gain.setValueAtTime(0.015, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                const lp = ctx.createBiquadFilter();
+                lp.type = 'lowpass'; lp.frequency.value = 200;
+                osc.connect(lp).connect(gain).connect(ctx.destination);
+                osc.start(now); osc.stop(now + 0.5);
+                // plus a subtle thud
+                const osc2 = ctx.createOscillator();
+                const g2 = ctx.createGain();
+                osc2.frequency.setValueAtTime(60, now);
+                osc2.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+                g2.gain.setValueAtTime(0.04, now);
+                g2.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc2.connect(g2).connect(ctx.destination);
+                osc2.start(now); osc2.stop(now + 0.2);
+            }
+            else if (type === 'cover-close') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.frequency.setValueAtTime(50, now);
+                osc.frequency.exponentialRampToValueAtTime(25, now + 0.2);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+            else if (type === 'pen-down') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 1800;
+                gain.gain.setValueAtTime(0.008, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(now); osc.stop(now + 0.06);
+            }
+            else if (type === 'ink-write') {
+                const bufferSize = ctx.sampleRate * 0.03;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.003 * (1 - i / bufferSize);
+                }
+                const src = ctx.createBufferSource();
+                src.buffer = buffer;
+                const bp = ctx.createBiquadFilter();
+                bp.type = 'bandpass'; bp.frequency.value = 3000; bp.Q.value = 2;
+                src.connect(bp).connect(ctx.destination);
+                src.start(now);
+            }
+        }
+
+        // === NOTEBOOK STATE ===
+        const TOTAL_PAGES = 12; // 12 physical pages = 24 writable sides
+        let notebookOpen = false;
+        let coverOpen = false;
+        let currentSpread = 0; // which spread (pair of visible pages) we're on
+        let isAnimating = false;
+        let penMode = false;
+        let isDrawing = false;
+
+        // Persistent page data (text + drawing)
+        const pageData = {};
+        for (let i = 0; i < TOTAL_PAGES * 2; i++) {
+            pageData[i] = { text: '', drawPaths: [] };
+        }
+
+        // === DOM REFS ===
+        const notebookApp = document.getElementById('notebookApp');
+        const deskSurface = document.getElementById('deskSurface');
+        const bookContainer = document.getElementById('bookContainer');
+        const bookPagesBlock = document.getElementById('bookPagesBlock');
+        const bookCoverFront = document.getElementById('bookCoverFront');
+        const pageEdges = document.getElementById('pageEdges');
+        const turnPrev = document.getElementById('turnPrev');
+        const turnNext = document.getElementById('turnNext');
+        const openHint = document.getElementById('openHint');
+        const pageIndicator = document.getElementById('pageIndicator');
+        const penCursor = document.getElementById('penCursor');
+        const btnPen = document.getElementById('btnPen');
+        const btnErase = document.getElementById('btnErase');
+        const btnClose = document.getElementById('btnClose');
+
+        // === GENERATE PAGES ===
+        function buildPages() {
+            bookPagesBlock.innerHTML = '';
+            for (let i = TOTAL_PAGES - 1; i >= 0; i--) {
+                const page = document.createElement('div');
+                page.className = 'book-page';
+                page.dataset.index = i;
+                page.style.zIndex = TOTAL_PAGES - i;
+                // slight offset for page stack depth
+                page.style.transform = `translateZ(${(TOTAL_PAGES - i) * 0.4}px)`;
+
+                const frontIdx = i * 2;
+                const backIdx = i * 2 + 1;
+
+                page.innerHTML = `
+                    <div class="page-face page-front">
+                        <div class="page-ruled"></div>
+                        <div class="page-margin"></div>
+                        <div class="page-content-area" contenteditable="false"
+                             data-page="${frontIdx}"
+                             data-placeholder="${i === 0 ? 'Begin writing here...' : ''}"></div>
+                        <canvas class="page-draw-canvas" data-page="${frontIdx}"></canvas>
+                        <div class="page-num">${frontIdx + 1}</div>
+                    </div>
+                    <div class="page-face page-back">
+                        <div class="page-ruled"></div>
+                        <div class="page-margin"></div>
+                        <div class="page-content-area" contenteditable="false"
+                             data-page="${backIdx}"
+                             data-placeholder=""></div>
+                        <canvas class="page-draw-canvas" data-page="${backIdx}"></canvas>
+                        <div class="page-num">${backIdx + 1}</div>
+                    </div>
+                `;
+                bookPagesBlock.appendChild(page);
+            }
+            initCanvases();
+        }
+
+        // === CANVAS DRAWING SYSTEM ===
+        function initCanvases() {
+            document.querySelectorAll('.page-draw-canvas').forEach(canvas => {
+                const parent = canvas.parentElement;
+                canvas.width = parent.offsetWidth || 580;
+                canvas.height = parent.offsetHeight || 400;
+                const ctx = canvas.getContext('2d');
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                // Redraw saved paths
+                const pageIdx = parseInt(canvas.dataset.page);
+                redrawCanvas(canvas, pageIdx);
+
+                canvas.addEventListener('pointerdown', onDrawStart);
+                canvas.addEventListener('pointermove', onDrawMove);
+                canvas.addEventListener('pointerup', onDrawEnd);
+                canvas.addEventListener('pointerleave', onDrawEnd);
+            });
+        }
+
+        function redrawCanvas(canvas, pageIdx) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const paths = pageData[pageIdx]?.drawPaths || [];
+            paths.forEach(path => {
+                if (path.length < 2) return;
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(44,40,37,0.7)';
+                ctx.lineWidth = 1.8;
+                ctx.moveTo(path[0].x, path[0].y);
+                for (let i = 1; i < path.length; i++) {
+                    const p0 = path[i - 1];
+                    const p1 = path[i];
+                    const mx = (p0.x + p1.x) / 2;
+                    const my = (p0.y + p1.y) / 2;
+                    ctx.quadraticCurveTo(p0.x, p0.y, mx, my);
+                }
+                ctx.stroke();
+            });
+        }
+
+        let currentPath = [];
+        let activeCanvas = null;
+        let writeThrottle = 0;
+
+        function onDrawStart(e) {
+            if (!penMode) return;
+            isDrawing = true;
+            activeCanvas = e.target;
+            const rect = activeCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            currentPath = [{ x, y }];
+            playSound('pen-down');
+            e.preventDefault();
+        }
+
+        function onDrawMove(e) {
+            if (!isDrawing || !activeCanvas) return;
+            const rect = activeCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            currentPath.push({ x, y });
+
+            const ctx = activeCanvas.getContext('2d');
+            if (currentPath.length >= 2) {
+                const p0 = currentPath[currentPath.length - 2];
+                const p1 = currentPath[currentPath.length - 1];
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(44,40,37,0.7)';
+                ctx.lineWidth = 1.8;
+                ctx.moveTo(p0.x, p0.y);
+                ctx.lineTo(p1.x, p1.y);
+                ctx.stroke();
+            }
+
+            // Subtle pen scratching sound (throttled)
+            const now = Date.now();
+            if (now - writeThrottle > 120) {
+                writeThrottle = now;
+                playSound('ink-write');
+            }
+            e.preventDefault();
+        }
+
+        function onDrawEnd(e) {
+            if (!isDrawing || !activeCanvas) return;
+            isDrawing = false;
+            if (currentPath.length > 1) {
+                const pageIdx = parseInt(activeCanvas.dataset.page);
+                pageData[pageIdx].drawPaths.push([...currentPath]);
+            }
+            currentPath = [];
+            activeCanvas = null;
+        }
+
+        // === OPEN / CLOSE NOTEBOOK APP ===
+        function openNotebookApp() {
+            notebookApp.classList.add('active');
+            notebookOpen = true;
+            coverOpen = false;
+            currentSpread = 0;
+            bookCoverFront.classList.remove('open');
+            turnPrev.style.display = 'none';
+            turnNext.style.display = 'none';
+            openHint.classList.remove('hidden');
+            pageIndicator.textContent = '';
+            buildPages();
+            resetPageStates();
+            // Tilt the book slightly
+            bookContainer.style.transform = 'rotateX(8deg) rotateY(-3deg)';
+            // Spawn desk dust
+            spawnDeskDust();
+        }
+
+        function closeNotebookApp() {
+            if (coverOpen) {
+                // Close cover first
+                closeCover(() => {
+                    setTimeout(() => {
+                        notebookApp.classList.remove('active');
+                        notebookOpen = false;
+                        setPenMode(false);
+                    }, 400);
+                });
+            } else {
+                notebookApp.classList.remove('active');
+                notebookOpen = false;
+                setPenMode(false);
+            }
+        }
+
+        // === COVER INTERACTION ===
+        bookCoverFront.addEventListener('click', () => {
+            if (coverOpen || isAnimating) return;
+            openCover();
+        });
+
+        function openCover() {
+            isAnimating = true;
+            coverOpen = true;
+            bookCoverFront.classList.add('open');
+            playSound('cover-open');
+            openHint.classList.add('hidden');
+
+            // Flatten the book for reading
+            bookContainer.style.transform = 'rotateX(12deg) rotateY(0deg)';
+
+            setTimeout(() => {
+                turnPrev.style.display = 'block';
+                turnNext.style.display = 'block';
+                enableCurrentPages();
+                updatePageIndicator();
+                isAnimating = false;
+            }, 800);
+        }
+
+        function closeCover(callback) {
+            isAnimating = true;
+            turnPrev.style.display = 'none';
+            turnNext.style.display = 'none';
+            disableAllPages();
+            saveCurrentPageText();
+            playSound('cover-close');
+
+            // Turn all pages back first
+            const pages = document.querySelectorAll('.book-page');
+            pages.forEach(p => {
+                p.classList.remove('turned', 'fluttering', 'fluttering-back');
+                p.style.transform = `translateZ(${(TOTAL_PAGES - parseInt(p.dataset.index)) * 0.4}px)`;
+            });
+            currentSpread = 0;
+
+            setTimeout(() => {
+                bookCoverFront.classList.remove('open');
+                bookContainer.style.transform = 'rotateX(8deg) rotateY(-3deg)';
+                coverOpen = false;
+                pageIndicator.textContent = '';
+                setTimeout(() => {
+                    isAnimating = false;
+                    if (callback) callback();
+                }, 600);
+            }, 300);
+        }
+
+        // === PAGE TURNING ===
+        turnNext.addEventListener('click', (e) => {
+            e.stopPropagation();
+            turnForward();
+        });
+        turnPrev.addEventListener('click', (e) => {
+            e.stopPropagation();
+            turnBack();
+        });
+
+        function turnForward() {
+            if (isAnimating || currentSpread >= TOTAL_PAGES) return;
+            isAnimating = true;
+            saveCurrentPageText();
+            disableAllPages();
+
+            const pageEl = getPageElement(currentSpread);
+            if (!pageEl) { isAnimating = false; return; }
+
+            playSound('page-turn');
+            pageEl.classList.add('fluttering');
+            pageEl.style.zIndex = 100 + currentSpread;
+
+            pageEl.addEventListener('animationend', function handler() {
+                pageEl.removeEventListener('animationend', handler);
+                pageEl.classList.remove('fluttering');
+                pageEl.classList.add('turned');
+                pageEl.style.transform = 'rotateY(-160deg)';
+                currentSpread++;
+                enableCurrentPages();
+                updatePageIndicator();
+                isAnimating = false;
+            });
+        }
+
+        function turnBack() {
+            if (isAnimating || currentSpread <= 0) return;
+            isAnimating = true;
+            saveCurrentPageText();
+            disableAllPages();
+
+            currentSpread--;
+            const pageEl = getPageElement(currentSpread);
+            if (!pageEl) { isAnimating = false; return; }
+
+            playSound('page-turn');
+            pageEl.classList.remove('turned');
+            pageEl.classList.add('fluttering-back');
+            pageEl.style.zIndex = 100 + currentSpread;
+
+            pageEl.addEventListener('animationend', function handler() {
+                pageEl.removeEventListener('animationend', handler);
+                pageEl.classList.remove('fluttering-back');
+                pageEl.style.transform = `translateZ(${(TOTAL_PAGES - currentSpread) * 0.4}px)`;
+                pageEl.style.zIndex = TOTAL_PAGES - currentSpread;
+                enableCurrentPages();
+                updatePageIndicator();
+                isAnimating = false;
+            });
+        }
+
+        function getPageElement(spreadIdx) {
+            return document.querySelector(`.book-page[data-index="${spreadIdx}"]`);
+        }
+
+        function resetPageStates() {
+            document.querySelectorAll('.book-page').forEach(p => {
+                p.classList.remove('turned', 'fluttering', 'fluttering-back');
+            });
+        }
+
+        // === PAGE TEXT MANAGEMENT ===
+        function enableCurrentPages() {
+            // The visible front page is on the page at currentSpread (right side)
+            // The visible back page is on the page at currentSpread - 1 (left side, its back face)
+            disableAllPages();
+
+            if (currentSpread < TOTAL_PAGES) {
+                const rightPage = getPageElement(currentSpread);
+                if (rightPage) {
+                    const frontArea = rightPage.querySelector('.page-front .page-content-area');
+                    if (frontArea && !penMode) {
+                        frontArea.contentEditable = 'true';
+                        // Load saved text
+                        const idx = parseInt(frontArea.dataset.page);
+                        frontArea.innerText = pageData[idx].text;
+                    }
+                    if (penMode) {
+                        const canvas = rightPage.querySelector('.page-front .page-draw-canvas');
+                        if (canvas) canvas.classList.add('drawing-active');
+                    }
+                }
+            }
+            if (currentSpread > 0) {
+                const leftPage = getPageElement(currentSpread - 1);
+                if (leftPage) {
+                    const backArea = leftPage.querySelector('.page-back .page-content-area');
+                    if (backArea && !penMode) {
+                        backArea.contentEditable = 'true';
+                        const idx = parseInt(backArea.dataset.page);
+                        backArea.innerText = pageData[idx].text;
+                    }
+                    if (penMode) {
+                        const canvas = leftPage.querySelector('.page-back .page-draw-canvas');
+                        if (canvas) canvas.classList.add('drawing-active');
+                    }
+                }
+            }
+        }
+
+        function disableAllPages() {
+            document.querySelectorAll('.page-content-area').forEach(el => {
+                el.contentEditable = 'false';
+            });
+            document.querySelectorAll('.page-draw-canvas').forEach(c => {
+                c.classList.remove('drawing-active');
+            });
+        }
+
+        function saveCurrentPageText() {
+            document.querySelectorAll('.page-content-area[contenteditable="true"]').forEach(el => {
+                const idx = parseInt(el.dataset.page);
+                pageData[idx].text = el.innerText || '';
+            });
+        }
+
+        function updatePageIndicator() {
+            if (!coverOpen) { pageIndicator.textContent = ''; return; }
+            const leftNum = currentSpread > 0 ? (currentSpread - 1) * 2 + 2 : '—';
+            const rightNum = currentSpread < TOTAL_PAGES ? currentSpread * 2 + 1 : '—';
+            pageIndicator.textContent = `${leftNum}  ·  ${rightNum}`;
+        }
+
+        // === PEN MODE ===
+        function setPenMode(active) {
+            penMode = active;
+            btnPen.classList.toggle('active-tool', active);
+            if (active) {
+                disableAllPages();
+                // Enable canvases on current spread
+                if (currentSpread < TOTAL_PAGES) {
+                    const rp = getPageElement(currentSpread);
+                    if (rp) rp.querySelector('.page-front .page-draw-canvas')?.classList.add('drawing-active');
+                }
+                if (currentSpread > 0) {
+                    const lp = getPageElement(currentSpread - 1);
+                    if (lp) lp.querySelector('.page-back .page-draw-canvas')?.classList.add('drawing-active');
+                }
+            } else {
+                document.querySelectorAll('.page-draw-canvas').forEach(c => c.classList.remove('drawing-active'));
+                enableCurrentPages();
+                penCursor.classList.remove('visible');
+            }
+        }
+
+        btnPen.addEventListener('click', () => {
+            if (!coverOpen) return;
+            setPenMode(!penMode);
+        });
+
+        btnErase.addEventListener('click', () => {
+            if (!coverOpen) return;
+            // Clear drawings on current visible pages
+            const indicesToClear = [];
+            if (currentSpread < TOTAL_PAGES) indicesToClear.push(currentSpread * 2);
+            if (currentSpread > 0) indicesToClear.push((currentSpread - 1) * 2 + 1);
+            indicesToClear.forEach(idx => {
+                pageData[idx].drawPaths = [];
+                const canvas = document.querySelector(`.page-draw-canvas[data-page="${idx}"]`);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            });
+        });
+
+        btnClose.addEventListener('click', closeNotebookApp);
+
+        // Pen cursor tracking
+        document.addEventListener('mousemove', (e) => {
+            if (penMode && notebookOpen) {
+                penCursor.style.left = e.clientX - 2 + 'px';
+                penCursor.style.top = e.clientY - 2 + 'px';
+                penCursor.classList.add('visible');
+            }
+        });
+
+        // === DESK TILT (mouse-driven parallax) ===
+        let deskTargetX = 0, deskTargetY = 0;
+        let deskCurrentX = 0, deskCurrentY = 0;
+
+        deskSurface.addEventListener('mousemove', (e) => {
+            if (!coverOpen) {
+                const rect = deskSurface.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                deskTargetX = y * 4;
+                deskTargetY = x * -6;
+            }
+        });
+
+        deskSurface.addEventListener('mouseleave', () => {
+            if (!coverOpen) {
+                deskTargetX = 8;
+                deskTargetY = -3;
+            }
+        });
+
+        function animateDesk() {
+            if (notebookOpen && !coverOpen) {
+                deskCurrentX += (deskTargetX - deskCurrentX) * 0.04;
+                deskCurrentY += (deskTargetY - deskCurrentY) * 0.04;
+                bookContainer.style.transform = `rotateX(${8 + deskCurrentX}deg) rotateY(${-3 + deskCurrentY}deg)`;
+            }
+            requestAnimationFrame(animateDesk);
+        }
+        animateDesk();
+
+        // === DESK DUST ===
+        function spawnDeskDust() {
+            const existing = notebookApp.querySelectorAll('.desk-dust');
+            existing.forEach(d => d.remove());
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('div');
+                p.className = 'desk-dust';
+                p.style.left = 20 + Math.random() * 60 + '%';
+                p.style.top = 40 + Math.random() * 40 + '%';
+                p.style.animationDuration = 8 + Math.random() * 10 + 's';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                notebookApp.appendChild(p);
+            }
+        }
+
+        // === KEYBOARD SHORTCUTS ===
+        document.addEventListener('keydown', (e) => {
+            if (!notebookOpen || !coverOpen) return;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); turnForward(); }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); turnBack(); }
+            if (e.key === 'Escape') { closeNotebookApp(); }
+        });
+
+        // === HOOK INTO LANDING PAGE ===
+        document.querySelectorAll('.hero-cta, .closing-cta').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openNotebookApp();
+            });
+        });
+
+        // =============================================
+        // WORKSHOP — HAND TRACKING CANVAS
+        // =============================================
+        (() => {
+            const overlay = document.getElementById('workshopOverlay');
+            const camVideo = document.getElementById('wsCamVideo');
+            const camContainer = document.getElementById('wsCamContainer');
+            const drawCanvas = document.getElementById('wsDrawCanvas');
+            const handCanvas = document.getElementById('wsHandCanvas');
+            const fingerCursor = document.getElementById('wsFingerCursor');
+            const canvasFrame = document.getElementById('wsCanvasFrame');
+            const handStatus = document.getElementById('wsHandStatus');
+            const handLabel = document.getElementById('wsHandLabel');
+            const gestureHints = document.getElementById('wsGestureHints');
+            const mouseFallback = document.getElementById('wsMouseFallback');
+            const retryCamera = document.getElementById('wsRetryCamera');
+
+            // Page management
+            const WS_TOTAL_PAGES = 24;
+            let wsCurrentPage = 0;
+            const wsPageStore = {};
+            for (let i = 0; i < WS_TOTAL_PAGES; i++) wsPageStore[i] = null; // stores ImageData
+
+            // Brush state
+            let wsBrush = {
+                tool: 'pen',       // pen | brush | eraser
+                size: 2.5,
+                color: 'rgba(44,40,37,0.85)',
+                opacity: 1
+            };
+
+            let wsActive = false;
+            let wsHandsLoaded = false;
+            let wsUsingMouse = false;
+            let wsHandInstance = null;
+            let wsCameraInstance = null;
+
+            // Drawing state
+            let wsIsDrawing = false;
+            let wsLastPoint = null;
+            let wsDrawCtx = null;
+            let wsHandCtx = null;
+            let wsInkThrottle = 0;
+
+            // Gesture detection state
+            let wsSwipeStartX = null;
+            let wsSwipeStartTime = 0;
+            let wsGestureDebounce = 0;
+
+            function initWorkshopCanvases() {
+                const rect = canvasFrame.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                [drawCanvas, handCanvas].forEach(c => {
+                    c.width = rect.width * dpr;
+                    c.height = rect.height * dpr;
+                    c.style.width = rect.width + 'px';
+                    c.style.height = rect.height + 'px';
+                    const ctx = c.getContext('2d');
+                    ctx.scale(dpr, dpr);
+                });
+                wsDrawCtx = drawCanvas.getContext('2d');
+                wsHandCtx = handCanvas.getContext('2d');
+                wsDrawCtx.lineCap = 'round';
+                wsDrawCtx.lineJoin = 'round';
+            }
+
+            function openWorkshop() {
+                overlay.classList.add('active');
+                wsActive = true;
+                wsCurrentPage = 0;
+                updateWsPageUI();
+
+                requestAnimationFrame(() => {
+                    initWorkshopCanvases();
+                    loadWsPage(wsCurrentPage);
+                    startHandTracking();
+                });
+
+                // Show gesture hints briefly
+                setTimeout(() => gestureHints.classList.add('visible'), 800);
+                setTimeout(() => gestureHints.classList.remove('visible'), 6000);
+            }
+
+            function closeWorkshop() {
+                saveWsPage(wsCurrentPage);
+                overlay.classList.remove('active');
+                wsActive = false;
+                stopHandTracking();
+            }
+
+            document.getElementById('wsClose').addEventListener('click', closeWorkshop);
+
+            // Toolbar bindings
+            const toolBtns = { pen: document.getElementById('wsBtnPen'), brush: document.getElementById('wsBtnBrush'), eraser: document.getElementById('wsBtnEraser') };
+            Object.keys(toolBtns).forEach(tool => {
+                toolBtns[tool].addEventListener('click', () => {
+                    wsBrush.tool = tool;
+                    Object.values(toolBtns).forEach(b => b.classList.remove('active'));
+                    toolBtns[tool].classList.add('active');
+                    playSound('pen-down');
+                });
+            });
+
+            document.querySelectorAll('#wsSizeRow .size-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    wsBrush.size = parseFloat(dot.dataset.size);
+                    document.querySelectorAll('#wsSizeRow .size-dot').forEach(d => d.classList.remove('active'));
+                    dot.classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('#wsColorRow .color-swatch').forEach(sw => {
+                sw.addEventListener('click', () => {
+                    wsBrush.color = sw.dataset.color;
+                    document.querySelectorAll('#wsColorRow .color-swatch').forEach(s => s.classList.remove('active'));
+                    sw.classList.add('active');
+                });
+            });
+
+            document.getElementById('wsBtnClear').addEventListener('click', () => {
+                if (!wsDrawCtx) return;
+                const rect = canvasFrame.getBoundingClientRect();
+                wsDrawCtx.clearRect(0, 0, rect.width, rect.height);
+                wsPageStore[wsCurrentPage] = null;
+                playSound('page-turn');
+            });
+
+            // Page navigation
+            document.getElementById('wsPagePrev').addEventListener('click', () => wsChangePage(-1));
+            document.getElementById('wsPageNext').addEventListener('click', () => wsChangePage(1));
+
+            function wsChangePage(dir) {
+                const newPage = wsCurrentPage + dir;
+                if (newPage < 0 || newPage >= WS_TOTAL_PAGES) return;
+                saveWsPage(wsCurrentPage);
+                wsCurrentPage = newPage;
+                loadWsPage(wsCurrentPage);
+                updateWsPageUI();
+                playSound('page-turn');
+            }
+
+            function saveWsPage(idx) {
+                if (!wsDrawCtx) return;
+                const rect = canvasFrame.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                wsPageStore[idx] = wsDrawCtx.getImageData(0, 0, rect.width * dpr, rect.height * dpr);
+            }
+
+            function loadWsPage(idx) {
+                if (!wsDrawCtx) return;
+                const rect = canvasFrame.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                wsDrawCtx.clearRect(0, 0, rect.width, rect.height);
+                // Reset transform to draw ImageData at 1:1 pixel mapping
+                wsDrawCtx.setTransform(1, 0, 0, 1, 0, 0);
+                if (wsPageStore[idx]) {
+                    wsDrawCtx.putImageData(wsPageStore[idx], 0, 0);
+                }
+                wsDrawCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            function updateWsPageUI() {
+                document.getElementById('wsPageNum').textContent = wsCurrentPage + 1;
+                document.getElementById('wsPageInfo').textContent = `Page ${wsCurrentPage + 1} of ${WS_TOTAL_PAGES}`;
+                document.getElementById('wsPagePrev').disabled = wsCurrentPage === 0;
+                document.getElementById('wsPageNext').disabled = wsCurrentPage === WS_TOTAL_PAGES - 1;
+            }
+
+            // === DRAWING FUNCTIONS ===
+            function drawStroke(x, y) {
+                if (!wsDrawCtx) return;
+                if (wsBrush.tool === 'eraser') {
+                    wsDrawCtx.globalCompositeOperation = 'destination-out';
+                    wsDrawCtx.strokeStyle = 'rgba(0,0,0,1)';
+                    wsDrawCtx.lineWidth = wsBrush.size * 4;
+                } else if (wsBrush.tool === 'brush') {
+                    wsDrawCtx.globalCompositeOperation = 'source-over';
+                    wsDrawCtx.strokeStyle = wsBrush.color;
+                    wsDrawCtx.lineWidth = wsBrush.size * 2.5;
+                    wsDrawCtx.globalAlpha = 0.4;
+                } else {
+                    wsDrawCtx.globalCompositeOperation = 'source-over';
+                    wsDrawCtx.strokeStyle = wsBrush.color;
+                    wsDrawCtx.lineWidth = wsBrush.size;
+                    wsDrawCtx.globalAlpha = 1;
+                }
+
+                if (wsLastPoint) {
+                    wsDrawCtx.beginPath();
+                    wsDrawCtx.moveTo(wsLastPoint.x, wsLastPoint.y);
+                    const mx = (wsLastPoint.x + x) / 2;
+                    const my = (wsLastPoint.y + y) / 2;
+                    wsDrawCtx.quadraticCurveTo(wsLastPoint.x, wsLastPoint.y, mx, my);
+                    wsDrawCtx.stroke();
+                }
+                wsLastPoint = { x, y };
+
+                // Subtle ink sound
+                const now = Date.now();
+                if (now - wsInkThrottle > 100) {
+                    wsInkThrottle = now;
+                    playSound('ink-write');
+                }
+            }
+
+            function startStroke(x, y) {
+                wsIsDrawing = true;
+                wsLastPoint = { x, y };
+                playSound('pen-down');
+            }
+
+            function endStroke() {
+                wsIsDrawing = false;
+                wsLastPoint = null;
+                wsDrawCtx && (wsDrawCtx.globalAlpha = 1);
+                wsDrawCtx && (wsDrawCtx.globalCompositeOperation = 'source-over');
+            }
+
+            // === MOUSE FALLBACK DRAWING ===
+            function enableMouseFallback() {
+                wsUsingMouse = true;
+                mouseFallback.style.display = 'block';
+
+                drawCanvas.addEventListener('pointerdown', onWsMouseDown);
+                drawCanvas.addEventListener('pointermove', onWsMouseMove);
+                drawCanvas.addEventListener('pointerup', onWsMouseUp);
+                drawCanvas.addEventListener('pointerleave', onWsMouseUp);
+            }
+
+            function onWsMouseDown(e) {
+                const rect = canvasFrame.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                startStroke(x, y);
+                e.preventDefault();
+            }
+
+            function onWsMouseMove(e) {
+                if (!wsIsDrawing) return;
+                const rect = canvasFrame.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                drawStroke(x, y);
+                e.preventDefault();
+            }
+
+            function onWsMouseUp() {
+                if (wsIsDrawing) endStroke();
+            }
+
+            // === HAND TRACKING (MediaPipe) ===
+            async function startHandTracking() {
+                handLabel.textContent = 'Loading hand model…';
+
+                try {
+                    // Try accessing camera first
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: 640, height: 480, facingMode: 'user' }
+                    });
+                    camVideo.srcObject = stream;
+                    camContainer.style.display = 'block';
+
+                    // Load MediaPipe scripts dynamically
+                    await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.min.js');
+                    await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.min.js');
+
+                    handLabel.textContent = 'Calibrating…';
+
+                    const hands = new window.Hands({
+                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/${file}`
+                    });
+
+                    hands.setOptions({
+                        maxNumHands: 1,
+                        modelComplexity: 1,
+                        minDetectionConfidence: 0.7,
+                        minTrackingConfidence: 0.5
+                    });
+
+                    hands.onResults(onHandResults);
+                    wsHandInstance = hands;
+
+                    const camera = new window.Camera(camVideo, {
+                        onFrame: async () => {
+                            if (wsActive && wsHandInstance) {
+                                await wsHandInstance.send({ image: camVideo });
+                            }
+                        },
+                        width: 640,
+                        height: 480
+                    });
+                    camera.start();
+                    wsCameraInstance = camera;
+                    wsHandsLoaded = true;
+
+                    handLabel.textContent = 'Show your hand';
+
+                } catch (err) {
+                    console.warn('Hand tracking unavailable:', err.message);
+                    handLabel.textContent = 'Mouse mode active';
+                    enableMouseFallback();
+                }
+            }
+
+            function stopHandTracking() {
+                if (wsCameraInstance) {
+                    try { wsCameraInstance.stop(); } catch(e) {}
+                    wsCameraInstance = null;
+                }
+                if (camVideo.srcObject) {
+                    camVideo.srcObject.getTracks().forEach(t => t.stop());
+                    camVideo.srcObject = null;
+                }
+                camContainer.style.display = 'none';
+                wsHandInstance = null;
+                wsHandsLoaded = false;
+                wsUsingMouse = false;
+            }
+
+            retryCamera.addEventListener('click', () => {
+                mouseFallback.style.display = 'none';
+                wsUsingMouse = false;
+                drawCanvas.removeEventListener('pointerdown', onWsMouseDown);
+                drawCanvas.removeEventListener('pointermove', onWsMouseMove);
+                drawCanvas.removeEventListener('pointerup', onWsMouseUp);
+                drawCanvas.removeEventListener('pointerleave', onWsMouseUp);
+                startHandTracking();
+            });
+
+            function loadScript(url) {
+                return new Promise((resolve, reject) => {
+                    // Check if already loaded
+                    if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
+                    const s = document.createElement('script');
+                    s.src = url;
+                    s.crossOrigin = 'anonymous';
+                    s.onload = resolve;
+                    s.onerror = () => reject(new Error('Script load failed: ' + url));
+                    document.head.appendChild(s);
+                });
+            }
+
+            // === HAND RESULTS PROCESSING ===
+            function onHandResults(results) {
+                if (!wsActive || !wsHandCtx) return;
+                const frameRect = canvasFrame.getBoundingClientRect();
+                const cw = frameRect.width;
+                const ch = frameRect.height;
+
+                // Clear hand skeleton overlay
+                wsHandCtx.clearRect(0, 0, cw, ch);
+
+                if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+                    handStatus.classList.remove('tracking');
+                    handLabel.textContent = 'Show your hand';
+                    fingerCursor.classList.remove('visible', 'drawing-now');
+                    if (wsIsDrawing) endStroke();
+                    return;
+                }
+
+                handStatus.classList.add('tracking');
+                handLabel.textContent = 'Tracking';
+
+                const landmarks = results.multiHandLandmarks[0];
+
+                // Draw hand skeleton (ghostly, on the hand overlay canvas)
+                drawHandSkeleton(landmarks, cw, ch);
+
+                // Detect gesture
+                const gesture = detectGesture(landmarks);
+                updateFingerCursor(landmarks, cw, ch, gesture);
+
+                const indexTip = landmarks[8];
+                // Mirror x because camera is mirrored
+                const ix = (1 - indexTip.x) * cw;
+                const iy = indexTip.y * ch;
+
+                if (gesture === 'point') {
+                    // Drawing with index finger
+                    if (!wsIsDrawing) {
+                        startStroke(ix, iy);
+                    } else {
+                        drawStroke(ix, iy);
+                    }
+                } else if (gesture === 'two-fingers') {
+                    // Eraser mode — temporarily override
+                    const prevTool = wsBrush.tool;
+                    wsBrush.tool = 'eraser';
+                    if (!wsIsDrawing) {
+                        startStroke(ix, iy);
+                    } else {
+                        drawStroke(ix, iy);
+                    }
+                    wsBrush.tool = prevTool;
+                } else if (gesture === 'swipe-left' || gesture === 'swipe-right') {
+                    if (wsIsDrawing) endStroke();
+                    const now = Date.now();
+                    if (now - wsGestureDebounce > 1200) {
+                        wsGestureDebounce = now;
+                        wsChangePage(gesture === 'swipe-left' ? 1 : -1);
+                    }
+                } else {
+                    // Open palm or unknown — stop drawing
+                    if (wsIsDrawing) endStroke();
+                }
+            }
+
+            function detectGesture(lm) {
+                // Landmark indices:
+                // 0=wrist, 4=thumb_tip, 8=index_tip, 12=middle_tip, 16=ring_tip, 20=pinky_tip
+                // 5=index_mcp, 6=index_pip, 7=index_dip
+                // 9=middle_mcp, 10=middle_pip, 11=middle_dip
+
+                const indexExtended = lm[8].y < lm[6].y;
+                const middleExtended = lm[12].y < lm[10].y;
+                const ringExtended = lm[16].y < lm[14].y;
+                const pinkyExtended = lm[20].y < lm[18].y;
+
+                // Swipe detection via wrist movement
+                const wristX = lm[0].x;
+                const now = Date.now();
+                if (wsSwipeStartX === null) {
+                    wsSwipeStartX = wristX;
+                    wsSwipeStartTime = now;
+                } else if (now - wsSwipeStartTime > 400) {
+                    const dx = wristX - wsSwipeStartX;
+                    wsSwipeStartX = wristX;
+                    wsSwipeStartTime = now;
+                    // Remember camera is mirrored: moving hand left in camera = moving right in real space
+                    if (dx > 0.18) return 'swipe-left';   // hand moved right in camera frame = swipe left (next page)
+                    if (dx < -0.18) return 'swipe-right';  // opposite
+                }
+
+                // Two fingers (index + middle extended, others closed)
+                if (indexExtended && middleExtended && !ringExtended && !pinkyExtended) {
+                    return 'two-fingers';
+                }
+
+                // Point (only index extended)
+                if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
+                    return 'point';
+                }
+
+                // Open palm (all extended)
+                if (indexExtended && middleExtended && ringExtended && pinkyExtended) {
+                    return 'palm';
+                }
+
+                return 'unknown';
+            }
+
+            function drawHandSkeleton(lm, cw, ch) {
+                const ctx = wsHandCtx;
+                ctx.strokeStyle = 'rgba(180,160,130,0.12)';
+                ctx.lineWidth = 1;
+
+                // Connections
+                const connections = [
+                    [0,1],[1,2],[2,3],[3,4],       // thumb
+                    [0,5],[5,6],[6,7],[7,8],       // index
+                    [0,9],[9,10],[10,11],[11,12],  // middle
+                    [0,13],[13,14],[14,15],[15,16],// ring
+                    [0,17],[17,18],[18,19],[19,20],// pinky
+                    [5,9],[9,13],[13,17]           // palm
+                ];
+
+                connections.forEach(([a, b]) => {
+                    const ax = (1 - lm[a].x) * cw, ay = lm[a].y * ch;
+                    const bx = (1 - lm[b].x) * cw, by = lm[b].y * ch;
+                    ctx.beginPath();
+                    ctx.moveTo(ax, ay);
+                    ctx.lineTo(bx, by);
+                    ctx.stroke();
+                });
+
+                // Landmark dots
+                const tipIndices = [4, 8, 12, 16, 20];
+                lm.forEach((pt, i) => {
+                    const px = (1 - pt.x) * cw;
+                    const py = pt.y * ch;
+                    const isTip = tipIndices.includes(i);
+                    ctx.beginPath();
+                    ctx.arc(px, py, isTip ? 3 : 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = isTip ? 'rgba(180,160,130,0.25)' : 'rgba(180,160,130,0.1)';
+                    ctx.fill();
+                });
+            }
+
+            function updateFingerCursor(lm, cw, ch, gesture) {
+                const indexTip = lm[8];
+                const frameRect = canvasFrame.getBoundingClientRect();
+                const screenX = frameRect.left + (1 - indexTip.x) * cw;
+                const screenY = frameRect.top + indexTip.y * ch;
+
+                fingerCursor.style.left = (screenX - 4) + 'px';
+                fingerCursor.style.top = (screenY - 4) + 'px';
+                fingerCursor.classList.add('visible');
+
+                if (gesture === 'point') {
+                    fingerCursor.style.background = wsBrush.color;
+                    fingerCursor.style.color = wsBrush.color;
+                    fingerCursor.style.width = (wsBrush.size * 2 + 4) + 'px';
+                    fingerCursor.style.height = (wsBrush.size * 2 + 4) + 'px';
+                    fingerCursor.classList.add('drawing-now');
+                } else if (gesture === 'two-fingers') {
+                    fingerCursor.style.background = 'rgba(200,80,60,0.5)';
+                    fingerCursor.style.color = 'rgba(200,80,60,0.5)';
+                    fingerCursor.style.width = '16px';
+                    fingerCursor.style.height = '16px';
+                    fingerCursor.classList.add('drawing-now');
+                } else {
+                    fingerCursor.style.background = 'rgba(180,160,130,0.3)';
+                    fingerCursor.style.color = 'rgba(180,160,130,0.3)';
+                    fingerCursor.style.width = '8px';
+                    fingerCursor.style.height = '8px';
+                    fingerCursor.classList.remove('drawing-now');
+                }
+            }
+
+            // === KEYBOARD SHORTCUTS FOR WORKSHOP ===
+            document.addEventListener('keydown', (e) => {
+                if (!wsActive) return;
+                if (e.key === 'ArrowRight') { e.preventDefault(); wsChangePage(1); }
+                if (e.key === 'ArrowLeft') { e.preventDefault(); wsChangePage(-1); }
+                if (e.key === 'Escape') { e.preventDefault(); closeWorkshop(); }
+                if (e.key === '1') { toolBtns.pen.click(); }
+                if (e.key === '2') { toolBtns.brush.click(); }
+                if (e.key === '3') { toolBtns.eraser.click(); }
+            });
+
+            // Workshop hook placeholder (no closing-cta button anymore)
+
+            // We'll also expose it so the nav menu concept could use it
+            window.openKamiWorkshop = openWorkshop;
+        })();
+
+        // =============================================
+        // ORIGINAL LANDING PAGE SCRIPTS
+        // =============================================
+
+        // Notebook 3D tilt on mouse move
+        const heroVisual = document.getElementById('heroVisual');
+        const notebook3d = document.getElementById('notebook3d');
+        let targetRotateX = 4;
+        let targetRotateY = -12;
+        let currentRotateX = 4;
+        let currentRotateY = -12;
+
+        heroVisual.addEventListener('mousemove', (e) => {
+            const rect = heroVisual.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            targetRotateY = -12 + x * 20;
+            targetRotateX = 4 - y * 12;
+        });
+
+        heroVisual.addEventListener('mouseleave', () => {
+            targetRotateY = -12;
+            targetRotateX = 4;
+        });
+
+        function animateNotebook() {
+            currentRotateX += (targetRotateX - currentRotateX) * 0.06;
+            currentRotateY += (targetRotateY - currentRotateY) * 0.06;
+            notebook3d.style.transform = `rotateY(${currentRotateY}deg) rotateX(${currentRotateX}deg)`;
+            requestAnimationFrame(animateNotebook);
+        }
+        animateNotebook();
+
+        // Dust particles
+        function createDust() {
+            const visual = document.getElementById('heroVisual');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'dust-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = 60 + Math.random() * 40 + '%';
+                particle.style.animationDuration = 6 + Math.random() * 8 + 's';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.width = (1 + Math.random() * 2) + 'px';
+                particle.style.height = particle.style.width;
+                visual.appendChild(particle);
+            }
+        }
+        createDust();
+
+        // Intersection Observer for reveal animations
+        const revealElements = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 80);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: '0px 0px -40px 0px'
+        });
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // Smooth parallax on open notebook
+        const ritualVisual = document.querySelector('.ritual-visual');
+        const openNotebook = document.querySelector('.open-notebook');
+
+        if (ritualVisual && openNotebook) {
+            window.addEventListener('scroll', () => {
+                const rect = ritualVisual.getBoundingClientRect();
+                const progress = 1 - (rect.bottom / (window.innerHeight + rect.height));
+                if (progress > 0 && progress < 1) {
+                    const shift = (progress - 0.5) * 20;
+                    openNotebook.style.transform = `translateY(${shift}px)`;
+                }
+            }, { passive: true });
+        }
+    </script>
+</body>
+</html>

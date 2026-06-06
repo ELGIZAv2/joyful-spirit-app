@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FORMA — Sit Smarter. Work Better. Live Deeper.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Playfair+Display:ital,wght@1,400;1,600;1,700&display=swap');
+
+    :root {
+      --orange: #E8621A;
+      --bg: #080808;
+      --warm-white: #F5F0E8;
+      --charcoal: #1A1A1A;
+      --mid-grey: #2A2A2A;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: auto; }
+
+    body {
+      background: var(--bg);
+      color: var(--warm-white);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ─── LOADING SCREEN ─── */
+    #loader {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 32px;
+    }
+    #loader-logo {
+      font-size: 13px; letter-spacing: 0.4em;
+      color: rgba(245,240,232,0.4);
+      text-transform: uppercase;
+    }
+    #loader-svg {
+      width: 280px; height: 120px;
+    }
+    #loader-path {
+      fill: none;
+      stroke: var(--orange);
+      stroke-width: 1.5;
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+    }
+    #loader-pct {
+      font-size: 12px; letter-spacing: 0.3em;
+      color: rgba(245,240,232,0.3);
+    }
+
+    /* ─── GRAIN OVERLAY ─── */
+    #grain {
+      position: fixed; inset: 0; z-index: 100;
+      pointer-events: none;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* ─── CANVAS ─── */
+    #canvas-wrapper {
+      position: fixed; inset: 0; z-index: 1;
+      pointer-events: none;
+    }
+    #canvas-overlay {
+      position: fixed; inset: 0; z-index: 2;
+      background: rgba(0,0,0,0.60);
+      pointer-events: none;
+    }
+    #three-canvas {
+      width: 100%; height: 100%;
+    }
+
+    /* ─── SCROLL CONTAINER ─── */
+    #scroll-root {
+      position: relative; z-index: 10;
+      pointer-events: none;
+    }
+
+    /* ─── SECTIONS ─── */
+    .section {
+      position: relative;
+      display: flex; align-items: center;
+      padding: 0 8vw;
+      pointer-events: none;
+    }
+    .section.right { justify-content: flex-end; }
+    .section.center { justify-content: center; text-align: center; flex-direction: column; }
+
+    #hero { height: 100vh; }
+    .feature-section { height: 150vh; }
+    #cta-section { height: 80vh; pointer-events: all; }
+
+    /* ─── HERO TEXT ─── */
+    #hero-content {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: 100%;
+      padding: 0 24px;
+    }
+    #hero-eyebrow {
+      font-size: 11px; letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #hero-headline {
+      font-size: clamp(36px, 6vw, 88px);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--warm-white);
+      margin-bottom: 20px;
+      opacity: 0;
+    }
+    #hero-sub {
+      font-size: clamp(14px, 1.4vw, 18px);
+      font-weight: 300;
+      color: rgba(245,240,232,0.55);
+      margin-bottom: 40px;
+      opacity: 0;
+    }
+    #hero-cta {
+      display: inline-block;
+      padding: 15px 36px;
+      border: 1px solid rgba(232,98,26,0.6);
+      color: var(--warm-white);
+      font-size: 14px; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: all;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    #hero-cta::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--orange);
+      transform: translateX(-101%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #hero-cta:hover::before { transform: translateX(0); }
+    #hero-cta span { position: relative; z-index: 1; }
+    #hero-cta:hover { color: #fff; }
+
+    #hero-scroll-hint {
+      position: absolute;
+      bottom: 36px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      opacity: 0;
+    }
+    #hero-scroll-hint span {
+      font-size: 10px; letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.3);
+    }
+    .scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, rgba(232,98,26,0.8), transparent);
+      animation: scrollDrop 2s ease-in-out infinite;
+    }
+    @keyframes scrollDrop {
+      0%, 100% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+      50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+    }
+
+    /* ─── FEATURE COPY BLOCKS ─── */
+    .copy-block {
+      max-width: 460px;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .copy-block.sticky-block {
+      position: sticky;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0;
+    }
+    .section-num {
+      font-size: 11px; letter-spacing: 0.5em;
+      color: var(--orange);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .copy-block h2 {
+      font-size: clamp(28px, 4vw, 54px);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin-bottom: 18px;
+      color: var(--warm-white);
+    }
+    .copy-block p {
+      font-size: 15px; line-height: 1.7;
+      color: rgba(245,240,232,0.55);
+      font-weight: 300;
+    }
+
+    /* ─── ANNOTATION DOTS ─── */
+    .annot-dot-wrapper {
+      position: fixed;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .annot-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--orange);
+      position: relative;
+    }
+    .annot-dot::before, .annot-dot::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: transparent;
+      border: 1px solid var(--orange);
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    .annot-dot::before { width: 24px; height: 24px; animation-delay: 0s; }
+    .annot-dot::after { width: 36px; height: 36px; animation-delay: 0.4s; }
+    @keyframes pulse-ring {
+      0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.8); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+    }
+    .annot-line {
+      width: 60px; height: 1px;
+      background: linear-gradient(to right, var(--orange), rgba(232,98,26,0.2));
+      position: absolute; top: 6px; left: 14px;
+    }
+    .annot-label {
+      position: absolute; top: -6px; left: 80px;
+      font-size: 11px; letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.6);
+      white-space: nowrap;
+    }
+
+    /* ─── STATS ROW ─── */
+    .stats-row {
+      display: flex; gap: 48px;
+      margin-top: 36px;
+      opacity: 0;
+    }
+    .stat-item { display: flex; flex-direction: column; gap: 4px; }
+    .stat-val {
+      font-size: 36px; font-weight: 600;
+      color: var(--orange); letter-spacing: -0.02em;
+    }
+    .stat-label { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,232,0.4); }
+
+    /* ─── MATERIAL BADGE ─── */
+    .material-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      margin-top: 28px;
+      padding: 10px 18px;
+      border: 1px solid rgba(232,98,26,0.3);
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(245,240,232,0.5);
+      opacity: 0;
+    }
+    .material-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--orange);
+    }
+
+    /* ─── COLOR SWATCHES ─── */
+    .swatch-row {
+      display: flex; gap: 14px;
+      margin-top: 28px;
+      opacity: 0;
+    }
+    .swatch {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      pointer-events: all;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 2px solid transparent;
+    }
+    .swatch:hover, .swatch.active {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 2px rgba(245,240,232,0.5);
+    }
+
+    /* ─── RECLINE GAUGE ─── */
+    #recline-gauge {
+      position: fixed;
+      right: 5vw; top: 50%;
+      transform: translateY(-50%);
+      z-index: 25;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      opacity: 0;
+    }
+    #gauge-label { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(245,240,232,0.3); }
+    #gauge-val { font-size: 28px; font-weight: 600; color: var(--orange); letter-spacing: -0.02em; }
+    #gauge-unit { font-size: 10px; letter-spacing: 0.3em; color: rgba(245,240,232,0.3); }
+    #gauge-arc-svg { width: 60px; height: 60px; }
+
+    /* ─── CTA SECTION ─── */
+    #cta-section {
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: 0;
+      padding: 0 24px;
+    }
+    #cta-eyebrow {
+      font-size: 11px; letter-spacing: 0.5em; text-transform: uppercase;
+      color: var(--orange); margin-bottom: 20px;
+      opacity: 0;
+    }
+    #cta-headline {
+      font-size: clamp(40px, 7vw, 100px);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.0;
+      letter-spacing: -0.01em;
+      color: var(--warm-white);
+      margin-bottom: 14px;
+      opacity: 0;
+    }
+    #cta-price {
+      font-size: 16px; letter-spacing: 0.2em;
+      color: rgba(245,240,232,0.4);
+      margin-bottom: 36px;
+      opacity: 0;
+    }
+    #cta-price strong { color: var(--warm-white); }
+    .cta-buttons {
+      display: flex; gap: 16px;
+      margin-bottom: 48px;
+      opacity: 0;
+    }
+    .btn-primary {
+      padding: 16px 40px;
+      background: var(--orange);
+      color: #fff;
+      font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase;
+      border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.3s, transform 0.2s;
+      pointer-events: all;
+    }
+    .btn-primary:hover { background: #ff7730; transform: translateY(-2px); }
+    .btn-outline {
+      padding: 16px 40px;
+      background: transparent;
+      color: var(--warm-white);
+      font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase;
+      border: 1px solid rgba(245,240,232,0.25);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color 0.3s, transform 0.2s;
+      pointer-events: all;
+    }
+    .btn-outline:hover { border-color: var(--orange); transform: translateY(-2px); }
+    .trust-badges {
+      display: flex; gap: 32px; align-items: center;
+      opacity: 0;
+    }
+    .trust-item {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(245,240,232,0.35);
+    }
+    .trust-item svg { opacity: 0.5; }
+    .trust-sep {
+      width: 1px; height: 30px;
+      background: rgba(245,240,232,0.1);
+    }
+
+    /* ─── PARTICLES ─── */
+    #particles-canvas {
+      position: fixed; inset: 0;
+      z-index: 2; pointer-events: none;
+      opacity: 0;
+    }
+
+    /* ─── X-RAY LINES ─── */
+    .xray-block {
+      display: flex; flex-direction: column; gap: 12px;
+      margin-top: 28px;
+      opacity: 0;
+    }
+    .xray-line {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(245,240,232,0.4);
+    }
+    .xray-dash {
+      width: 20px; height: 1px;
+      background: var(--orange);
+    }
+
+    /* ─── NAV ─── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 6vw;
+      pointer-events: all;
+    }
+    #nav-logo {
+      font-size: 20px; font-weight: 600; letter-spacing: 0.1em;
+      color: var(--warm-white);
+    }
+    #nav-logo span { color: var(--orange); }
+    #nav-links {
+      display: flex; gap: 36px;
+    }
+    #nav-links a {
+      font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(245,240,232,0.45);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    #nav-links a:hover { color: var(--warm-white); }
+
+    /* ─── SECTION BACKGROUNDS ─── */
+    .section-bg-overlay {
+      position: sticky; top: 0; left: 0;
+      width: 100%; height: 100vh;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .copy-block { max-width: 90vw; }
+      #hero-headline { font-size: 36px; }
+      .section { padding: 0 5vw; }
+      #nav-links { display: none; }
+      .stats-row { gap: 24px; }
+      .stat-val { font-size: 28px; }
+      .cta-buttons { flex-direction: column; }
+      .trust-badges { flex-wrap: wrap; gap: 20px; }
+      #recline-gauge { right: 3vw; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div id="loader-logo">FORMA</div>
+  <svg id="loader-svg" viewBox="0 0 280 120">
+    <path id="loader-path" d="
+      M20,90 C20,90 30,60 50,50 C70,40 90,70 110,65
+      C130,60 140,40 160,38 C180,36 200,55 220,60
+      C240,65 255,55 260,45 L260,95 C260,100 255,105 250,105
+      L30,105 C25,105 20,100 20,95 Z
+    "/>
+  </svg>
+  <div id="loader-pct">0%</div>
+</div>
+
+<!-- GRAIN -->
+<div id="grain"></div>
+
+<!-- CANVAS -->
+<div id="canvas-wrapper">
+  <canvas id="three-canvas"></canvas>
+</div>
+<div id="canvas-overlay"></div>
+
+<!-- PARTICLES -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ANNOTATION DOTS -->
+<div class="annot-dot-wrapper" id="dot-neck" style="left:52%;top:28%">
+  <div class="annot-dot"></div>
+  <div class="annot-line"></div>
+  <div class="annot-label">Cervical Zone</div>
+</div>
+<div class="annot-dot-wrapper" id="dot-lumbar" style="left:48%;top:58%">
+  <div class="annot-dot"></div>
+  <div class="annot-line"></div>
+  <div class="annot-label">Lumbar Core</div>
+</div>
+<div class="annot-dot-wrapper" id="dot-arm" style="left:72%;top:50%">
+  <div class="annot-dot"></div>
+  <div class="annot-line"></div>
+  <div class="annot-label">Natural Angle</div>
+</div>
+
+<!-- RECLINE GAUGE -->
+<div id="recline-gauge">
+  <div id="gauge-label">Recline</div>
+  <svg id="gauge-arc-svg" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(245,240,232,0.08)" stroke-width="3"/>
+    <circle id="gauge-arc" cx="30" cy="30" r="24" fill="none" stroke="#E8621A" stroke-width="3"
+      stroke-dasharray="150.8" stroke-dashoffset="150.8"
+      stroke-linecap="round" transform="rotate(-90 30 30)"/>
+  </svg>
+  <div id="gauge-val">90°</div>
+  <div id="gauge-unit">angle</div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <div id="nav-logo">FOR<span>M</span>A</div>
+  <div id="nav-links">
+    <a href="#">Design</a>
+    <a href="#">Ergonomics</a>
+    <a href="#">Materials</a>
+    <a href="#">Order</a>
+  </div>
+</div>
+
+<!-- SCROLL ROOT -->
+<div id="scroll-root">
+
+  <!-- HERO -->
+  <section class="section center" id="hero">
+    <div id="hero-content">
+      <div id="hero-eyebrow">Sit Smarter. Work Better. Live Deeper.</div>
+      <h1 id="hero-headline">The Last Sofa<br>You'll Ever Need</h1>
+      <p id="hero-sub">Engineered for humans who sit 8 hours a day.</p>
+      <a href="#" id="hero-cta"><span>Explore FORMA &rarr;</span></a>
+    </div>
+    <div id="hero-scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- SECTION 1 — NECK -->
+  <section class="section feature-section" id="sec-neck" style="align-items:flex-start; padding-top:40vh;">
+    <div class="copy-block" id="copy-neck">
+      <span class="section-num">01 — Neck Support</span>
+      <h2>Zero Neck<br>Strain</h2>
+      <p>Contoured headrest keeps your cervical spine perfectly aligned whether you're on a call or watching Netflix. Form follows physiology.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2 — BACK -->
+  <section class="section right feature-section" id="sec-back" style="align-items:flex-start; padding-top:40vh;">
+    <div class="copy-block" id="copy-back">
+      <span class="section-num">02 — Back Support</span>
+      <h2>Your Back Will<br>Thank You</h2>
+      <p>Adaptive lumbar support responds to your posture — not the other way around. Seven layers of precision-tuned comfort.</p>
+      <div class="xray-block" id="xray-block">
+        <div class="xray-line"><div class="xray-dash"></div>Lumbar curve zone</div>
+        <div class="xray-line"><div class="xray-dash"></div>High-density foam core</div>
+        <div class="xray-line"><div class="xray-dash"></div>Pressure relief base</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 — WFH -->
+  <section class="section feature-section" id="sec-wfh" style="align-items:flex-start; padding-top:40vh;">
+    <div class="copy-block" id="copy-wfh">
+      <span class="section-num">03 — Work From Home</span>
+      <h2>Your Office.<br>Redefined.</h2>
+      <p>Wide flat armrests at perfect typing height. No hunching. No compromise. The desk chair is obsolete.</p>
+      <div class="stats-row" id="stats-row">
+        <div class="stat-item">
+          <span class="stat-val" data-target="8">0</span>
+          <span class="stat-label">Hour workday</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" data-target="0" data-suffix="°">0°</span>
+          <span class="stat-label">Neck tilt</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-val" data-target="100" data-suffix="%">0</span>
+          <span class="stat-label">WFH approved</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 — ARMRESTS -->
+  <section class="section right feature-section" id="sec-arm" style="align-items:flex-start; padding-top:40vh;">
+    <div class="copy-block" id="copy-arm">
+      <span class="section-num">04 — Armrests</span>
+      <h2>Arms at Rest.<br>Mind at Work.</h2>
+      <p>Precision-positioned armrests reduce shoulder tension by keeping your arms at their natural fall angle. Engineered down to the millimeter.</p>
+      <div class="material-badge" id="material-badge">Aerospace-grade memory foam padding</div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 — FABRIC -->
+  <section class="section feature-section" id="sec-fabric" style="align-items:flex-start; padding-top:40vh;">
+    <div class="copy-block" id="copy-fabric">
+      <span class="section-num">05 — Premium Fabric</span>
+      <h2>Feels As Good<br>As It Looks</h2>
+      <p>Stain-resistant, breathable, premium-grade fabric. Built for real life, designed for the rest of your life.</p>
+      <div class="swatch-row" id="swatch-row">
+        <div class="swatch active" data-color="0" style="background:#E8621A;" title="Burnt Orange"></div>
+        <div class="swatch" data-color="1" style="background:#5A5F6B;" title="Slate Grey"></div>
+        <div class="swatch" data-color="2" style="background:#EDE8DE;" title="Cream White"></div>
+        <div class="swatch" data-color="3" style="background:#1B2540;" title="Midnight Navy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 — RECLINE -->
+  <section class="section right feature-section" id="sec-recline" style="align-items:flex-start; padding-top:40vh;">
+    <div class="copy-block" id="copy-recline">
+      <span class="section-num">06 — Recline System</span>
+      <h2>From Work Mode<br>to Rest Mode</h2>
+      <p>One fluid motion. Infinite positions between 90° and 160°. Your body decides when to rest, FORMA simply follows.</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section center" id="cta-section">
+    <div id="cta-eyebrow">The Future of Sitting</div>
+    <h2 id="cta-headline">FORMA.<br>Sit Into It.</h2>
+    <div id="cta-price">Starting at <strong>₹49,999</strong></div>
+    <div class="cta-buttons" id="cta-btns">
+      <button class="btn-primary">Order Now &rarr;</button>
+      <button class="btn-outline">Book a Demo &rarr;</button>
+    </div>
+    <div class="trust-badges" id="trust-badges">
+      <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M5 12l4-4m-4 4l4 4"/></svg>
+        Free Delivery
+      </div>
+      <div class="trust-sep"></div>
+      <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        10 Year Warranty
+      </div>
+      <div class="trust-sep"></div>
+      <div class="trust-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        30 Day Returns
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ═══════════════════════════════════════════════
+   THREE.JS SOFA SCENE
+═══════════════════════════════════════════════ */
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 3.2, 7.5);
+camera.lookAt(0, 0, 0);
+
+// Camera state
+const camState = {
+  x: 0, y: 3.2, z: 7.5,
+  lx: 0, ly: 0, lz: 0,
+  fov: 42
+};
+
+/* ── LIGHTS ── */
+const ambientLight = new THREE.AmbientLight(0x1a0800, 3.0);
+scene.add(ambientLight);
+
+// Strong back rim light — cinematic orange halo
+const rimLight = new THREE.DirectionalLight(0xe8621a, 12);
+rimLight.position.set(0, 2, -6);
+scene.add(rimLight);
+
+// Side fill — warm
+const fillLight = new THREE.DirectionalLight(0xff7733, 3.5);
+fillLight.position.set(-4, 3, 2);
+scene.add(fillLight);
+
+// Right fill — cool contrast
+const fillLight2 = new THREE.DirectionalLight(0x442211, 2.0);
+fillLight2.position.set(4, 2, 2);
+scene.add(fillLight2);
+
+// Top key light — soft warm white
+const topLight = new THREE.DirectionalLight(0xf5ece0, 4.5);
+topLight.position.set(0, 8, 3);
+topLight.castShadow = true;
+scene.add(topLight);
+
+// Under-glow orange halo — mimics studio floor bounce
+const pointGlow = new THREE.PointLight(0xe8621a, 8, 10);
+pointGlow.position.set(0, -0.8, 0);
+scene.add(pointGlow);
+
+// Front low fill
+const frontFill = new THREE.PointLight(0xff9955, 3, 9);
+frontFill.position.set(0, 1.0, 4);
+scene.add(frontFill);
+
+/* ── SOFA BUILDER — Horseshoe Torus Shape ── */
+const sofaGroup = new THREE.Group();
+scene.add(sofaGroup);
+
+const sofaColors = [0xe8621a, 0x5a5f6b, 0xede8de, 0x1b2540];
+let currentColor = 0xe8621a;
+
+// Fabric texture from uploaded image
+const fabricTexture = new THREE.TextureLoader().load('assets/pasted-image-2026-03-30T06-04-35.png');
+fabricTexture.wrapS = THREE.RepeatWrapping;
+fabricTexture.wrapT = THREE.RepeatWrapping;
+fabricTexture.repeat.set(4, 4);
+
+function makeSofaMat(color) {
+  const mat = new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.82,
+    metalness: 0.0,
+    bumpMap: fabricTexture,
+    bumpScale: 0.018,
+    roughnessMap: fabricTexture,
+  });
+  return mat;
+}
+
+// Seat platform material
+const seatMat = new THREE.MeshStandardMaterial({
+  color: 0x2a2520,
+  roughness: 0.95,
+  metalness: 0.0,
+  bumpMap: fabricTexture,
+  bumpScale: 0.006,
+});
+
+function buildSofa(color) {
+  while (sofaGroup.children.length) sofaGroup.remove(sofaGroup.children[0]);
+
+  const mat = makeSofaMat(color);
+
+  // ── BUBBLE SOFA — grid of rounded cushion pods ──
+  // Matches the Roche Bobois Bubble sofa: oval base, rows of spherical bumps
+
+  // Bubble parameters
+  const bubbleR = 0.30;        // radius of each bubble sphere
+  const bubbleGeo = new THREE.SphereGeometry(bubbleR, 20, 16);
+
+  // Sofa overall footprint (oval): width ~3.6, depth ~1.8
+  const sofaW = 1.75;   // half-width X
+  const sofaD = 0.82;   // half-depth Z
+  const sofaH = 0.72;   // total seating height (base bottom to top of seat)
+
+  // ── Seat cushion layer (flat grid) ──
+  // 7 cols × 3 rows, ellipse-clipped
+  const seatCols = 7;
+  const seatRows = 3;
+  const sColStep = (sofaW * 2) / (seatCols - 1);
+  const sRowStep = (sofaD * 2) / (seatRows - 1);
+
+  for (let row = 0; row < seatRows; row++) {
+    for (let col = 0; col < seatCols; col++) {
+      const x = -sofaW + col * sColStep;
+      const z = -sofaD + row * sRowStep;
+      // Ellipse clip
+      const ex = x / (sofaW + 0.15);
+      const ez = z / (sofaD + 0.15);
+      if (ex * ex + ez * ez > 1.0) continue;
+
+      // Slight height variation for organic feel
+      const yOff = Math.sin(col * 0.9) * 0.03 + Math.cos(row * 1.2) * 0.02;
+      const b = new THREE.Mesh(bubbleGeo, mat);
+      b.position.set(x, sofaH * 0.18 + yOff, z);
+      b.castShadow = true;
+      b.receiveShadow = true;
+      sofaGroup.add(b);
+    }
+  }
+
+  // ── Back cushion layer (vertical grid, curved arc) ──
+  // 7 cols × 3 rows, sits behind and rises up
+  const backCols = 7;
+  const backRows = 3;
+  const bColStep = (sofaW * 2) / (backCols - 1);
+  const backBaseZ = -sofaD - bubbleR * 0.6;
+  const backBaseY = sofaH * 0.18 + bubbleR * 0.5;
+  const backRowH  = bubbleR * 1.82;
+
+  for (let row = 0; row < backRows; row++) {
+    for (let col = 0; col < backCols; col++) {
+      const x = -sofaW + col * bColStep;
+      // Ellipse clip for back (wider at middle, narrower at sides)
+      const ex = x / (sofaW + 0.1);
+      if (Math.abs(ex) > 1.0) continue;
+
+      // Arc: back leans slightly backward, curves in at sides
+      const arcLean = (ex * ex) * 0.18;  // sides lean back more
+      const arcCurveZ = backBaseZ - arcLean;
+      const arcCurveY = backBaseY + row * backRowH;
+
+      const yOff = Math.sin(col * 0.8 + row) * 0.025;
+      const b = new THREE.Mesh(bubbleGeo, mat);
+      b.position.set(x, arcCurveY + yOff, arcCurveZ);
+      b.castShadow = true;
+      b.receiveShadow = true;
+      sofaGroup.add(b);
+    }
+  }
+
+  // ── Side / armrest panels (left + right) ──
+  // 2 cols × 3 rows on each side, form the rounded armrest walls
+  const armRows = 4;
+  const armCols = 2;
+  const armRowH  = bubbleR * 1.82;
+  const armColStep = bubbleR * 1.85;
+
+  [-1, 1].forEach(side => {
+    const baseX = side * (sofaW + bubbleR * 0.55);
+    for (let row = 0; row < armRows; row++) {
+      for (let col = 0; col < armCols; col++) {
+        const x = baseX + side * col * armColStep;
+        const y = sofaH * 0.18 + row * armRowH;
+        // Distribute along depth
+        const zPositions = [-sofaD * 0.7, 0, sofaD * 0.55];
+        zPositions.forEach((z, zi) => {
+          // clip top rows to be shorter at front
+          if (row === armRows - 1 && zi === 2) return;
+          const yOff = Math.sin(zi * 1.1 + row) * 0.025;
+          const b = new THREE.Mesh(bubbleGeo, mat);
+          b.position.set(x, y + yOff, z);
+          b.scale.set(1, 0.92 + row * 0.04, 1);
+          b.castShadow = true;
+          b.receiveShadow = true;
+          sofaGroup.add(b);
+        });
+      }
+    }
+  });
+
+  // ── Front skirt row (bottom front edge, small bumps) ──
+  const skirtCols = 6;
+  const skirtStep = (sofaW * 1.8) / (skirtCols - 1);
+  for (let col = 0; col < skirtCols; col++) {
+    const x = -sofaW * 0.9 + col * skirtStep;
+    const ex = x / (sofaW * 1.05);
+    if (ex * ex > 1.0) continue;
+    const b = new THREE.Mesh(bubbleGeo, mat);
+    b.scale.set(1.0, 0.7, 0.85);
+    b.position.set(x, -0.14, sofaD + bubbleR * 0.4);
+    b.castShadow = true;
+    sofaGroup.add(b);
+  }
+}
+
+buildSofa(currentColor);
+
+// Front-facing: camera looks at front of sofa
+sofaGroup.rotation.y = 0;
+sofaGroup.rotation.x = -0.06;
+
+
+
+/* ── RIM GLOW SPRITE ── */
+const glowCanvas = document.createElement('canvas');
+glowCanvas.width = 256; glowCanvas.height = 256;
+const gCtx = glowCanvas.getContext('2d');
+const grd = gCtx.createRadialGradient(128,128,10,128,128,128);
+grd.addColorStop(0,'rgba(232,98,26,0.35)');
+grd.addColorStop(0.5,'rgba(232,98,26,0.08)');
+grd.addColorStop(1,'rgba(0,0,0,0)');
+gCtx.fillStyle = grd;
+gCtx.fillRect(0,0,256,256);
+const glowTex = new THREE.CanvasTexture(glowCanvas);
+const glowMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false });
+const glowSprite = new THREE.Sprite(glowMat);
+glowSprite.scale.set(10, 8, 1);
+glowSprite.position.set(0, 0.5, -2);
+scene.add(glowSprite);
+
+/* ── PARTICLES ── */
+const particleCount = 120;
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+  pPos[i*3]   = (Math.random()-0.5)*12;
+  pPos[i*3+1] = (Math.random()-0.5)*8;
+  pPos[i*3+2] = (Math.random()-0.5)*8;
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pMat = new THREE.PointsMaterial({ color: 0xe8621a, size: 0.03, transparent: true, opacity: 0.4 });
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+/* ══════════════════════════════════════════════
+   SCROLL STATE
+══════════════════════════════════════════════ */
+const state = {
+  breathe: 0,
+  rotY: 0,
+  camX: 0, camY: 3.2, camZ: 7.5,
+  lookX: 0, lookY: 0, lookZ: 0,
+  fov: 42,
+  sofaY: 0,
+  sofaRotY: 0,
+  sofaScale: 1,
+  backTilt: 0,
+  colorIndex: 0,
+  showGauge: false,
+  reclineAngle: 90,
+  particlesOpacity: 0
+};
+
+/* ══════════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════════ */
+const loaderPath = document.getElementById('loader-path');
+const loaderPct = document.getElementById('loader-pct');
+
+gsap.to(loaderPath, {
+  strokeDashoffset: 0,
+  duration: 2,
+  ease: 'power2.inOut',
+  onUpdate: function() {
+    const p = Math.round((1 - this.progress()) * 100);
+    loaderPct.textContent = (100 - p) + '%';
+  },
+  onComplete: () => {
+    gsap.to('#loader', {
+      opacity: 0, duration: 0.8, delay: 0.3,
+      onComplete: () => {
+        document.getElementById('loader').style.display = 'none';
+        initScrollAnimations();
+        animateIn();
+      }
+    });
+  }
+});
+
+/* ══════════════════════════════════════════════
+   HERO ANIMATE IN
+══════════════════════════════════════════════ */
+function animateIn() {
+  gsap.to('#hero-eyebrow', { opacity: 1, y: 0, duration: 0.9, delay: 0.1, ease: 'power3.out' });
+  gsap.to('#hero-headline', { opacity: 1, y: 0, duration: 1, delay: 0.3, ease: 'power3.out' });
+  gsap.to('#hero-sub', { opacity: 1, y: 0, duration: 0.9, delay: 0.5, ease: 'power3.out' });
+  gsap.to('#hero-cta', { opacity: 1, y: 0, duration: 0.8, delay: 0.7, ease: 'power3.out' });
+  gsap.to('#hero-scroll-hint', { opacity: 1, duration: 0.8, delay: 1.2 });
+  gsap.to('#nav', { opacity: 1, duration: 0.8, delay: 0.5 });
+}
+
+/* ══════════════════════════════════════════════
+   SCROLL ANIMATIONS
+══════════════════════════════════════════════ */
+function initScrollAnimations() {
+
+  // HERO → S1
+  ScrollTrigger.create({
+    trigger: '#hero',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 1.2,
+    onUpdate: self => {
+      const p = self.progress;
+      gsap.set(state, {
+        camZ: 7.5 - p * 2.0,
+        camY: 3.2 - p * 1.0,
+        sofaScale: 1 + p * 0.18,
+        sofaRotY: p * 0.3
+      });
+    }
+  });
+
+  // SECTION 1 — NECK
+  ScrollTrigger.create({
+    trigger: '#sec-neck',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to('#copy-neck', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
+      gsap.to('#dot-neck', { opacity: 1, duration: 0.5, delay: 0.4 });
+      gsap.to(state, { camY: 2.8, camZ: 5.8, camX: -1.5, lookY: 0.2, duration: 1.2, ease: 'power2.inOut', sofaRotY: -0.4 });
+    },
+    onLeaveBack: () => {
+      gsap.to('#copy-neck', { opacity: 0, y: 20, duration: 0.5 });
+      gsap.to('#dot-neck', { opacity: 0, duration: 0.3 });
+    }
+  });
+
+  ScrollTrigger.create({
+    trigger: '#sec-neck',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 1,
+    onUpdate: self => {
+      const p = self.progress;
+      gsap.set(state, {
+        sofaRotY: -0.4 + p * 0.5,
+        camZ: 5.8 - p * 0.4
+      });
+    }
+  });
+
+  // SECTION 2 — BACK
+  ScrollTrigger.create({
+    trigger: '#sec-back',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to('#copy-back', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
+      gsap.to('#xray-block', { opacity: 1, duration: 0.7, delay: 0.5, stagger: 0.1 });
+      gsap.to('#dot-neck', { opacity: 0, duration: 0.3 });
+      gsap.to('#dot-lumbar', { opacity: 1, duration: 0.5, delay: 0.4 });
+      gsap.to(state, { camX: 2.2, camY: 2.2, camZ: 5.5, lookY: 0.0, sofaRotY: 0.5, duration: 1.2, ease: 'power2.inOut' });
+      pointGlow.color.set(0xe8621a);
+      gsap.to(pointGlow, { intensity: 14, duration: 0.8 });
+    },
+    onLeaveBack: () => {
+      gsap.to('#copy-back', { opacity: 0, y: 20, duration: 0.5 });
+      gsap.to('#dot-lumbar', { opacity: 0, duration: 0.3 });
+      gsap.to(pointGlow, { intensity: 6, duration: 0.5 });
+    }
+  });
+
+  ScrollTrigger.create({
+    trigger: '#sec-back',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 1,
+    onUpdate: self => {
+      const p = self.progress;
+      gsap.set(state, { sofaRotY: 0.5 - p * 0.5 });
+    }
+  });
+
+  // SECTION 3 — WFH
+  ScrollTrigger.create({
+    trigger: '#sec-wfh',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to('#copy-wfh', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
+      gsap.to('#stats-row', { opacity: 1, duration: 0.7, delay: 0.4 });
+      gsap.to('#dot-lumbar', { opacity: 0, duration: 0.3 });
+      gsap.to(state, { camX: 0, camY: 2.6, camZ: 6.5, lookY: 0, sofaRotY: 0, duration: 1.4, ease: 'power2.inOut' });
+      animateStats();
+    },
+    onLeaveBack: () => {
+      gsap.to('#copy-wfh', { opacity: 0, y: 20, duration: 0.5 });
+      gsap.to('#stats-row', { opacity: 0, duration: 0.3 });
+    }
+  });
+
+  // SECTION 4 — ARMRESTS
+  ScrollTrigger.create({
+    trigger: '#sec-arm',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to('#copy-arm', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
+      gsap.to('#material-badge', { opacity: 1, duration: 0.7, delay: 0.6 });
+      gsap.to('#dot-arm', { opacity: 1, duration: 0.5, delay: 0.4 });
+      gsap.to(state, { camX: -2.5, camY: 1.6, camZ: 5.0, lookY: 0, sofaRotY: 0.6, duration: 1.2, ease: 'power2.inOut' });
+    },
+    onLeaveBack: () => {
+      gsap.to('#copy-arm', { opacity: 0, y: 20, duration: 0.5 });
+      gsap.to('#material-badge', { opacity: 0, duration: 0.3 });
+      gsap.to('#dot-arm', { opacity: 0, duration: 0.3 });
+    }
+  });
+
+  // SECTION 5 — FABRIC
+  ScrollTrigger.create({
+    trigger: '#sec-fabric',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to('#copy-fabric', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
+      gsap.to('#swatch-row', { opacity: 1, duration: 0.7, delay: 0.5 });
+      gsap.to('#dot-arm', { opacity: 0, duration: 0.3 });
+      gsap.to(state, { camX: 0, camY: 3.2, camZ: 7.5, sofaRotY: 0, duration: 1.5, ease: 'power2.inOut' });
+    },
+    onLeaveBack: () => {
+      gsap.to('#copy-fabric', { opacity: 0, y: 20, duration: 0.5 });
+      gsap.to('#swatch-row', { opacity: 0, duration: 0.3 });
+    }
+  });
+
+  ScrollTrigger.create({
+    trigger: '#sec-fabric',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 1.5,
+    onUpdate: self => {
+      gsap.set(state, { sofaRotY: self.progress * Math.PI * 2 });
+    }
+  });
+
+  // SECTION 6 — RECLINE
+  ScrollTrigger.create({
+    trigger: '#sec-recline',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to('#copy-recline', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' });
+      gsap.to('#recline-gauge', { opacity: 1, duration: 0.5, delay: 0.3 });
+      gsap.to(state, { camX: 2.5, camY: 1.8, camZ: 6.2, sofaRotY: 0.5, duration: 1.2, ease: 'power2.inOut' });
+      state.showGauge = true;
+    },
+    onLeaveBack: () => {
+      gsap.to('#copy-recline', { opacity: 0, y: 20, duration: 0.5 });
+      gsap.to('#recline-gauge', { opacity: 0, duration: 0.3 });
+      state.showGauge = false;
+    }
+  });
+
+  ScrollTrigger.create({
+    trigger: '#sec-recline',
+    start: 'top top',
+    end: 'bottom top',
+    scrub: 1.2,
+    onUpdate: self => {
+      const angle = 90 + self.progress * 70;
+      state.reclineAngle = angle;
+      state.backTilt = self.progress * 0.7;
+      updateGauge(angle);
+    }
+  });
+
+  // CTA
+  ScrollTrigger.create({
+    trigger: '#cta-section',
+    start: 'top 80%',
+    onEnter: () => {
+      gsap.to(state, { camX: 0, camY: 3.2, camZ: 7.5, sofaRotY: 0, backTilt: 0, sofaScale: 1, duration: 1.8, ease: 'power3.inOut' });
+      gsap.to('#cta-eyebrow', { opacity: 1, y: 0, duration: 0.7, delay: 0.3 });
+      gsap.to('#cta-headline', { opacity: 1, y: 0, duration: 0.9, delay: 0.5 });
+      gsap.to('#cta-price', { opacity: 1, y: 0, duration: 0.7, delay: 0.7 });
+      gsap.to('#cta-btns', { opacity: 1, y: 0, duration: 0.7, delay: 0.9 });
+      gsap.to('#trust-badges', { opacity: 1, duration: 0.7, delay: 1.1 });
+      gsap.to('#particles-canvas', { opacity: 1, duration: 1.5 });
+      pointGlow.intensity = 14;
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   STATS COUNTER
+═══════════════════════════════════════════ */
+function animateStats() {
+  const els = document.querySelectorAll('.stat-val');
+  els.forEach(el => {
+    const target = parseInt(el.dataset.target);
+    const suffix = el.dataset.suffix || '';
+    const obj = { val: 0 };
+    gsap.to(obj, {
+      val: target, duration: 1.5, delay: 0.5, ease: 'power2.out',
+      onUpdate: () => {
+        el.textContent = Math.round(obj.val) + (target === 0 ? '°' : suffix);
+      }
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   RECLINE GAUGE
+═══════════════════════════════════════════ */
+function updateGauge(angle) {
+  const gaugeVal = document.getElementById('gauge-val');
+  const arc = document.getElementById('gauge-arc');
+  gaugeVal.textContent = Math.round(angle) + '°';
+  const pct = (angle - 90) / 70;
+  const circumf = 150.8;
+  arc.setAttribute('stroke-dashoffset', circumf * (1 - pct));
+}
+
+/* ═══════════════════════════════════════════
+   COLOR SWATCHES
+═══════════════════════════════════════════ */
+document.querySelectorAll('.swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    const idx = parseInt(sw.dataset.color);
+    const newColor = sofaColors[idx];
+    buildSofa(newColor);
+    currentColor = newColor;
+    if (idx === 0) rimLight.color.set(0xe8621a);
+    else if (idx === 1) rimLight.color.set(0x8899bb);
+    else if (idx === 2) rimLight.color.set(0xfff8ee);
+    else rimLight.color.set(0x334477);
+  });
+});
+
+/* ═══════════════════════════════════════════
+   PARTICLE CANVAS
+═══════════════════════════════════════════ */
+const pCanvas = document.getElementById('particles-canvas');
+pCanvas.width = window.innerWidth;
+pCanvas.height = window.innerHeight;
+const pCtx = pCanvas.getContext('2d');
+
+const ptcls = Array.from({length: 60}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: window.innerHeight + Math.random() * 100,
+  size: Math.random() * 1.5 + 0.3,
+  speed: Math.random() * 0.4 + 0.2,
+  opacity: Math.random() * 0.5 + 0.1
+}));
+
+function drawParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  ptcls.forEach(p => {
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    pCtx.fillStyle = `rgba(232,98,26,${p.opacity})`;
+    pCtx.fill();
+    p.y -= p.speed;
+    if (p.y < -10) {
+      p.y = window.innerHeight + 10;
+      p.x = Math.random() * window.innerWidth;
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   RENDER LOOP
+═══════════════════════════════════════════ */
+const clock = new THREE.Clock();
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// Smooth camera state
+const smooth = {
+  camX: 0, camY: 3.2, camZ: 7.5,
+  lookX: 0, lookY: 0, lookZ: 0,
+  sofaRotY: 0, sofaScale: 1, backTilt: 0
+};
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const dt = 0.055;
+
+  // Smooth interpolation
+  smooth.camX = lerp(smooth.camX, state.camX, dt);
+  smooth.camY = lerp(smooth.camY, state.camY, dt);
+  smooth.camZ = lerp(smooth.camZ, state.camZ, dt);
+  smooth.lookX = lerp(smooth.lookX, state.lookX, dt);
+  smooth.lookY = lerp(smooth.lookY, state.lookY, dt);
+  smooth.sofaRotY = lerp(smooth.sofaRotY, state.sofaRotY, dt);
+  smooth.sofaScale = lerp(smooth.sofaScale, state.sofaScale, dt * 0.7);
+  smooth.backTilt = lerp(smooth.backTilt, state.backTilt, dt);
+
+  // Breathing float
+  const breatheY = Math.sin(t * 0.9) * 0.08;
+  const breatheRot = Math.sin(t * 0.6) * 0.05;
+
+  sofaGroup.position.y = breatheY;
+  sofaGroup.rotation.y = smooth.sofaRotY + breatheRot;
+  sofaGroup.scale.setScalar(smooth.sofaScale);
+
+  // Back tilt (recline) — tilt back bubbles
+  sofaGroup.children.forEach((child, i) => {
+    if (child.position && child.position.y > 0.2 && child.position.z < -0.5) {
+      child.position.z = child.position.z; // recline via group rotation
+    }
+  });
+
+  // Camera
+  camera.position.set(smooth.camX, smooth.camY, smooth.camZ);
+  camera.lookAt(smooth.lookX, smooth.lookY, smooth.lookZ);
+
+  // Glow pulse
+  pointGlow.intensity = 6 + Math.sin(t * 1.2) * 1.5;
+  rimLight.intensity = 8 + Math.sin(t * 0.7) * 1.0;
+
+  // Particles
+  particles.rotation.y = t * 0.02;
+
+  drawParticles();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+/* ═══════════════════════════════════════════
+   RESIZE
+═══════════════════════════════════════════ */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+});
+
+/* ═══════════════════════════════════════════
+   MAGNETIC CTA
+═══════════════════════════════════════════ */
+const heroCta = document.getElementById('hero-cta');
+heroCta.addEventListener('mousemove', (e) => {
+  const rect = heroCta.getBoundingClientRect();
+  const dx = e.clientX - (rect.left + rect.width / 2);
+  const dy = e.clientY - (rect.top + rect.height / 2);
+  gsap.to(heroCta, { x: dx * 0.3, y: dy * 0.3, duration: 0.4, ease: 'power2.out' });
+});
+heroCta.addEventListener('mouseleave', () => {
+  gsap.to(heroCta, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.5)' });
+});
+</script>
+</body>
+</html>

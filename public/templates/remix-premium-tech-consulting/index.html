@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stratum — Strategic Technology Consulting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #f8f7f4;
+      --gray-100: #f0ede8;
+      --gray-200: #e2ddd6;
+      --gray-400: #9c9488;
+      --gray-600: #5a5550;
+      --accent: #c8b89a;
+      --accent-dark: #8a7560;
+      --font-heading: 'Syne', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── Custom cursor ── */
+    .cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 8px; height: 8px;
+      background: var(--black);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, background 0.2s;
+    }
+    .cursor-ring {
+      position: fixed;
+      top: 0; left: 0;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(10,10,10,0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s, border-color 0.3s;
+    }
+    body:has(.nav-link:hover) .cursor,
+    body:has(a:hover) .cursor { width: 12px; height: 12px; }
+    body:has(a:hover) .cursor-ring { width: 56px; height: 56px; border-color: rgba(200,184,154,0.7); }
+
+    /* ── Navbar ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 24px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: padding 0.4s ease, background 0.4s ease, backdrop-filter 0.4s ease, border-bottom 0.4s ease;
+    }
+    nav.scrolled {
+      padding: 16px 60px;
+      background: rgba(248,247,244,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .nav-logo {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      color: var(--black);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+    .nav-link {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--black); }
+    .nav-cta {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 10px 22px;
+      background: var(--black);
+      color: var(--white);
+      border: none;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.2s;
+      cursor: none;
+    }
+    .nav-cta:hover { background: var(--gray-600); transform: translateY(-1px); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+      background: var(--black);
+    }
+
+    #wave-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(10,10,10,0.85) 0%,
+        rgba(10,10,10,0.6) 45%,
+        rgba(10,10,10,0.15) 100%
+      );
+      z-index: 2;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      padding: 0 60px 80px;
+      max-width: 720px;
+    }
+    .hero-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s 0.3s forwards;
+    }
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: clamp(48px, 7vw, 96px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      margin-bottom: 28px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 0.9s 0.5s forwards;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .hero-sub {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: rgba(248,247,244,0.65);
+      max-width: 440px;
+      margin-bottom: 44px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s 0.7s forwards;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.8s 0.9s forwards;
+    }
+    .btn-primary {
+      padding: 14px 32px;
+      background: var(--white);
+      color: var(--black);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: none;
+      cursor: none;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .btn-primary:hover { background: var(--accent); transform: translateY(-2px); }
+    .btn-ghost {
+      padding: 14px 32px;
+      background: transparent;
+      color: rgba(248,247,244,0.75);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid rgba(248,247,244,0.25);
+      cursor: none;
+      transition: border-color 0.25s, color 0.25s, transform 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--white); transform: translateY(-2px); }
+
+    .hero-scroll-indicator {
+      position: absolute;
+      bottom: 36px;
+      right: 60px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s forwards;
+    }
+    .scroll-line {
+      width: 40px;
+      height: 1px;
+      background: rgba(248,247,244,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: var(--accent);
+      animation: scrollLine 2s 1.5s infinite ease-in-out;
+    }
+    .scroll-text {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(248,247,244,0.4);
+    }
+
+    @keyframes scrollLine {
+      0% { left: -100%; }
+      50% { left: 0%; }
+      100% { left: 100%; }
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Marquee ── */
+    .marquee-section {
+      background: var(--black);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 20px 0;
+      overflow: hidden;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 80px;
+      animation: marquee 28s linear infinite;
+      white-space: nowrap;
+    }
+    .marquee-item {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(248,247,244,0.3);
+      flex-shrink: 0;
+    }
+    .marquee-item span {
+      color: rgba(200,184,154,0.6);
+      margin-right: 80px;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ── Sections ── */
+    section { padding: 140px 60px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: clamp(36px, 4.5vw, 64px);
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -0.025em;
+      color: var(--black);
+      margin-bottom: 24px;
+    }
+    .section-body {
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--gray-600);
+      max-width: 480px;
+    }
+
+    /* About section */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .about-visual {
+      position: relative;
+      height: 520px;
+      background: var(--gray-100);
+      overflow: hidden;
+    }
+    .about-visual-inner {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 2px;
+    }
+    .about-cell {
+      background: var(--gray-200);
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .about-cell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--black);
+      transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.76,0,0.24,1);
+    }
+    .about-cell:hover::after { transform: translateY(0); }
+    .about-cell:nth-child(1) { background: #e8e2da; }
+    .about-cell:nth-child(2) { background: #d4cfc8; }
+    .about-cell:nth-child(3) { background: #cac4bc; }
+    .about-cell:nth-child(4) { background: #bfb9b0; }
+    .about-number {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .about-stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 48px;
+      padding-top: 48px;
+      border-top: 1px solid var(--gray-200);
+    }
+    .stat-item {}
+    .stat-num {
+      font-family: var(--font-heading);
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--black);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Services section */
+    .services-section { background: var(--black); }
+    .services-section .section-title { color: var(--white); }
+    .services-section .section-label { color: rgba(200,184,154,0.7); }
+    .services-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+      margin-bottom: 80px;
+    }
+    .services-header .section-body { color: rgba(248,247,244,0.45); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+    .service-card {
+      background: var(--black);
+      padding: 48px 40px;
+      transition: background 0.3s;
+      cursor: none;
+    }
+    .service-card:hover { background: #111; }
+    .service-num {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: rgba(200,184,154,0.5);
+      margin-bottom: 32px;
+    }
+    .service-icon {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 24px;
+    }
+    .service-name {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+    .service-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: rgba(248,247,244,0.4);
+    }
+    .service-arrow {
+      display: inline-block;
+      margin-top: 32px;
+      font-size: 20px;
+      color: var(--accent);
+      transform: rotate(0deg);
+      transition: transform 0.3s;
+    }
+    .service-card:hover .service-arrow { transform: rotate(45deg); }
+
+    /* Work section */
+    .work-intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+      margin-bottom: 64px;
+    }
+    .work-grid {
+      display: grid;
+      grid-template-columns: 7fr 5fr;
+      gap: 20px;
+    }
+    .work-card {
+      position: relative;
+      overflow: hidden;
+      cursor: none;
+    }
+    .work-card-inner {
+      height: 460px;
+      background: var(--gray-100);
+      position: relative;
+      overflow: hidden;
+    }
+    .work-card:nth-child(2) .work-card-inner { height: 340px; }
+    .work-card:nth-child(3) .work-card-inner { height: 100px; margin-top: 20px; }
+    .work-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform 0.6s cubic-bezier(0.76,0,0.24,1);
+    }
+    .work-card:hover .work-bg { transform: scale(1.04); }
+    .work-bg-1 {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    }
+    .work-bg-2 {
+      background: linear-gradient(135deg, #2d1b1b 0%, #4a2020 100%);
+    }
+    .work-bg-3 {
+      background: linear-gradient(135deg, #1a2d1a 0%, #2d4a2d 100%);
+    }
+    .work-card-info {
+      position: absolute;
+      bottom: 28px;
+      left: 28px;
+      right: 28px;
+    }
+    .work-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      background: rgba(248,247,244,0.12);
+      color: rgba(248,247,244,0.7);
+      margin-bottom: 10px;
+    }
+    .work-title {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+    .work-card:nth-child(3) .work-card-info { display: none; }
+    .work-more {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--black);
+      text-decoration: none;
+      height: 100%;
+    }
+    .work-card:nth-child(3) .work-card-inner {
+      background: var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Approach section */
+    .approach-section { background: var(--gray-100); }
+    .approach-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .approach-steps {
+      margin-top: 16px;
+    }
+    .approach-step {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--gray-200);
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 24px;
+      align-items: start;
+      cursor: none;
+    }
+    .approach-step:first-child { border-top: 1px solid var(--gray-200); }
+    .step-num {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--accent-dark);
+      padding-top: 4px;
+    }
+    .step-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--black);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .step-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--gray-600);
+    }
+    .approach-visual {
+      position: sticky;
+      top: 120px;
+    }
+    .approach-diagram {
+      width: 100%;
+      aspect-ratio: 1;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .diagram-rings {
+      position: relative;
+      width: 260px;
+      height: 260px;
+    }
+    .diagram-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid var(--gray-200);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .diagram-ring:nth-child(1) { width: 80px; height: 80px; background: var(--black); border-color: var(--black); }
+    .diagram-ring:nth-child(2) { width: 140px; height: 140px; }
+    .diagram-ring:nth-child(3) { width: 200px; height: 200px; }
+    .diagram-ring:nth-child(4) { width: 260px; height: 260px; }
+    .diagram-dot {
+      position: absolute;
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+    }
+
+    /* Testimonial */
+    .testimonial-section {
+      padding: 120px 60px;
+      background: var(--black);
+    }
+    .testimonial-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .quote-mark {
+      font-family: var(--font-heading);
+      font-size: 80px;
+      line-height: 0.5;
+      color: rgba(200,184,154,0.2);
+      margin-bottom: 32px;
+    }
+    .quote-text {
+      font-family: var(--font-heading);
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      margin-bottom: 40px;
+    }
+    .quote-author {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: rgba(248,247,244,0.4);
+      text-transform: uppercase;
+    }
+    .quote-author strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* CTA section */
+    .cta-section {
+      padding: 160px 60px;
+      text-align: center;
+    }
+    .cta-section .section-title {
+      font-size: clamp(48px, 6vw, 88px);
+      max-width: 800px;
+      margin: 0 auto 12px;
+    }
+    .cta-section .section-body {
+      max-width: 440px;
+      margin: 0 auto 48px;
+      text-align: center;
+    }
+    .cta-btn {
+      display: inline-block;
+      padding: 18px 48px;
+      background: var(--black);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: none;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .cta-btn:hover { background: var(--accent-dark); transform: translateY(-2px); }
+
+    /* Footer */
+    footer {
+      background: var(--black);
+      padding: 80px 60px 40px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 60px;
+    }
+    .footer-brand-name {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.5px;
+      margin-bottom: 16px;
+    }
+    .footer-tagline {
+      font-size: 13px;
+      line-height: 1.7;
+      color: rgba(248,247,244,0.35);
+      max-width: 240px;
+    }
+    .footer-col-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(248,247,244,0.25);
+      margin-bottom: 20px;
+    }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 12px; }
+    .footer-links a {
+      font-size: 14px;
+      color: rgba(248,247,244,0.5);
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: none;
+    }
+    .footer-links a:hover { color: var(--white); }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-copy {
+      font-size: 12px;
+      color: rgba(248,247,244,0.2);
+      letter-spacing: 0.04em;
+    }
+    .footer-legal {
+      display: flex;
+      gap: 28px;
+    }
+    .footer-legal a {
+      font-size: 12px;
+      color: rgba(248,247,244,0.2);
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: none;
+    }
+    .footer-legal a:hover { color: rgba(248,247,244,0.6); }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    @media (max-width: 900px) {
+      nav { padding: 20px 24px; }
+      nav.scrolled { padding: 14px 24px; }
+      .nav-links { display: none; }
+      section { padding: 80px 24px; }
+      .hero-content { padding: 0 24px 60px; }
+      .about-grid, .services-header, .work-intro, .approach-grid,
+      .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .work-grid { grid-template-columns: 1fr; }
+      .hero-scroll-indicator { right: 24px; }
+      .testimonial-section, .cta-section { padding: 80px 24px; }
+      footer { padding: 60px 24px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Navbar -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">Stratum</a>
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link">Services</a></li>
+      <li><a href="#" class="nav-link">Work</a></li>
+      <li><a href="#" class="nav-link">Approach</a></li>
+      <li><a href="#" class="nav-link">About</a></li>
+      <li><a href="#" class="nav-link">Insights</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Start a project</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <canvas id="wave-canvas"></canvas>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-label">Strategic Technology Consulting</p>
+      <h1 class="hero-title">Build what<br>matters <em>most.</em></h1>
+      <p class="hero-sub">We partner with ambitious organizations to engineer transformative digital systems — from architecture to deployment.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary">Explore our work</a>
+        <a href="#" class="btn-ghost">Our approach</a>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator">
+      <div class="scroll-line"></div>
+      <span class="scroll-text">Scroll</span>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee-section">
+    <div class="marquee-track" id="marqueeTrack">
+      <span class="marquee-item">Platform Engineering <span>✦</span></span>
+      <span class="marquee-item">Cloud Architecture <span>✦</span></span>
+      <span class="marquee-item">AI & Machine Learning <span>✦</span></span>
+      <span class="marquee-item">Digital Transformation <span>✦</span></span>
+      <span class="marquee-item">Product Strategy <span>✦</span></span>
+      <span class="marquee-item">DevOps & SRE <span>✦</span></span>
+      <span class="marquee-item">Data Engineering <span>✦</span></span>
+      <span class="marquee-item">Security & Compliance <span>✦</span></span>
+      <span class="marquee-item">Platform Engineering <span>✦</span></span>
+      <span class="marquee-item">Cloud Architecture <span>✦</span></span>
+      <span class="marquee-item">AI & Machine Learning <span>✦</span></span>
+      <span class="marquee-item">Digital Transformation <span>✦</span></span>
+      <span class="marquee-item">Product Strategy <span>✦</span></span>
+      <span class="marquee-item">DevOps & SRE <span>✦</span></span>
+      <span class="marquee-item">Data Engineering <span>✦</span></span>
+      <span class="marquee-item">Security & Compliance <span>✦</span></span>
+    </div>
+  </div>
+
+  <!-- About -->
+  <section>
+    <div class="about-grid">
+      <div>
+        <p class="section-label reveal">Who we are</p>
+        <h2 class="section-title reveal reveal-delay-1">Precision<br>engineering<br>at scale.</h2>
+        <p class="section-body reveal reveal-delay-2">Stratum brings together senior engineers, architects, and strategists to solve the problems that matter. We work inside your teams, not around them — embedding expertise where it has the most impact.</p>
+        <div class="about-stats reveal reveal-delay-3">
+          <div class="stat-item">
+            <div class="stat-num">180+</div>
+            <div class="stat-label">Projects delivered</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">94%</div>
+            <div class="stat-label">Client retention</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">12</div>
+            <div class="stat-label">Years operating</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-visual reveal reveal-delay-2">
+        <div class="about-visual-inner">
+          <div class="about-cell"><span class="about-number">01</span></div>
+          <div class="about-cell"><span class="about-number">02</span></div>
+          <div class="about-cell"><span class="about-number">03</span></div>
+          <div class="about-cell"><span class="about-number">04</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="services-section">
+    <div class="services-header">
+      <div>
+        <p class="section-label reveal">What we do</p>
+        <h2 class="section-title reveal reveal-delay-1">Capabilities<br>built for complexity.</h2>
+      </div>
+      <p class="section-body reveal reveal-delay-2">From the initial whiteboard to production at scale, we cover the full spectrum of technology consulting — with the depth to go end-to-end on every engagement.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal">
+        <div class="service-num">01</div>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none">
+          <rect x="4" y="4" width="28" height="28" rx="2" stroke="rgba(200,184,154,0.6)" stroke-width="1.5"/>
+          <path d="M4 14h28M14 4v28" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="service-name">Platform Architecture</div>
+        <div class="service-desc">Design and build resilient, scalable infrastructure that grows with your business — from microservices to event-driven systems.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-num">02</div>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="12" stroke="rgba(200,184,154,0.6)" stroke-width="1.5"/>
+          <circle cx="18" cy="18" r="5" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+          <path d="M18 6v4M18 26v4M6 18h4M26 18h4" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="service-name">AI & Data Systems</div>
+        <div class="service-desc">Operationalize machine learning and build intelligent data pipelines that deliver measurable competitive advantage.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-num">03</div>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none">
+          <path d="M8 28L18 8l10 20" stroke="rgba(200,184,154,0.6)" stroke-width="1.5"/>
+          <path d="M11 22h14" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="service-name">Product Engineering</div>
+        <div class="service-desc">Ship faster without sacrificing quality. Our embedded teams work in your codebase to accelerate delivery and raise engineering standards.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <div class="service-num">04</div>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none">
+          <path d="M6 30V16l12-10 12 10V30" stroke="rgba(200,184,154,0.6)" stroke-width="1.5"/>
+          <rect x="13" y="20" width="10" height="10" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="service-name">Cloud & DevOps</div>
+        <div class="service-desc">Modernize your infrastructure with automated deployment pipelines, observability stacks, and cloud-native reliability engineering.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-num">05</div>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none">
+          <path d="M18 4L4 12v12l14 8 14-8V12L18 4z" stroke="rgba(200,184,154,0.6)" stroke-width="1.5"/>
+          <path d="M18 4v24M4 12l14 8 14-8" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="service-name">Security & Compliance</div>
+        <div class="service-desc">Embed security from the ground up. Threat modelling, zero-trust architecture, and compliance frameworks built for regulated industries.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-num">06</div>
+        <svg class="service-icon" viewBox="0 0 36 36" fill="none">
+          <rect x="4" y="10" width="12" height="16" rx="1" stroke="rgba(200,184,154,0.6)" stroke-width="1.5"/>
+          <rect x="20" y="4" width="12" height="10" rx="1" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+          <rect x="20" y="20" width="12" height="10" rx="1" stroke="rgba(200,184,154,0.4)" stroke-width="1.5"/>
+        </svg>
+        <div class="service-name">Digital Strategy</div>
+        <div class="service-desc">Align technology investment with business outcomes. We work with leadership to set the direction and build the roadmap that gets you there.</div>
+        <div class="service-arrow">↗</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work -->
+  <section>
+    <div class="work-intro">
+      <div>
+        <p class="section-label reveal">Selected work</p>
+        <h2 class="section-title reveal reveal-delay-1">Projects that<br>define markets.</h2>
+      </div>
+      <p class="section-body reveal reveal-delay-2">A selection of engagements where deep technical partnership produced lasting competitive advantage for our clients.</p>
+    </div>
+    <div class="work-grid">
+      <div class="work-card reveal">
+        <div class="work-card-inner">
+          <div class="work-bg work-bg-1"></div>
+          <div class="work-card-info">
+            <div class="work-tag">Financial Services · Platform</div>
+            <div class="work-title">Real-time Trading Infrastructure at 200k TPS</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="work-card reveal reveal-delay-1">
+          <div class="work-card-inner">
+            <div class="work-bg work-bg-2"></div>
+            <div class="work-card-info">
+              <div class="work-tag">Healthcare · AI</div>
+              <div class="work-title">Predictive Diagnostics Platform</div>
+            </div>
+          </div>
+        </div>
+        <div class="work-card reveal reveal-delay-2" style="margin-top:20px;">
+          <div class="work-card-inner" style="height:120px; background: var(--gray-200); display:flex; align-items:center; justify-content:center;">
+            <a href="#" class="work-more">View all projects <span style="font-size:18px">→</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Approach -->
+  <section class="approach-section">
+    <div class="approach-grid">
+      <div>
+        <p class="section-label reveal">How we work</p>
+        <h2 class="section-title reveal reveal-delay-1">A methodology<br>built on trust.</h2>
+        <div class="approach-steps">
+          <div class="approach-step reveal reveal-delay-1">
+            <span class="step-num">01</span>
+            <div>
+              <div class="step-title">Discovery & Alignment</div>
+              <div class="step-desc">We begin by understanding the business deeply — stakeholders, constraints, existing systems — before proposing a single line of architecture.</div>
+            </div>
+          </div>
+          <div class="approach-step reveal reveal-delay-2">
+            <span class="step-num">02</span>
+            <div>
+              <div class="step-title">Design & Validation</div>
+              <div class="step-desc">Architecture is co-designed with your team. We validate assumptions early with prototypes and spike solutions to de-risk the build phase.</div>
+            </div>
+          </div>
+          <div class="approach-step reveal reveal-delay-3">
+            <span class="step-num">03</span>
+            <div>
+              <div class="step-title">Embedded Delivery</div>
+              <div class="step-desc">Our engineers work directly alongside yours — inside your tools, your sprints, your culture — transferring knowledge as we build.</div>
+            </div>
+          </div>
+          <div class="approach-step reveal reveal-delay-4">
+            <span class="step-num">04</span>
+            <div>
+              <div class="step-title">Handover & Growth</div>
+              <div class="step-desc">Every engagement ends with your team fully capable. Documentation, runbooks, and ongoing access to our network ensure the work endures.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="approach-visual reveal reveal-delay-2">
+        <div class="approach-diagram">
+          <div class="diagram-rings">
+            <div class="diagram-ring"></div>
+            <div class="diagram-ring"></div>
+            <div class="diagram-ring"></div>
+            <div class="diagram-ring" style="display:flex;align-items:center;justify-content:center;">
+              <span style="font-family:var(--font-heading);font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--gray-400);position:absolute;bottom:20px;text-transform:uppercase;">Stratum Method</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial -->
+  <section class="testimonial-section">
+    <div class="testimonial-inner">
+      <div class="quote-mark reveal">"</div>
+      <p class="quote-text reveal reveal-delay-1">"Stratum didn't just build the platform — they rewired how our engineering organization thinks about scale. The results speak for themselves."</p>
+      <p class="quote-author reveal reveal-delay-2"><strong>Matias Vörös</strong> — CTO, Norvik Capital Group</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <p class="section-label reveal" style="text-align:center;">Let's talk</p>
+    <h2 class="section-title reveal reveal-delay-1">Ready to build<br>something lasting?</h2>
+    <p class="section-body reveal reveal-delay-2">We take on a small number of new clients each quarter. Tell us about your challenge and we'll respond within 24 hours.</p>
+    <a href="#" class="cta-btn reveal reveal-delay-3">Get in touch</a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">Stratum</div>
+        <p class="footer-tagline">Strategic technology consulting for organizations building at the frontier.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Services</div>
+        <ul class="footer-links">
+          <li><a href="#">Platform Architecture</a></li>
+          <li><a href="#">AI & Data Systems</a></li>
+          <li><a href="#">Product Engineering</a></li>
+          <li><a href="#">Cloud & DevOps</a></li>
+          <li><a href="#">Security</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="#">About us</a></li>
+          <li><a href="#">Work</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Insights</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Connect</div>
+        <ul class="footer-links">
+          <li><a href="#">LinkedIn</a></li>
+          <li><a href="#">GitHub</a></li>
+          <li><a href="#">X / Twitter</a></li>
+          <li><a href="#">Newsletter</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 Stratum Consulting. All rights reserved.</span>
+      <div class="footer-legal">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Cookie Settings</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ── Custom cursor ──
+    const cursor = document.getElementById('cursor');
+    const cursorRing = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    (function animCursor() {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      cursor.style.left = mx + 'px';
+      cursor.style.top = my + 'px';
+      cursorRing.style.left = rx + 'px';
+      cursorRing.style.top = ry + 'px';
+      requestAnimationFrame(animCursor);
+    })();
+
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ── Scroll reveal ──
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+
+    // ── Wave Canvas (Three.js-style but using WebGL via raw canvas) ──
+    (function initWaves() {
+      const canvas = document.getElementById('wave-canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return;
+
+      let W, H, mouseX = 0.5, mouseY = 0.5, targetX = 0.5, targetY = 0.5;
+
+      function resize() {
+        W = canvas.width = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+        gl.viewport(0, 0, W, H);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      document.addEventListener('mousemove', e => {
+        targetX = e.clientX / window.innerWidth;
+        targetY = 1.0 - e.clientY / window.innerHeight;
+      });
+
+      const vsSource = `
+        attribute vec2 a_pos;
+        void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+      `;
+
+      const fsSource = `
+        precision mediump float;
+        uniform float u_time;
+        uniform vec2 u_res;
+        uniform vec2 u_mouse;
+
+        float wave(vec2 uv, float freq, float speed, float amp, float phase) {
+          return sin(uv.x * freq + u_time * speed + phase + u_mouse.x * 3.0) * amp;
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / u_res;
+          float aspect = u_res.x / u_res.y;
+          vec2 p = uv;
+          p.x *= aspect;
+
+          vec2 mp = vec2(u_mouse.x * aspect, u_mouse.y);
+          float mdist = length(p - mp);
+          float mousePull = exp(-mdist * mdist * 3.0) * 0.4;
+
+          float alpha = 0.0;
+          float baseY = 0.0;
+
+          for (int i = 0; i < 9; i++) {
+            float fi = float(i);
+            float t = fi / 8.0;
+            float yOffset = t * 1.2 - 0.1;
+            float freq = 3.5 + fi * 0.9;
+            float speed = 0.3 + fi * 0.07;
+            float amp = 0.018 + fi * 0.004;
+            float mouseAmp = mousePull * (0.04 + fi * 0.006);
+
+            float wy = wave(p, freq, speed, amp + mouseAmp, fi * 0.72)
+                     + wave(p, freq * 0.5, speed * 0.7, amp * 0.5, fi * 1.3 + 2.1)
+                     + u_mouse.y * 0.12 * exp(-fi * 0.3);
+
+            float dist = abs(p.y - yOffset - wy);
+            float thickness = 0.0008 + t * 0.0005 + mousePull * 0.002;
+            float lineAlpha = smoothstep(thickness * 2.2, thickness * 0.3, dist);
+            lineAlpha *= (0.08 + t * 0.12) * (1.0 + mousePull * 2.0);
+            alpha = max(alpha, lineAlpha);
+          }
+
+          // Subtle color tint — warm smoke
+          vec3 lineColor = mix(
+            vec3(0.55, 0.48, 0.38),
+            vec3(0.8, 0.72, 0.58),
+            alpha
+          );
+
+          gl_FragColor = vec4(lineColor, alpha * 0.85);
+        }
+      `;
+
+      function compile(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+      }
+
+      const prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSource));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSource));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      const aPos = gl.getAttribLocation(prog, 'a_pos');
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+      const uTime = gl.getUniformLocation(prog, 'u_time');
+      const uRes = gl.getUniformLocation(prog, 'u_res');
+      const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+      let t0 = performance.now();
+
+      (function render() {
+        requestAnimationFrame(render);
+        const t = (performance.now() - t0) * 0.001;
+
+        // Smooth inertia
+        mouseX += (targetX - mouseX) * 0.04;
+        mouseY += (targetY - mouseY) * 0.04;
+
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.uniform1f(uTime, t);
+        gl.uniform2f(uRes, W, H);
+        gl.uniform2f(uMouse, mouseX, mouseY);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      })();
+    })();
+  </script>
+</body>
+</html>

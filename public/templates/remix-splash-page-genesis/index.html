@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Remix: Splash Page Genesis</title>
+  <style>
+    * { margin: 0; padding: 0; outline: none !important; box-sizing: border-box; }
+    canvas { display: block; outline: none !important; }
+  </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --accent: #10a37f;
+      --accent-dim: rgba(16, 163, 127, 0.35);
+      --dark: #ececec;
+    }
+
+    body {
+      background: linear-gradient(180deg, #0e0e0e 0%, #1a1a1a 100%);
+      color: var(--dark);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 32px 48px;
+      pointer-events: none;
+    }
+
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      opacity: 0.85;
+    }
+
+    .nav {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav li {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      opacity: 0.45;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: opacity 0.3s;
+    }
+
+    .nav li:hover {
+      opacity: 1;
+    }
+
+    /* ── Left panel ── */
+    .panel-left {
+      position: fixed;
+      left: 48px;
+      bottom: 35px;
+      z-index: 2;
+      pointer-events: none;
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+    }
+
+    .panel-left .vertical-label {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      opacity: 1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .panel-left .vertical-label::before {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 40px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .panel-left .coords {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .panel-left .coords span {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: rgba(255, 255, 255, 0.25);
+      opacity: 1;
+    }
+
+    .panel-left .coords .accent {
+      color: var(--accent);
+      opacity: 0.6;
+    }
+
+    /* ── Right panel ── */
+    .panel-right {
+      position: fixed;
+      right: 48px;
+      bottom: 7px;
+      z-index: 2;
+      pointer-events: none;
+      text-align: right;
+      max-width: 220px;
+    }
+
+    .panel-right .stat {
+      margin-bottom: 32px;
+    }
+
+    .panel-right .stat-value {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 35px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .panel-right .stat-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      opacity: 1;
+      margin-top: 5px;
+    }
+
+    /* ── Bottom bar ── */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0;
+      padding: 32px 48px;
+      pointer-events: none;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      opacity: 1;
+      padding: 6px 24px;
+      pointer-events: auto;
+      cursor: default;
+      transition: opacity 0.3s, color 0.3s;
+    }
+
+    .tag:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    .tag + .tag {
+      border-left-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .tag + .tag {
+      border-left: 1px solid var(--accent-dim);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .panel-left, .panel-right {
+        display: none;
+      }
+
+      .top-bar {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top navigation -->
+  <header class="top-bar">
+    <div class="logo">Genesis Lab</div>
+    <ul class="nav">
+      <li>Research</li>
+      <li>Systems</li>
+      <li>About</li>
+    </ul>
+  </header>
+
+  <!-- Left info panel -->
+  <div class="panel-left">
+    <div class="vertical-label">Bio.Innovation — Genesis Lab</div>
+    <div class="coords">
+      <span class="accent">SYS.ONLINE</span>
+      <span>45.0621° N</span>
+      <span>7.6821° E</span>
+      <span>ALT 239M</span>
+      <span class="accent">V.2.4.1</span>
+    </div>
+  </div>
+
+  <!-- Right stats panel -->
+  <div class="panel-right">
+    <div class="stat">
+      <div class="stat-value">10</div>
+      <div class="stat-label">Active organisms</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">1.8</div>
+      <div class="stat-label">Membrane radius</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">60</div>
+      <div class="stat-label">Tessellation</div>
+    </div>
+  </div>
+
+  <!-- Bottom tags -->
+  <div class="bottom-bar">
+    <span class="tag">Morphogenesis</span>
+    <span class="tag">Adaptive systems</span>
+    <span class="tag">Biomimicry</span>
+    <span class="tag">Emergence</span>
+  </div>
+  <script type="module" src="/scene.js"></script>
+</body>
+</html>

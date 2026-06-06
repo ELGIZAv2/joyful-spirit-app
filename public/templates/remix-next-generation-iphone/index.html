@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iPhone · Aura</title>
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@200;300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'SF Pro';
+      src: local('SF Pro Display'), local('-apple-system'), local('BlinkMacSystemFont');
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #000000;
+      --text: #f5f5f7;
+      --text-dim: rgba(245,245,247,0.5);
+      --text-ultra-dim: rgba(245,245,247,0.25);
+      --accent: #7C9AFF;
+      --accent-warm: #FFB07C;
+      --accent-green: #7CFFB0;
+      --accent-violet: #B07CFF;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.06);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      cursor: default;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 0; }
+
+    /* ── NAVIGATION ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.6s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    nav.scrolled {
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo .apple-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.9;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      transition: width 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-ambient {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .hero-ambient .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      animation: orbFloat 12s ease-in-out infinite;
+    }
+
+    .hero-ambient .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: var(--accent);
+      top: 10%;
+      left: 20%;
+      animation-delay: 0s;
+    }
+
+    .hero-ambient .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent-violet);
+      bottom: 10%;
+      right: 15%;
+      animation-delay: -4s;
+    }
+
+    .hero-ambient .orb-3 {
+      width: 400px;
+      height: 400px;
+      background: var(--accent-warm);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      animation-delay: -8s;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 15px) scale(0.95); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 1s 0.3s forwards;
+    }
+
+    .hero-title {
+      font-size: clamp(64px, 12vw, 160px);
+      font-weight: 200;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp 1s 0.5s forwards;
+    }
+
+    .hero-title .em {
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--accent), var(--accent-violet), var(--accent-warm));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 22px);
+      font-weight: 300;
+      color: var(--text-dim);
+      letter-spacing: -0.01em;
+      max-width: 480px;
+      margin: 24px auto 0;
+      line-height: 1.5;
+      opacity: 0;
+      animation: fadeUp 1s 0.7s forwards;
+    }
+
+    .hero-cta-group {
+      margin-top: 48px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 1s 0.9s forwards;
+    }
+
+    .btn-primary {
+      padding: 14px 36px;
+      border-radius: 100px;
+      background: var(--accent);
+      color: #000;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 40px rgba(124,154,255,0.3);
+    }
+
+    .btn-ghost {
+      padding: 14px 36px;
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(255,255,255,0.15);
+      transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeUp 1s 1.2s forwards;
+    }
+
+    .hero-scroll span {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-ultra-dim);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--text-ultra-dim), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 0.8; transform: scaleY(1.2); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SECTIONS COMMON ── */
+    section {
+      padding: 160px 40px;
+      position: relative;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+    }
+
+    .section-title {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 200;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      max-width: 800px;
+    }
+
+    .section-title strong {
+      font-weight: 600;
+    }
+
+    .section-desc {
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--text-dim);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-top: 24px;
+    }
+
+    /* ── SPATIAL AR HUD ── */
+    .spatial {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .spatial .section-label { color: var(--accent); }
+    .spatial .section-label::before { background: var(--accent); }
+
+    .spatial-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .spatial-visual {
+      position: relative;
+      height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hud-container {
+      position: relative;
+      width: 360px;
+      height: 460px;
+    }
+
+    .hud-room {
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+      border: 1px solid var(--glass-border);
+      overflow: hidden;
+    }
+
+    .hud-room::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.5;
+    }
+
+    .hud-float {
+      position: absolute;
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 16px;
+      animation: hudFloat 6s ease-in-out infinite;
+      transition: all 0.4s;
+    }
+
+    .hud-float:hover {
+      border-color: rgba(124,154,255,0.3);
+      box-shadow: 0 0 30px rgba(124,154,255,0.1);
+      transform: scale(1.03);
+    }
+
+    .hud-morning {
+      top: 30px;
+      left: 20px;
+      width: 180px;
+      background: rgba(124,154,255,0.06);
+      animation-delay: 0s;
+    }
+
+    .hud-health {
+      top: 80px;
+      right: 15px;
+      width: 140px;
+      background: rgba(124,255,176,0.06);
+      animation-delay: -2s;
+    }
+
+    .hud-work {
+      bottom: 60px;
+      left: 30px;
+      width: 200px;
+      background: rgba(176,124,255,0.06);
+      animation-delay: -4s;
+    }
+
+    .hud-float-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .hud-morning .hud-float-label { color: var(--accent); }
+    .hud-health .hud-float-label { color: var(--accent-green); }
+    .hud-work .hud-float-label { color: var(--accent-violet); }
+
+    .hud-float-content {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .hud-float-content .hud-value {
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--text);
+      display: block;
+      margin: 4px 0;
+    }
+
+    .hud-float-content .hud-detail {
+      font-size: 10px;
+      color: var(--text-ultra-dim);
+    }
+
+    .hud-connector {
+      position: absolute;
+      border: 1px dashed rgba(255,255,255,0.05);
+    }
+
+    @keyframes hudFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .anchor-list {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .anchor-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      transition: all 0.3s;
+      cursor: default;
+    }
+
+    .anchor-item:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .anchor-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .anchor-item:nth-child(1) .anchor-icon { background: rgba(124,154,255,0.12); }
+    .anchor-item:nth-child(2) .anchor-icon { background: rgba(124,255,176,0.12); }
+    .anchor-item:nth-child(3) .anchor-icon { background: rgba(176,124,255,0.12); }
+
+    .anchor-text h4 {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .anchor-text p {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ── ARIA VOICE ── */
+    .aria {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(180deg, var(--bg) 0%, rgba(176,124,255,0.03) 50%, var(--bg) 100%);
+    }
+
+    .aria .section-label { color: var(--accent-violet); }
+    .aria .section-label::before { background: var(--accent-violet); }
+
+    .aria-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .aria-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 500px;
+      order: 2;
+    }
+
+    .aria-orb-container {
+      position: relative;
+      width: 260px;
+      height: 260px;
+    }
+
+    .aria-orb {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, rgba(176,124,255,0.2), rgba(124,154,255,0.08), transparent 70%);
+      border: 1px solid rgba(176,124,255,0.15);
+      animation: ariaBreath 4s ease-in-out infinite;
+    }
+
+    .aria-orb::before {
+      content: '';
+      position: absolute;
+      inset: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 50%, rgba(176,124,255,0.15), transparent 60%);
+      animation: ariaBreath 4s ease-in-out infinite reverse;
+    }
+
+    .aria-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(176,124,255,0.08);
+      animation: ringExpand 4s ease-in-out infinite;
+    }
+
+    .aria-ring:nth-child(2) {
+      inset: -20px;
+      animation-delay: -1s;
+    }
+
+    .aria-ring:nth-child(3) {
+      inset: -40px;
+      animation-delay: -2s;
+    }
+
+    .aria-ring:nth-child(4) {
+      inset: -60px;
+      animation-delay: -3s;
+    }
+
+    @keyframes ariaBreath {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.06); opacity: 1; }
+    }
+
+    @keyframes ringExpand {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.02); }
+    }
+
+    .aria-waveform {
+      position: absolute;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 3px;
+      align-items: center;
+      height: 30px;
+    }
+
+    .wave-bar {
+      width: 2px;
+      background: var(--accent-violet);
+      border-radius: 1px;
+      animation: waveAnim 1.5s ease-in-out infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes waveAnim {
+      0%, 100% { height: 4px; opacity: 0.3; }
+      50% { height: 20px; opacity: 0.7; }
+    }
+
+    .aria-text { order: 1; }
+
+    .aria-features {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .aria-feature {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .aria-feature-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-violet);
+      margin-top: 6px;
+      flex-shrink: 0;
+      opacity: 0.6;
+    }
+
+    .aria-feature h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .aria-feature p {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── ROUTINE PRESETS ── */
+    .routines {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .routines .section-label { color: var(--accent-warm); }
+    .routines .section-label::before { background: var(--accent-warm); }
+
+    .routines-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 80px;
+    }
+
+    .routines-header .section-title {
+      margin: 0 auto;
+    }
+
+    .routines-header .section-desc {
+      margin: 24px auto 0;
+    }
+
+    .mode-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .mode-card {
+      border-radius: 20px;
+      padding: 28px 24px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      transition: all 0.5s cubic-bezier(0.22,1,0.36,1);
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mode-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .mode-card:hover::before { opacity: 1; }
+
+    .mode-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-4px);
+    }
+
+    .mode-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent-warm), transparent); }
+    .mode-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent), transparent); }
+    .mode-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-green), transparent); }
+    .mode-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent-violet), transparent); }
+
+    .mode-icon {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .mode-name {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .mode-trigger {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .mode-card:nth-child(1) .mode-trigger { color: var(--accent-warm); }
+    .mode-card:nth-child(2) .mode-trigger { color: var(--accent); }
+    .mode-card:nth-child(3) .mode-trigger { color: var(--accent-green); }
+    .mode-card:nth-child(4) .mode-trigger { color: var(--accent-violet); }
+
+    .mode-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mode-action {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .mode-action::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      flex-shrink: 0;
+    }
+
+    /* ── TIMELINE ── */
+    .timeline-section {
+      padding: 120px 40px;
+    }
+
+    .timeline-section .section-label { color: var(--accent-green); }
+    .timeline-section .section-label::before { background: var(--accent-green); }
+
+    .timeline-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 80px;
+    }
+
+    .timeline-header .section-title { margin: 0 auto; }
+
+    .timeline {
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 10%, rgba(255,255,255,0.06) 90%, transparent);
+    }
+
+    .tl-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 40px;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .tl-time {
+      width: calc(50% - 20px);
+      text-align: right;
+      padding-top: 4px;
+    }
+
+    .tl-time-value {
+      font-size: 28px;
+      font-weight: 200;
+      letter-spacing: -0.02em;
+    }
+
+    .tl-time-period {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .tl-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 8px;
+      position: relative;
+    }
+
+    .tl-dot::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid;
+      opacity: 0.3;
+    }
+
+    .tl-item:nth-child(1) .tl-dot { background: var(--accent-warm); }
+    .tl-item:nth-child(1) .tl-dot::after { border-color: var(--accent-warm); }
+    .tl-item:nth-child(2) .tl-dot { background: var(--accent); }
+    .tl-item:nth-child(2) .tl-dot::after { border-color: var(--accent); }
+    .tl-item:nth-child(3) .tl-dot { background: var(--accent-green); }
+    .tl-item:nth-child(3) .tl-dot::after { border-color: var(--accent-green); }
+    .tl-item:nth-child(4) .tl-dot { background: var(--accent-violet); }
+    .tl-item:nth-child(4) .tl-dot::after { border-color: var(--accent-violet); }
+
+    .tl-content {
+      width: calc(50% - 20px);
+    }
+
+    .tl-content h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .tl-content p {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ── PRIVACY STRIP ── */
+    .privacy-strip {
+      padding: 80px 40px;
+      text-align: center;
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .privacy-badges {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      border-radius: 100px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+    }
+
+    .privacy-badge-icon {
+      font-size: 16px;
+    }
+
+    .privacy-badge-text {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── CLOSING CTA ── */
+    .closing {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 24px;
+      position: relative;
+    }
+
+    .closing-ambient {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,154,255,0.08), transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .closing-title {
+      font-size: clamp(40px, 6vw, 80px);
+      font-weight: 200;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .closing-title strong {
+      font-weight: 600;
+    }
+
+    .closing-sub {
+      font-size: 17px;
+      color: var(--text-dim);
+      margin-top: 20px;
+      font-weight: 300;
+      position: relative;
+      z-index: 1;
+    }
+
+    .closing .btn-primary {
+      margin-top: 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    footer p {
+      font-size: 11px;
+      color: var(--text-ultra-dim);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      section { padding: 100px 24px; }
+
+      .spatial-grid,
+      .aria-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .aria-visual { order: 0; height: 300px; }
+      .aria-text { order: 1; }
+
+      .mode-cards {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .nav-links { display: none; }
+
+      .tl-item { gap: 20px; }
+    }
+
+    @media (max-width: 600px) {
+      .mode-cards {
+        grid-template-columns: 1fr;
+        max-width: 340px;
+      }
+
+      .privacy-badges {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .hero-cta-group {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav id="nav">
+    <div class="nav-logo">
+      <svg class="apple-icon" viewBox="0 0 18 18" fill="currentColor">
+        <path d="M14.94 13.5c-.4.87-.58 1.26-1.09 2.03-.7 1.07-1.7 2.41-2.92 2.43-1.1.02-1.38-.71-2.87-.7-1.5.01-1.8.72-2.9.7-1.22-.02-2.15-1.22-2.86-2.29C.62 13.1-.02 10.13.66 8.01c.48-1.48 1.57-2.49 2.78-2.49 1.04 0 1.69.72 2.55.72.83 0 1.34-.72 2.54-.72 1.07 0 2.02.58 2.56 1.49-2.25 1.23-1.89 4.44.47 5.3zM10.1 3.99c.56-.72.99-1.73.83-2.76-.92.06-1.99.65-2.62 1.41-.57.68-1.04 1.71-.86 2.7 1 .03 2.04-.57 2.65-1.35z"/>
+      </svg>
+      iPhone · Aura
+    </div>
+    <ul class="nav-links">
+      <li><a href="#spatial">Spatial HUD</a></li>
+      <li><a href="#aria">ARIA Voice</a></li>
+      <li><a href="#routines">Routines</a></li>
+      <li><a href="#timeline">Your Day</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-ambient">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Introducing</div>
+      <h1 class="hero-title">iPhone <span class="em">Aura</span></h1>
+      <p class="hero-sub">An ambient intelligence that lives around you — not on a screen. Context-aware. Whisper-quiet. Always there.</p>
+      <div class="hero-cta-group">
+        <a href="#spatial" class="btn-primary">Explore Features</a>
+        <a href="#" class="btn-ghost">Watch the Film</a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- SPATIAL AR HUD -->
+  <section class="spatial" id="spatial">
+    <div class="spatial-grid">
+      <div class="spatial-visual reveal">
+        <div class="hud-container">
+          <div class="hud-room"></div>
+          <div class="hud-float hud-morning">
+            <div class="hud-float-label">☀ Morning Summary</div>
+            <div class="hud-float-content">
+              <span class="hud-value">7:14 AM</span>
+              <span class="hud-detail">3 meetings · 22 min commute</span><br>
+              <span class="hud-detail">Clear skies · 68°F</span>
+            </div>
+          </div>
+          <div class="hud-float hud-health">
+            <div class="hud-float-label">♡ Vitals</div>
+            <div class="hud-float-content">
+              <span class="hud-value">7h 42m</span>
+              <span class="hud-detail">Sleep score: 88</span><br>
+              <span class="hud-detail">Recovery: Optimal</span>
+            </div>
+          </div>
+          <div class="hud-float hud-work">
+            <div class="hud-float-label">◈ Work Dashboard</div>
+            <div class="hud-float-content">
+              <span class="hud-detail">Focus time remaining</span>
+              <span class="hud-value">1h 24m</span>
+              <span class="hud-detail">Next: Design review @ 2pm</span><br>
+              <span class="hud-detail">4 Slack threads · 2 priority</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="reveal">
+          <div class="section-label">Spatial AR HUD</div>
+          <h2 class="section-title">An interface that <strong>floats around you</strong></h2>
+          <p class="section-desc">Context-aware panels anchor to real-world surfaces. Semi-transparent, softly blurred, barely there — until you need them. No app to open. No screen to unlock.</p>
+        </div>
+        <div class="anchor-list">
+          <div class="anchor-item reveal reveal-delay-1">
+            <div class="anchor-icon">🛏</div>
+            <div class="anchor-text">
+              <h4>Bedside Table</h4>
+              <p>Morning summary fades in as you wake — weather, calendar, commute time, first meeting prep.</p>
+            </div>
+          </div>
+          <div class="anchor-item reveal reveal-delay-2">
+            <div class="anchor-icon">🪞</div>
+            <div class="anchor-text">
+              <h4>Mirror</h4>
+              <p>Health vitals, sleep quality, hydration cues, and your daily routine — glanceable in reflection.</p>
+            </div>
+          </div>
+          <div class="anchor-item reveal reveal-delay-3">
+            <div class="anchor-icon">🖥</div>
+            <div class="anchor-text">
+              <h4>Desk</h4>
+              <p>Work dashboard materializes — focus timer, priority threads, upcoming meetings, deep work blocks.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARIA SECURE VOICE -->
+  <section class="aria" id="aria">
+    <div class="aria-grid">
+      <div class="aria-text">
+        <div class="reveal">
+          <div class="section-label">ARIA Secure Voice</div>
+          <h2 class="section-title">A voice that <strong>knows when to speak</strong></h2>
+          <p class="section-desc">Hyper-personal. On-device. ARIA never interrupts — she complements. Identity-verified, context-aware, and gated for sensitive information. Private by design.</p>
+        </div>
+        <div class="aria-features">
+          <div class="aria-feature reveal reveal-delay-1">
+            <div class="aria-feature-dot"></div>
+            <div>
+              <h4>Voice + Presence Verification</h4>
+              <p>Identity confirmed through voice biometrics and spatial presence — no passwords, no prompts.</p>
+            </div>
+          </div>
+          <div class="aria-feature reveal reveal-delay-2">
+            <div class="aria-feature-dot"></div>
+            <div>
+              <h4>Contextual Awareness</h4>
+              <p>Responses shaped by time, location, activity, and emotional state — never generic, always grounded.</p>
+            </div>
+          </div>
+          <div class="aria-feature reveal reveal-delay-3">
+            <div class="aria-feature-dot"></div>
+            <div>
+              <h4>Intelligent Sensitivity Gating</h4>
+              <p>Financial, health, and personal data only surfaces when environment and identity are verified.</p>
+            </div>
+          </div>
+          <div class="aria-feature reveal reveal-delay-4">
+            <div class="aria-feature-dot"></div>
+            <div>
+              <h4>Intimate Tone, Low Volume</h4>
+              <p>Defaults to a whisper-close register. Speaks only when necessary. Presence without intrusion.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="aria-visual reveal">
+        <div class="aria-orb-container">
+          <div class="aria-orb"></div>
+          <div class="aria-ring"></div>
+          <div class="aria-ring"></div>
+          <div class="aria-ring"></div>
+          <div class="aria-ring"></div>
+          <div class="aria-waveform" id="ariaWave"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROUTINE PRESETS -->
+  <section class="routines" id="routines">
+    <div class="routines-header reveal">
+      <div class="section-label" style="justify-content:center;">Routine Presets</div>
+      <h2 class="section-title">Life modes that <strong>adapt to you</strong></h2>
+      <p class="section-desc">Triggered by time, location, and behavior patterns. Each mode bundles notifications, apps, and environmental cues into one seamless shift.</p>
+    </div>
+    <div class="mode-cards">
+      <div class="mode-card reveal reveal-delay-1">
+        <div class="mode-icon">🌅</div>
+        <div class="mode-name">Morning</div>
+        <div class="mode-trigger">6:30 – 9:00 AM</div>
+        <div class="mode-actions">
+          <div class="mode-action">Calendar preview & first meeting</div>
+          <div class="mode-action">Weather + commute ETA</div>
+          <div class="mode-action">Gentle notification drip</div>
+          <div class="mode-action">Ambient light warm-up</div>
+        </div>
+      </div>
+      <div class="mode-card reveal reveal-delay-2">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-name">Work</div>
+        <div class="mode-trigger">Office GPS · Focus hours</div>
+        <div class="mode-actions">
+          <div class="mode-action">Deep work timer</div>
+          <div class="mode-action">Priority-only notifications</div>
+          <div class="mode-action">Slack & email digest</div>
+          <div class="mode-action">Meeting prep 5m before</div>
+        </div>
+      </div>
+      <div class="mode-card reveal reveal-delay-3">
+        <div class="mode-icon">🏃</div>
+        <div class="mode-name">Fitness</div>
+        <div class="mode-trigger">Workout detected · Gym zone</div>
+        <div class="mode-actions">
+          <div class="mode-action">Heart rate & rep tracking</div>
+          <div class="mode-action">Audio coaching cues</div>
+          <div class="mode-action">All alerts silenced</div>
+          <div class="mode-action">Hydration reminders</div>
+        </div>
+      </div>
+      <div class="mode-card reveal reveal-delay-4">
+        <div class="mode-icon">🌙</div>
+        <div class="mode-name">Wind-Down</div>
+        <div class="mode-trigger">9:30 PM · Home detected</div>
+        <div class="mode-actions">
+          <div class="mode-action">Screen warmth + dim</div>
+          <div class="mode-action">Tomorrow's preview</div>
+          <div class="mode-action">Notifications paused</div>
+          <div class="mode-action">Sleep sounds ready</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="timeline-section" id="timeline">
+    <div class="timeline-header reveal">
+      <div class="section-label" style="justify-content:center;">A Day with Aura</div>
+      <h2 class="section-title">Intelligence that moves <strong>with your rhythm</strong></h2>
+    </div>
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-time">
+          <div class="tl-time-value">6:45</div>
+          <div class="tl-time-period">Morning</div>
+        </div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <h4>Wake Gently</h4>
+          <p>Ambient light rises. Morning summary floats beside your bed — weather, calendar, 22-min commute.</p>
+        </div>
+      </div>
+      <div class="tl-item reveal reveal-delay-1">
+        <div class="tl-time">
+          <div class="tl-time-value">9:00</div>
+          <div class="tl-time-period">Focus</div>
+        </div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <h4>Deep Work Begins</h4>
+          <p>Desk HUD activates. ARIA holds all non-urgent alerts. Focus timer starts. You're in the zone.</p>
+        </div>
+      </div>
+      <div class="tl-item reveal reveal-delay-2">
+        <div class="tl-time">
+          <div class="tl-time-value">5:30</div>
+          <div class="tl-time-period">Move</div>
+        </div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <h4>Fitness Mode</h4>
+          <p>Gym detected. Workout HUD appears — reps, heart rate, coaching. Everything else goes silent.</p>
+        </div>
+      </div>
+      <div class="tl-item reveal reveal-delay-3">
+        <div class="tl-time">
+          <div class="tl-time-value">9:30</div>
+          <div class="tl-time-period">Rest</div>
+        </div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <h4>Wind-Down</h4>
+          <p>Screens dim. Tomorrow's preview surfaces softly. ARIA whispers your sleep score. Goodnight.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY STRIP -->
+  <div class="privacy-strip reveal">
+    <div class="privacy-badges">
+      <div class="privacy-badge">
+        <span class="privacy-badge-icon">🔒</span>
+        <span class="privacy-badge-text">100% On-Device Processing</span>
+      </div>
+      <div class="privacy-badge">
+        <span class="privacy-badge-icon">🧬</span>
+        <span class="privacy-badge-text">Voice Biometric Auth</span>
+      </div>
+      <div class="privacy-badge">
+        <span class="privacy-badge-icon">👁</span>
+        <span class="privacy-badge-text">Zero Cloud Storage</span>
+      </div>
+      <div class="privacy-badge">
+        <span class="privacy-badge-icon">🛡</span>
+        <span class="privacy-badge-text">Sensitivity Gating</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSING CTA -->
+  <section class="closing">
+    <div class="closing-ambient"></div>
+    <h2 class="closing-title reveal">The phone <strong>disappears.</strong><br>You remain.</h2>
+    <p class="closing-sub reveal reveal-delay-1">iPhone Aura. Available 2026.</p>
+    <a href="#" class="btn-primary reveal reveal-delay-2">Get Notified</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Apple · iPhone Aura Concept · Designed as a vision of ambient intelligence</p>
+  </footer>
+
+  <script>
+    // NAV SCROLL
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // SCROLL REVEAL
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    reveals.forEach(el => observer.observe(el));
+
+    // ARIA WAVEFORM
+    const waveContainer = document.getElementById('ariaWave');
+    for (let i = 0; i < 24; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'wave-bar';
+      const delay = (Math.sin(i * 0.5) * 0.5 + 0.5) * 1.2;
+      const duration = 1 + Math.random() * 0.8;
+      bar.style.animationDelay = `${delay}s`;
+      bar.style.animationDuration = `${duration}s`;
+      bar.style.height = `${4 + Math.random() * 12}px`;
+      waveContainer.appendChild(bar);
+    }
+
+    // SMOOTH ANCHOR SCROLLING
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // PARALLAX ON HERO ORBS
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      document.querySelectorAll('.orb').forEach((orb, i) => {
+        const factor = (i + 1) * 0.5;
+        orb.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+      });
+    });
+
+    // HUD FLOAT TIME UPDATE
+    const updateTime = () => {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes().toString().padStart(2, '0');
+      const period = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      const timeEl = document.querySelector('.hud-morning .hud-value');
+      if (timeEl) timeEl.textContent = `${h12}:${m} ${period}`;
+    };
+    updateTime();
+    setInterval(updateTime, 30000);
+  </script>
+</body>
+</html>

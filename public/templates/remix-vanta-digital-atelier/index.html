@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remix: Vanta Digital Atelier</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+        :root {
+            --c-bg: #0e0e0e;
+            --c-surface: #1a1a1a;
+            --c-text: #e8e4de;
+            --c-text-dim: #7a756d;
+            --c-accent: #c4a882;
+            --c-accent2: #8b7355;
+            --c-highlight: #f0ebe3;
+            
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Space Grotesk', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; cursor: default; }
+
+        body {
+            background: var(--c-bg);
+            font-family: var(--font-sans);
+            width: 100vw;
+            overflow-x: hidden;
+            overflow-y: auto;
+            color: var(--c-text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #three-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        .layer-blur {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 2;
+            pointer-events: none;
+            mask-image: radial-gradient(circle 250px at var(--x, 50%) var(--y, 50%), transparent 0%, transparent 30%, black 100%);
+            -webkit-mask-image: radial-gradient(circle 250px at var(--x, 50%) var(--y, 50%), transparent 0%, transparent 30%, black 100%);
+        }
+
+        /* Three.js canvas always behind content */
+        #three-container canvas {
+            display: block;
+        }
+
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 3;
+            opacity: 0.02;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .grain-overlay {
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            z-index: 4;
+            pointer-events: none;
+            opacity: 0.006;
+            background: repeating-conic-gradient(var(--c-text) 0.00015%, transparent 0.0004%, transparent 0.00075%, var(--c-text) 0.001%);
+            animation: grainShift 0.5s steps(1) infinite;
+            will-change: transform;
+        }
+
+        @keyframes grainShift {
+            0% { transform: translate3d(0, 0, 0); }
+            25% { transform: translate3d(-2%, 3%, 0); }
+            50% { transform: translate3d(1%, -2%, 0); }
+            75% { transform: translate3d(-3%, 1%, 0); }
+            100% { transform: translate3d(2%, -1%, 0); }
+        }
+
+        /* === LAYOUT === */
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            pointer-events: none;
+            isolation: isolate;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr auto;
+            min-height: 100vh;
+        }
+
+        /* HERO — left aligned */
+        .hero {
+            grid-column: 1;
+            grid-row: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 3.5rem;
+            padding-top: 6rem;
+            max-width: 640px;
+        }
+
+        .hero-tag {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            color: var(--c-accent);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: slideUp 1.2s var(--ease) forwards 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(196, 168, 130, 0.15);
+            border-radius: 2rem;
+            width: fit-content;
+        }
+
+        .hero-tag::before {
+            content: '◈';
+            font-size: 0.5rem;
+            color: var(--c-accent);
+        }
+
+        .hero-title {
+            font-family: var(--font-serif);
+            font-size: 4.8rem;
+            line-height: 1.05;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            color: var(--c-highlight);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: slideUp 1.4s var(--ease) forwards 0.5s;
+        }
+
+        .hero-title em {
+            font-style: italic;
+            color: var(--c-accent);
+            display: inline-block;
+            position: relative;
+        }
+
+        .hero-title em::after {
+            content: '';
+            position: absolute;
+            bottom: 0.08em;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--c-accent);
+            opacity: 0.4;
+        }
+
+        .hero-title .line-thin {
+            font-family: var(--font-sans);
+            font-weight: 300;
+            font-size: 3.6rem;
+            color: var(--c-text-dim);
+            display: block;
+            letter-spacing: 0.02em;
+        }
+
+        .hero-body {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            color: var(--c-text-dim);
+            font-weight: 300;
+            max-width: 380px;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: slideUp 1.4s var(--ease) forwards 0.8s;
+            border-left: 2px solid rgba(196, 168, 130, 0.2);
+            padding-left: 1.2rem;
+        }
+
+        /* === ABOUT SECTION === */
+        .section-about {
+            padding: 8rem 3.5rem;
+        }
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+        .about-text p {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            line-height: 1.9;
+            color: var(--c-text-dim);
+            font-weight: 300;
+            margin-bottom: 1.2rem;
+        }
+        .about-visual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+        }
+        .about-cell {
+            border: 1px solid rgba(196,168,130,0.07);
+            padding: 2rem 1.5rem;
+        }
+        .about-cell-label {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-text-dim);
+            margin-bottom: 0.6rem;
+        }
+        .about-cell-value {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--c-accent);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        /* === CAPABILITIES === */
+        .section-capabilities {
+            padding: 8rem 3.5rem;
+        }
+        .capabilities-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 6rem;
+            margin-top: 4rem;
+            align-items: start;
+        }
+        .capabilities-left p {
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: var(--c-text-dim);
+            font-weight: 300;
+        }
+        .capabilities-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .capability-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.4rem 0;
+            border-bottom: 1px solid rgba(196,168,130,0.07);
+            gap: 2rem;
+        }
+        .capability-row:first-child { border-top: 1px solid rgba(196,168,130,0.07); }
+        .capability-name {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            color: var(--c-text);
+            font-weight: 400;
+            letter-spacing: 0.02em;
+        }
+        .capability-bar {
+            flex: 1;
+            height: 1px;
+            background: rgba(196,168,130,0.08);
+            position: relative;
+            max-width: 200px;
+        }
+        .capability-fill {
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            background: var(--c-accent);
+            opacity: 0.5;
+        }
+        .capability-pct {
+            font-family: var(--font-mono);
+            font-size: 0.52rem;
+            color: var(--c-accent2);
+            letter-spacing: 0.1em;
+            min-width: 36px;
+            text-align: right;
+        }
+
+        /* === CLIENTS / LOGOS === */
+        .section-clients {
+            padding: 6rem 3.5rem;
+            background: rgba(255,255,255,0.01);
+        }
+        .clients-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            margin-top: 3rem;
+        }
+        .client-cell {
+            border: 1px solid rgba(196,168,130,0.06);
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .client-name {
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-text-dim);
+            font-weight: 500;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+        .client-cell:hover .client-name { opacity: 0.8; }
+
+        /* === TESTIMONIALS === */
+        .section-testimonials {
+            padding: 8rem 3.5rem;
+        }
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            margin-top: 4rem;
+        }
+        .testimonial-card {
+            border: 1px solid rgba(196,168,130,0.08);
+            padding: 2.5rem;
+        }
+        .testimonial-quote-mark {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            color: var(--c-accent);
+            opacity: 0.2;
+            line-height: 1;
+            margin-bottom: 1.2rem;
+        }
+        .testimonial-text {
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: var(--c-text-dim);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .testimonial-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(196,168,130,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-serif);
+            font-size: 0.8rem;
+            color: var(--c-accent);
+            font-style: italic;
+        }
+        .testimonial-name {
+            font-family: var(--font-sans);
+            font-size: 0.72rem;
+            color: var(--c-text);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+        .testimonial-role {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            color: var(--c-text-dim);
+            letter-spacing: 0.1em;
+            margin-top: 0.2rem;
+        }
+
+        /* === MANIFESTO === */
+        .section-manifesto {
+            padding: 8rem 3.5rem;
+            background: rgba(255,255,255,0.01);
+        }
+        .manifesto-list {
+            margin-top: 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            max-width: 780px;
+        }
+        .manifesto-item {
+            display: grid;
+            grid-template-columns: 56px 1fr;
+            gap: 2.5rem;
+            padding: 2.5rem 0;
+            border-bottom: 1px solid rgba(196,168,130,0.07);
+            align-items: start;
+        }
+        .manifesto-item:first-child { border-top: 1px solid rgba(196,168,130,0.07); }
+        .manifesto-num {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            color: var(--c-accent2);
+            letter-spacing: 0.15em;
+            padding-top: 0.3rem;
+        }
+        .manifesto-content {}
+        .manifesto-title {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            color: var(--c-highlight);
+            font-weight: 400;
+            margin-bottom: 0.6rem;
+        }
+        .manifesto-desc {
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            line-height: 1.75;
+            color: var(--c-text-dim);
+            font-weight: 300;
+        }
+
+        /* === TOOLS / STACK === */
+        .section-stack {
+            padding: 6rem 3.5rem;
+        }
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 2px;
+            margin-top: 3rem;
+        }
+        .stack-item {
+            border: 1px solid rgba(196,168,130,0.06);
+            padding: 1.8rem 1rem;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .stack-item:hover { border-color: rgba(196,168,130,0.18); }
+        .stack-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+        .stack-name {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--c-text-dim);
+        }
+
+        /* === CONTACT FORM === */
+        .section-contact {
+            padding: 8rem 3.5rem;
+            background: rgba(255,255,255,0.01);
+        }
+        .contact-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            margin-top: 4rem;
+            align-items: start;
+        }
+        .contact-info {}
+        .contact-info p {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: var(--c-text-dim);
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+        .contact-detail {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .contact-detail-label {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-accent2);
+            min-width: 60px;
+        }
+        .contact-detail-value {
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            color: var(--c-text);
+            font-weight: 300;
+        }
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            pointer-events: auto;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-label {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-accent2);
+        }
+        .form-input, .form-textarea, .form-select {
+            background: transparent;
+            border: 1px solid rgba(196,168,130,0.12);
+            padding: 0.9rem 1rem;
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            color: var(--c-text);
+            outline: none;
+            transition: border-color 0.3s;
+            font-weight: 300;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: rgba(196,168,130,0.35);
+        }
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: var(--c-text-dim);
+            opacity: 0.4;
+        }
+        .form-textarea {
+            resize: none;
+            height: 120px;
+        }
+        .form-select option {
+            background: var(--c-bg);
+            color: var(--c-text);
+        }
+        .form-submit {
+            font-family: var(--font-sans);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            padding: 1rem 2rem;
+            background: transparent;
+            color: var(--c-highlight);
+            border: 1.5px solid var(--c-accent);
+            cursor: pointer;
+            font-weight: 400;
+            transition: all 0.5s var(--ease);
+            position: relative;
+            overflow: hidden;
+            align-self: flex-start;
+        }
+        .form-submit::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: var(--c-accent);
+            transition: left 0.5s var(--ease);
+            z-index: -1;
+        }
+        .form-submit:hover::before { left: 0; }
+        .form-submit:hover { color: var(--c-bg); }
+
+        /* RIGHT SIDE — morph info */
+        .morph-info {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            padding: 0 3.5rem 6rem 0;
+        }
+
+        .morph-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--c-text-dim);
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            animation: fadeIn 2s var(--ease) forwards 1.5s;
+        }
+
+        .morph-name {
+            font-family: var(--font-serif);
+            font-size: 2.2rem;
+            font-style: italic;
+            color: var(--c-accent);
+            transition: all 0.6s var(--ease);
+            opacity: 0;
+            animation: fadeIn 2s var(--ease) forwards 1.7s;
+            letter-spacing: -0.02em;
+        }
+
+        .morph-progress-bar {
+            width: 80px;
+            height: 2px;
+            background: rgba(196, 168, 130, 0.1);
+            margin-top: 1rem;
+            border-radius: 1px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 2s var(--ease) forwards 2s;
+        }
+        .morph-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--c-accent);
+            border-radius: 1px;
+            transition: width 0.1s linear;
+        }
+
+        .morph-counter {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            color: var(--c-accent2);
+            margin-top: 0.8rem;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            animation: fadeIn 2s var(--ease) forwards 1.9s;
+        }
+
+        /* MORPH BOTTOM BAR */
+        .morph-bottom-bar {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 3.5rem 3rem;
+        }
+
+        .dot-nav {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            border: 1px solid var(--c-accent2);
+            background: transparent;
+            transition: all 0.3s;
+            pointer-events: auto;
+        }
+        .dot-nav.active {
+            background: var(--c-accent);
+            border-color: var(--c-accent);
+        }
+
+        /* ===================== */
+        /* CONTENT SECTIONS      */
+        /* ===================== */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            pointer-events: auto;
+            background: linear-gradient(to bottom,
+                transparent 0%,
+                rgba(14,14,14,0.55) 4%,
+                rgba(14,14,14,0.85) 10%,
+                rgba(14,14,14,0.97) 18%,
+                rgba(14,14,14,1) 25%
+            );
+        }
+
+        /* Divider line */
+        .section-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(196,168,130,0.15), transparent);
+            margin: 0;
+        }
+
+        /* --- SECTION: MARQUEE STRIP --- */
+        .marquee-strip {
+            overflow: hidden;
+            border-top: 1px solid rgba(196,168,130,0.08);
+            border-bottom: 1px solid rgba(196,168,130,0.08);
+            padding: 1rem 0;
+            background: rgba(255,255,255,0.01);
+        }
+        .marquee-track {
+            display: flex;
+            gap: 4rem;
+            white-space: nowrap;
+            animation: marqueeScroll 28s linear infinite;
+            width: max-content;
+        }
+        .marquee-item {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--c-accent2);
+        }
+        .marquee-dot {
+            color: var(--c-accent);
+            margin: 0 0.5rem;
+        }
+        @keyframes marqueeScroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        /* --- SECTION: SERVICES GRID --- */
+        .section-services {
+            padding: 8rem 3.5rem;
+        }
+        .section-tag {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--c-accent);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .section-tag::before {
+            content: '';
+            width: 24px;
+            height: 1px;
+            background: var(--c-accent);
+            opacity: 0.5;
+        }
+        .section-heading {
+            font-family: var(--font-serif);
+            font-size: 3.2rem;
+            font-weight: 400;
+            color: var(--c-highlight);
+            line-height: 1.1;
+            margin-bottom: 4rem;
+            letter-spacing: -0.02em;
+        }
+        .section-heading em {
+            font-style: italic;
+            color: var(--c-accent);
+        }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+        .service-card {
+            border: 1px solid rgba(196,168,130,0.08);
+            padding: 2.5rem;
+            transition: border-color 0.4s, background 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(196,168,130,0.04) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .service-card:hover { border-color: rgba(196,168,130,0.2); }
+        .service-card:hover::before { opacity: 1; }
+        .service-num {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            color: var(--c-accent2);
+            letter-spacing: 0.15em;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+        }
+        .service-icon {
+            font-size: 1.4rem;
+            margin-bottom: 1.2rem;
+            display: block;
+        }
+        .service-title {
+            font-family: var(--font-serif);
+            font-size: 1.3rem;
+            color: var(--c-highlight);
+            font-weight: 400;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.01em;
+        }
+        .service-desc {
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: var(--c-text-dim);
+            font-weight: 300;
+        }
+
+        /* --- SECTION: FEATURED WORK --- */
+        .section-work {
+            padding: 6rem 3.5rem;
+            background: rgba(255,255,255,0.01);
+        }
+        .work-list {
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .work-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 160px 120px;
+            align-items: center;
+            padding: 1.8rem 0;
+            border-bottom: 1px solid rgba(196,168,130,0.07);
+            gap: 2rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            pointer-events: auto;
+        }
+        .work-item:first-child { border-top: 1px solid rgba(196,168,130,0.07); }
+        .work-item:hover { background: rgba(196,168,130,0.03); }
+        .work-item:hover .work-title { color: var(--c-accent); }
+        .work-item:hover .work-arrow { transform: translateX(6px); opacity: 1; }
+        .work-index {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            color: var(--c-accent2);
+            letter-spacing: 0.1em;
+        }
+        .work-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--c-text);
+            font-weight: 400;
+            transition: color 0.3s;
+        }
+        .work-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .work-tag {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--c-accent2);
+            border: 1px solid rgba(196,168,130,0.15);
+            padding: 0.3rem 0.7rem;
+            border-radius: 2rem;
+        }
+        .work-arrow {
+            font-size: 0.9rem;
+            color: var(--c-accent);
+            justify-self: end;
+            opacity: 0.3;
+            transition: transform 0.3s var(--ease), opacity 0.3s;
+        }
+
+        /* --- SECTION: PHILOSOPHY / QUOTE --- */
+        .section-quote {
+            padding: 8rem 3.5rem;
+            display: flex;
+            justify-content: center;
+        }
+        .quote-inner {
+            max-width: 720px;
+            text-align: center;
+        }
+        .quote-mark {
+            font-family: var(--font-serif);
+            font-size: 5rem;
+            color: var(--c-accent);
+            opacity: 0.15;
+            line-height: 0.5;
+            margin-bottom: 2rem;
+        }
+        .quote-text {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-style: italic;
+            color: var(--c-text);
+            line-height: 1.5;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+        .quote-text em {
+            color: var(--c-accent);
+            font-style: normal;
+        }
+        .quote-attr {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-text-dim);
+            margin-top: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .quote-attr::before, .quote-attr::after {
+            content: '';
+            width: 30px;
+            height: 1px;
+            background: rgba(196,168,130,0.2);
+        }
+
+        /* --- SECTION: PROCESS STEPS --- */
+        .section-process {
+            padding: 8rem 3.5rem;
+            background: rgba(255,255,255,0.01);
+        }
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            margin-top: 4rem;
+            position: relative;
+        }
+        .process-steps::before {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(196,168,130,0.15) 20%, rgba(196,168,130,0.15) 80%, transparent);
+        }
+        .process-step {
+            padding: 0 2rem;
+            position: relative;
+        }
+        .step-num {
+            width: 56px; height: 56px;
+            border: 1px solid rgba(196,168,130,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--c-accent);
+            letter-spacing: 0.05em;
+            margin-bottom: 2rem;
+            background: var(--c-bg);
+            position: relative;
+            z-index: 1;
+        }
+        .step-title {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            color: var(--c-highlight);
+            font-weight: 400;
+            margin-bottom: 0.8rem;
+        }
+        .step-desc {
+            font-family: var(--font-sans);
+            font-size: 0.78rem;
+            line-height: 1.7;
+            color: var(--c-text-dim);
+            font-weight: 300;
+        }
+
+        /* --- SECTION: STATS --- */
+        .section-stats {
+            padding: 6rem 3.5rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+        }
+        .stat-item {
+            padding: 3rem 2.5rem;
+            border: 1px solid rgba(196,168,130,0.06);
+            text-align: center;
+        }
+        .stat-value {
+            font-family: var(--font-serif);
+            font-size: 3.5rem;
+            color: var(--c-accent);
+            font-weight: 400;
+            line-height: 1;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.03em;
+        }
+        .stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.52rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--c-text-dim);
+        }
+
+        /* --- SECTION: CONTACT CTA --- */
+        .section-cta {
+            padding: 10rem 3.5rem;
+            text-align: center;
+        }
+        .cta-tag {
+            font-family: var(--font-mono);
+            font-size: 0.55rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--c-accent);
+            margin-bottom: 2rem;
+        }
+        .cta-heading {
+            font-family: var(--font-serif);
+            font-size: 4rem;
+            color: var(--c-highlight);
+            font-weight: 400;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        .cta-heading em {
+            font-style: italic;
+            color: var(--c-accent);
+        }
+        .cta-sub {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            color: var(--c-text-dim);
+            font-weight: 300;
+            margin-bottom: 3rem;
+            max-width: 460px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+        }
+
+        /* === AWARDS === */
+        .section-awards {
+            padding: 6rem 3.5rem;
+        }
+        .awards-list {
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .award-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 200px 100px;
+            align-items: center;
+            padding: 1.6rem 0;
+            border-bottom: 1px solid rgba(196,168,130,0.07);
+            gap: 2rem;
+        }
+        .award-item:first-child { border-top: 1px solid rgba(196,168,130,0.07); }
+        .award-year {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            color: var(--c-accent2);
+            letter-spacing: 0.1em;
+        }
+        .award-title {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            color: var(--c-text);
+            font-weight: 400;
+        }
+        .award-org {
+            font-family: var(--font-mono);
+            font-size: 0.5rem;
+            letter-spacing: 0.1em;
+            color: var(--c-text-dim);
+            text-transform: uppercase;
+        }
+        .award-badge {
+            font-family: var(--font-mono);
+            font-size: 0.48rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--c-accent);
+            border: 1px solid rgba(196,168,130,0.2);
+            padding: 0.3rem 0.7rem;
+            border-radius: 2rem;
+            width: fit-content;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section { grid-template-columns: 1fr; }
+            .hero { padding: 6rem 2rem 3rem; grid-column: 1; }
+            .hero-title { font-size: 2.6rem; }
+            .hero-title .line-thin { font-size: 2rem; }
+            .morph-info { display: none; }
+            .morph-bottom-bar { padding: 0 2rem 2.5rem; }
+            .services-grid { grid-template-columns: 1fr; }
+            .process-steps { grid-template-columns: 1fr 1fr; gap: 2rem; }
+            .process-steps::before { display: none; }
+            .section-stats { grid-template-columns: 1fr 1fr; }
+            .work-item { grid-template-columns: 50px 1fr; }
+            .work-tags, .work-arrow { display: none; }
+            .section-services, .section-work, .section-process, .section-cta { padding: 5rem 2rem; }
+            .section-quote { padding: 5rem 2rem; }
+            .section-stats { padding: 3rem 2rem; }
+            .cta-heading { font-size: 2.4rem; }
+            .section-heading { font-size: 2.2rem; }
+            .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .capabilities-layout { grid-template-columns: 1fr; gap: 3rem; }
+            .clients-grid { grid-template-columns: repeat(2, 1fr); }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .stack-grid { grid-template-columns: repeat(3, 1fr); }
+            .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .award-item { grid-template-columns: 60px 1fr; }
+            .award-org, .award-badge { display: none; }
+            .section-about, .section-capabilities, .section-clients,
+            .section-testimonials, .section-manifesto, .section-stack,
+            .section-contact, .section-awards { padding: 5rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="three-container"></div>
+    <div class="layer-blur"></div>
+    <div class="noise-overlay"></div>
+    <div class="grain-overlay"></div>
+
+    <div class="ui-layer">
+
+        <!-- ── HERO ── -->
+        <div class="hero-section">
+            <div class="hero">
+                <div class="hero-tag">Generative Design Lab</div>
+                <h1 class="hero-title"><span class="line-thin">We craft</span>Algorithmic<br><em>Elegance</em></h1>
+                <p class="hero-body">Turning raw computation into sensory experiences — each particle a pixel of intention, each form a conversation between chaos and control.</p>
+            </div>
+
+            <div class="morph-info">
+                <div class="morph-label">Active Form</div>
+                <div class="morph-name" id="morph-name">Dodeca</div>
+                <div class="morph-counter" id="morph-counter">01 / 04</div>
+                <div class="morph-progress-bar"><div class="morph-progress-fill" id="morph-progress"></div></div>
+            </div>
+
+            <div class="morph-bottom-bar">
+                <div class="dot-nav active" data-idx="0"></div>
+                <div class="dot-nav" data-idx="1"></div>
+                <div class="dot-nav" data-idx="2"></div>
+                <div class="dot-nav" data-idx="3"></div>
+            </div>
+        </div>
+
+        <!-- ── CONTENT SECTIONS ── -->
+        <div class="content-wrapper">
+
+            <!-- ABOUT -->
+            <section class="section-about">
+                <div class="section-tag">Who We Are</div>
+                <h2 class="section-heading">A studio built on<br><em>Restraint</em></h2>
+                <div class="about-grid">
+                    <div class="about-text">
+                        <p>VANTA is a generative design laboratory founded in 2020 at the intersection of computational art and cultural curiosity. We believe that the most powerful aesthetic experiences emerge not from decoration, but from deeply considered systems.</p>
+                        <p>Our practice spans WebGL environments, physical installations, and brand identities — unified by a commitment to work that rewards attention. We don't chase trends. We build things that feel inevitable in retrospect.</p>
+                        <p>Based between Lisbon and Berlin, we collaborate with cultural institutions, technology companies, and independent artists who share our appetite for the unexpected.</p>
+                    </div>
+                    <div class="about-visual">
+                        <div class="about-cell"><div class="about-cell-label">Founded</div><div class="about-cell-value">2020</div></div>
+                        <div class="about-cell"><div class="about-cell-label">Focus</div><div class="about-cell-value">Digital</div></div>
+                        <div class="about-cell"><div class="about-cell-label">Based in</div><div class="about-cell-value">Lisbon</div></div>
+                        <div class="about-cell"><div class="about-cell-label">Projects</div><div class="about-cell-value">48+</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- MARQUEE -->
+            <div class="marquee-strip">
+                <div class="marquee-track">
+                    <span class="marquee-item">Generative Art <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Particle Systems <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Algorithmic Design <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Interactive Installations <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Computational Aesthetics <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">WebGL Experiences <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Digital Atelier <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Generative Art <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Particle Systems <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Algorithmic Design <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Interactive Installations <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Computational Aesthetics <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">WebGL Experiences <span class="marquee-dot">◈</span></span>
+                    <span class="marquee-item">Digital Atelier <span class="marquee-dot">◈</span></span>
+                </div>
+            </div>
+
+            <!-- SERVICES -->
+            <section class="section-services">
+                <div class="section-tag">What We Do</div>
+                <h2 class="section-heading">Craft meets<br><em>Computation</em></h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-num">01</div>
+                        <span class="service-icon">◎</span>
+                        <div class="service-title">Generative Visuals</div>
+                        <p class="service-desc">Real-time particle systems and procedural geometry that evolve with mathematical precision. Every render is a unique artifact.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-num">02</div>
+                        <span class="service-icon">⬡</span>
+                        <div class="service-title">Interactive Installations</div>
+                        <p class="service-desc">Sensor-driven environments where human presence becomes the brush — body, sound, and motion as creative input.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-num">03</div>
+                        <span class="service-icon">◈</span>
+                        <div class="service-title">WebGL Experiences</div>
+                        <p class="service-desc">Browser-native 3D environments pushing the limits of what lives in a single URL. No install. Pure presence.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-num">04</div>
+                        <span class="service-icon">⬟</span>
+                        <div class="service-title">Shader Artistry</div>
+                        <p class="service-desc">Custom GLSL programs that sculpt light at the GPU level — turning mathematics into visual texture and atmosphere.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-num">05</div>
+                        <span class="service-icon">○</span>
+                        <div class="service-title">Motion & Morphing</div>
+                        <p class="service-desc">Fluid transitions between states of matter. Geometry that breathes, dissolves, and reforms with organic intention.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-num">06</div>
+                        <span class="service-icon">△</span>
+                        <div class="service-title">Brand Identities</div>
+                        <p class="service-desc">Visual systems with a generative logic — logos and identities that evolve by rule, not by hand.</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- CAPABILITIES -->
+            <section class="section-capabilities">
+                <div class="section-tag">Expertise</div>
+                <h2 class="section-heading">What we do<br><em>exceptionally</em></h2>
+                <div class="capabilities-layout">
+                    <div class="capabilities-left">
+                        <p>Each discipline below represents years of deep technical investment — not surface-level competency. We go deep so our clients don't have to explain themselves twice.</p>
+                    </div>
+                    <div class="capabilities-list">
+                        <div class="capability-row"><span class="capability-name">WebGL & Three.js</span><div class="capability-bar"><div class="capability-fill" style="width:96%"></div></div><span class="capability-pct">96%</span></div>
+                        <div class="capability-row"><span class="capability-name">Generative Systems</span><div class="capability-bar"><div class="capability-fill" style="width:92%"></div></div><span class="capability-pct">92%</span></div>
+                        <div class="capability-row"><span class="capability-name">GLSL Shaders</span><div class="capability-bar"><div class="capability-fill" style="width:88%"></div></div><span class="capability-pct">88%</span></div>
+                        <div class="capability-row"><span class="capability-name">Interactive Installations</span><div class="capability-bar"><div class="capability-fill" style="width:85%"></div></div><span class="capability-pct">85%</span></div>
+                        <div class="capability-row"><span class="capability-name">Creative Direction</span><div class="capability-bar"><div class="capability-fill" style="width:90%"></div></div><span class="capability-pct">90%</span></div>
+                        <div class="capability-row"><span class="capability-name">Motion & Animation</span><div class="capability-bar"><div class="capability-fill" style="width:87%"></div></div><span class="capability-pct">87%</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- WORK LIST -->
+            <section class="section-work">
+                <div class="section-tag">Selected Work</div>
+                <h2 class="section-heading">Recent <em>Projects</em></h2>
+                <div class="work-list">
+                    <div class="work-item">
+                        <span class="work-index">001</span>
+                        <span class="work-title">Chromatic Void</span>
+                        <div class="work-tags"><span class="work-tag">WebGL</span><span class="work-tag">Installation</span></div>
+                        <span class="work-arrow">→</span>
+                    </div>
+                    <div class="work-item">
+                        <span class="work-index">002</span>
+                        <span class="work-title">Entropy Garden</span>
+                        <div class="work-tags"><span class="work-tag">Generative</span><span class="work-tag">Real-time</span></div>
+                        <span class="work-arrow">→</span>
+                    </div>
+                    <div class="work-item">
+                        <span class="work-index">003</span>
+                        <span class="work-title">Lattice Drift</span>
+                        <div class="work-tags"><span class="work-tag">Particles</span><span class="work-tag">Audio-Reactive</span></div>
+                        <span class="work-arrow">→</span>
+                    </div>
+                    <div class="work-item">
+                        <span class="work-index">004</span>
+                        <span class="work-title">Morphic Resonance</span>
+                        <div class="work-tags"><span class="work-tag">Shader</span><span class="work-tag">Brand</span></div>
+                        <span class="work-arrow">→</span>
+                    </div>
+                    <div class="work-item">
+                        <span class="work-index">005</span>
+                        <span class="work-title">Fold / Unfold</span>
+                        <div class="work-tags"><span class="work-tag">Geometry</span><span class="work-tag">Motion</span></div>
+                        <span class="work-arrow">→</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- CLIENTS -->
+            <section class="section-clients">
+                <div class="section-tag">Trusted By</div>
+                <h2 class="section-heading">Studios &amp; <em>Institutions</em></h2>
+                <div class="clients-grid">
+                    <div class="client-cell"><span class="client-name">Refik Anadol</span></div>
+                    <div class="client-cell"><span class="client-name">MoMA</span></div>
+                    <div class="client-cell"><span class="client-name">Sónar</span></div>
+                    <div class="client-cell"><span class="client-name">Ars Electronica</span></div>
+                    <div class="client-cell"><span class="client-name">Nike</span></div>
+                    <div class="client-cell"><span class="client-name">Serpentine</span></div>
+                    <div class="client-cell"><span class="client-name">Mutek</span></div>
+                    <div class="client-cell"><span class="client-name">Hyundai</span></div>
+                    <div class="client-cell"><span class="client-name">Tate Modern</span></div>
+                    <div class="client-cell"><span class="client-name">Adobe</span></div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- QUOTE -->
+            <section class="section-quote">
+                <div class="quote-inner">
+                    <div class="quote-mark">"</div>
+                    <p class="quote-text">We believe the most honest art is made by <em>systems</em> — structures that generate beauty without pretending to control it.</p>
+                    <div class="quote-attr">Vanta Manifesto, 2026</div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- MANIFESTO -->
+            <section class="section-manifesto">
+                <div class="section-tag">Our Beliefs</div>
+                <h2 class="section-heading">The <em>Manifesto</em></h2>
+                <div class="manifesto-list">
+                    <div class="manifesto-item">
+                        <div class="manifesto-num">I</div>
+                        <div class="manifesto-content"><div class="manifesto-title">Systems over Symbols</div><p class="manifesto-desc">We distrust decoration. A beautiful system generates beauty without needing to be told what beautiful is. Logos that evolve by rule, not by hand — these are the artifacts we seek.</p></div>
+                    </div>
+                    <div class="manifesto-item">
+                        <div class="manifesto-num">II</div>
+                        <div class="manifesto-content"><div class="manifesto-title">Emergence over Intent</div><p class="manifesto-desc">The most surprising results come from stepping back and letting the logic breathe. We write the rules, then get out of the way. Curation happens after emergence.</p></div>
+                    </div>
+                    <div class="manifesto-item">
+                        <div class="manifesto-num">III</div>
+                        <div class="manifesto-content"><div class="manifesto-title">Craft at the Pixel Level</div><p class="manifesto-desc">Precision matters infinitely. A shader that's wrong by one line is entirely wrong. We care about the quality of silence between the notes as much as the notes themselves.</p></div>
+                    </div>
+                    <div class="manifesto-item">
+                        <div class="manifesto-num">IV</div>
+                        <div class="manifesto-content"><div class="manifesto-title">Time as Material</div><p class="manifesto-desc">Still images are statements. Time-based work is a conversation. We prefer conversations — things that change with the viewer, the hour, the data, the day.</p></div>
+                    </div>
+                    <div class="manifesto-item">
+                        <div class="manifesto-num">V</div>
+                        <div class="manifesto-content"><div class="manifesto-title">Restraint as Radicalism</div><p class="manifesto-desc">In a world of maximalism, doing less is the most disruptive act. We subtract until only the essential remains — and then we subtract once more.</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- PROCESS -->
+            <section class="section-process">
+                <div class="section-tag">How We Work</div>
+                <h2 class="section-heading">A <em>Deliberate</em> Process</h2>
+                <div class="process-steps">
+                    <div class="process-step">
+                        <div class="step-num">01</div>
+                        <div class="step-title">Discover</div>
+                        <p class="step-desc">We immerse in your world — understanding the feeling before the form. Research, reference, and intuition.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-num">02</div>
+                        <div class="step-title">Define</div>
+                        <p class="step-desc">Rules, constraints, and parameters. We design the system that will generate the work — not the work itself.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-num">03</div>
+                        <div class="step-title">Generate</div>
+                        <p class="step-desc">The algorithm runs. We observe, refine, and iterate — a dialogue between intention and emergence.</p>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-num">04</div>
+                        <div class="step-title">Refine</div>
+                        <p class="step-desc">Curation from the infinite. Selecting the moments where chaos produces something that feels inevitable.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TESTIMONIALS -->
+            <section class="section-testimonials">
+                <div class="section-tag">Voices</div>
+                <h2 class="section-heading">What clients <em>say</em></h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">"</div>
+                        <p class="testimonial-text">Working with VANTA felt less like a commission and more like a collaboration with something genuinely other. The result was unlike anything we'd imagined — better.</p>
+                        <div class="testimonial-author"><div class="testimonial-avatar">M</div><div><div class="testimonial-name">Mia Fontaine</div><div class="testimonial-role">Creative Director — Sónar Festival</div></div></div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">"</div>
+                        <p class="testimonial-text">They delivered a WebGL experience that our engineers said was impossible in the timeline. The particle system became the centerpiece of our product launch.</p>
+                        <div class="testimonial-author"><div class="testimonial-avatar">K</div><div><div class="testimonial-name">Kai Müller</div><div class="testimonial-role">Head of Brand — Hyundai Creative Lab</div></div></div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote-mark">"</div>
+                        <p class="testimonial-text">VANTA doesn't just make beautiful things — they make things that make you think differently about what beauty can be. The installation ran for three months to sold-out crowds.</p>
+                        <div class="testimonial-author"><div class="testimonial-avatar">A</div><div><div class="testimonial-name">Amara Osei</div><div class="testimonial-role">Curator — Serpentine Galleries</div></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- STATS -->
+            <div class="section-stats">
+                <div class="stat-item">
+                    <div class="stat-value">48+</div>
+                    <div class="stat-label">Projects Shipped</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Awards Won</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">25k</div>
+                    <div class="stat-label">Particles Per Scene</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Possible Forms</div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- STACK -->
+            <section class="section-stack">
+                <div class="section-tag">Technology</div>
+                <h2 class="section-heading">Built with <em>Precision</em></h2>
+                <div class="stack-grid">
+                    <div class="stack-item"><span class="stack-icon">◎</span><div class="stack-name">Three.js</div></div>
+                    <div class="stack-item"><span class="stack-icon">⬡</span><div class="stack-name">WebGL</div></div>
+                    <div class="stack-item"><span class="stack-icon">△</span><div class="stack-name">GLSL</div></div>
+                    <div class="stack-item"><span class="stack-icon">◈</span><div class="stack-name">React</div></div>
+                    <div class="stack-item"><span class="stack-icon">○</span><div class="stack-name">TouchDesigner</div></div>
+                    <div class="stack-item"><span class="stack-icon">⬟</span><div class="stack-name">Houdini</div></div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- AWARDS -->
+            <section class="section-awards">
+                <div class="section-tag">Recognition</div>
+                <h2 class="section-heading">Awards &amp; <em>Honors</em></h2>
+                <div class="awards-list">
+                    <div class="award-item"><span class="award-year">2025</span><span class="award-title">Chromatic Void</span><span class="award-org">Ars Electronica — Golden Nica</span><span class="award-badge">Gold</span></div>
+                    <div class="award-item"><span class="award-year">2025</span><span class="award-title">Entropy Garden</span><span class="award-org">FWA — Site of the Year</span><span class="award-badge">SOTY</span></div>
+                    <div class="award-item"><span class="award-year">2024</span><span class="award-title">Lattice Drift</span><span class="award-org">Awwwards — Developer Award</span><span class="award-badge">DOTY</span></div>
+                    <div class="award-item"><span class="award-year">2024</span><span class="award-title">Morphic Resonance</span><span class="award-org">D&AD — Pencil</span><span class="award-badge">Wood</span></div>
+                    <div class="award-item"><span class="award-year">2023</span><span class="award-title">Fold / Unfold</span><span class="award-org">Cannes Lions — Silver</span><span class="award-badge">Silver</span></div>
+                    <div class="award-item"><span class="award-year">2023</span><span class="award-title">Void Protocol</span><span class="award-org">Mutek — Best Installation</span><span class="award-badge">Best</span></div>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- CONTACT -->
+            <section class="section-contact">
+                <div class="section-tag">Get In Touch</div>
+                <h2 class="section-heading">Start a <em>Conversation</em></h2>
+                <div class="contact-layout">
+                    <div class="contact-info">
+                        <p>We work with a small number of partners each year. If what you're building deserves to be extraordinary, we'd like to hear about it.</p>
+                        <div class="contact-detail"><span class="contact-detail-label">Email</span><span class="contact-detail-value">hello@vanta.lab</span></div>
+                        <div class="contact-detail"><span class="contact-detail-label">Studio</span><span class="contact-detail-value">Lisbon / Berlin</span></div>
+                        <div class="contact-detail"><span class="contact-detail-label">Inquiries</span><span class="contact-detail-value">Open for 2026</span></div>
+                    </div>
+                    <form class="contact-form" onsubmit="return false;">
+                        <div class="form-row">
+                            <div class="form-field"><label class="form-label">Name</label><input class="form-input" type="text" placeholder="Your name"></div>
+                            <div class="form-field"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="your@email.com"></div>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">Project Type</label>
+                            <select class="form-select">
+                                <option value="">Select a category</option>
+                                <option>WebGL Experience</option>
+                                <option>Physical Installation</option>
+                                <option>Brand Identity</option>
+                                <option>Generative Art</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-field"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell us about your vision…"></textarea></div>
+                        <button class="form-submit">Send Message <span style="margin-left:0.5rem">→</span></button>
+                    </form>
+                </div>
+            </section>
+
+            <div class="section-divider"></div>
+
+            <!-- CTA -->
+            <section class="section-cta">
+                <div class="cta-tag">Ready to Begin</div>
+                <h2 class="cta-heading">Let's make something<br><em>unreasonable</em></h2>
+                <p class="cta-sub">We take on a limited number of projects each year. If your vision deserves to exist at the edge of the possible, reach out.</p>
+            </section>
+
+        </div><!-- end content-wrapper -->
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const container = document.getElementById('three-container');
+        const morphNameEl = document.getElementById('morph-name');
+        const morphCounterEl = document.getElementById('morph-counter');
+        const dots = document.querySelectorAll('.dot-nav');
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 2.5;
+        renderer.powerPreference = 'high-performance';
+        container.appendChild(renderer.domElement);
+
+        // Ensure canvas never overlaps content
+        renderer.domElement.style.position = 'fixed';
+        renderer.domElement.style.top = '0';
+        renderer.domElement.style.left = '0';
+        renderer.domElement.style.zIndex = '0';
+        renderer.domElement.style.pointerEvents = 'none';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0e0e0e);
+        scene.fog = new THREE.FogExp2(0x0e0e0e, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(28, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 0, 4.2);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.04;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.4;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+        controls.enabled = false;
+
+        // Lights
+        const ambient = new THREE.AmbientLight(0xffeedd, 3);
+        scene.add(ambient);
+
+        const keyLight = new THREE.PointLight(0xc4a882, 15, 50);
+        keyLight.position.set(3, 3, 4);
+        scene.add(keyLight);
+
+        const fillLight = new THREE.PointLight(0x4a6fa5, 8, 50);
+        fillLight.position.set(-4, -2, 3);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.PointLight(0x8b7355, 10, 50);
+        rimLight.position.set(0, 4, -3);
+        scene.add(rimLight);
+
+        const frontLight = new THREE.PointLight(0xffffff, 12, 40);
+        frontLight.position.set(0, 0, 6);
+        scene.add(frontLight);
+
+        const bottomLight = new THREE.PointLight(0xc4a882, 8, 40);
+        bottomLight.position.set(0, -3, 3);
+        scene.add(bottomLight);
+
+        // === SHAPE DEFINITIONS ===
+        const PARTICLE_COUNT = 32000;
+        const shapes = [];
+        const shapeNames = ['Dodeca', 'Heart', 'Diamond', 'Helix'];
+
+        // Helper: sample points on geometry surface
+        function sampleGeometry(geometry, count) {
+            const pos = new Float32Array(count * 3);
+            const posAttr = geometry.attributes.position;
+            const indexAttr = geometry.index;
+            
+            // Get triangle data
+            const triangles = [];
+            const triCount = indexAttr ? indexAttr.count / 3 : posAttr.count / 3;
+            const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3();
+            const areas = [];
+            let totalArea = 0;
+
+            for (let i = 0; i < triCount; i++) {
+                let a, b, c;
+                if (indexAttr) {
+                    a = indexAttr.getX(i * 3);
+                    b = indexAttr.getX(i * 3 + 1);
+                    c = indexAttr.getX(i * 3 + 2);
+                } else {
+                    a = i * 3; b = i * 3 + 1; c = i * 3 + 2;
+                }
+                vA.fromBufferAttribute(posAttr, a);
+                vB.fromBufferAttribute(posAttr, b);
+                vC.fromBufferAttribute(posAttr, c);
+                const area = new THREE.Triangle(vA.clone(), vB.clone(), vC.clone()).getArea();
+                areas.push(area);
+                totalArea += area;
+                triangles.push([vA.clone(), vB.clone(), vC.clone()]);
+            }
+
+            // Weighted random sampling
+            for (let i = 0; i < count; i++) {
+                let r = Math.random() * totalArea;
+                let triIdx = 0;
+                for (let j = 0; j < areas.length; j++) {
+                    r -= areas[j];
+                    if (r <= 0) { triIdx = j; break; }
+                }
+                const tri = triangles[triIdx];
+                let u = Math.random(), v = Math.random();
+                if (u + v > 1) { u = 1 - u; v = 1 - v; }
+                const w = 1 - u - v;
+                pos[i * 3]     = tri[0].x * w + tri[1].x * u + tri[2].x * v;
+                pos[i * 3 + 1] = tri[0].y * w + tri[1].y * u + tri[2].y * v;
+                pos[i * 3 + 2] = tri[0].z * w + tri[1].z * u + tri[2].z * v;
+            }
+            return pos;
+        }
+
+        // Shape 0: Dodecahedron
+        function makeSkull() {
+            const geo = new THREE.DodecahedronGeometry(1.2, 1);
+            const nonIdx = geo.toNonIndexed();
+            const idxGeo = new THREE.BufferGeometry();
+            idxGeo.setAttribute('position', nonIdx.attributes.position);
+            const idxArr = [];
+            for (let i = 0; i < nonIdx.attributes.position.count; i++) idxArr.push(i);
+            idxGeo.setIndex(idxArr);
+            return sampleGeometry(idxGeo, PARTICLE_COUNT);
+        }
+
+        // Shape 1: Heart
+        function makeHeart() {
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const t = Math.random() * Math.PI * 2;
+                const s = Math.random() * Math.PI;
+                const scatter = 0.03;
+                // Heart parametric surface
+                const x = 1.2 * Math.sin(t) * Math.sin(s);
+                let y = 0.8 * Math.cos(s) + 0.4 * Math.cos(t) * Math.sin(s);
+                const z = 1.0 * Math.sin(t) * Math.cos(s) * (1 + 0.3 * Math.sin(t));
+                
+                // Heart shape modifier
+                const heartX = 16 * Math.pow(Math.sin(t), 3) / 16;
+                const heartY = (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) / 16;
+                const depth = Math.sin(s) * 0.5;
+
+                pos[i * 3]     = heartX + (Math.random() - 0.5) * scatter;
+                pos[i * 3 + 1] = heartY + (Math.random() - 0.5) * scatter;
+                pos[i * 3 + 2] = depth + (Math.random() - 0.5) * scatter;
+            }
+            return pos;
+        }
+
+        // Shape 2: Diamond / Gem (larger, centered, shifted up)
+        function makeDiamond() {
+            const yOffset = 0.35;
+            const topGeo = new THREE.ConeGeometry(1.4, 0.9, 8);
+            topGeo.translate(0, 0.45 + yOffset, 0);
+            const bottomGeo = new THREE.ConeGeometry(1.4, 2.0, 8);
+            bottomGeo.rotateX(Math.PI);
+            bottomGeo.translate(0, -1.0 + yOffset, 0);
+
+            const topNonIdx = topGeo.toNonIndexed();
+            const botNonIdx = bottomGeo.toNonIndexed();
+            const topIdxGeo = new THREE.BufferGeometry();
+            topIdxGeo.setAttribute('position', topNonIdx.attributes.position);
+            const topIdx = []; for (let i = 0; i < topNonIdx.attributes.position.count; i++) topIdx.push(i);
+            topIdxGeo.setIndex(topIdx);
+
+            const botIdxGeo = new THREE.BufferGeometry();
+            botIdxGeo.setAttribute('position', botNonIdx.attributes.position);
+            const botIdx = []; for (let i = 0; i < botNonIdx.attributes.position.count; i++) botIdx.push(i);
+            botIdxGeo.setIndex(botIdx);
+
+            const topCount = Math.floor(PARTICLE_COUNT * 0.4);
+            const botCount = PARTICLE_COUNT - topCount;
+            const topPts = sampleGeometry(topIdxGeo, topCount);
+            const botPts = sampleGeometry(botIdxGeo, botCount);
+
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            pos.set(topPts);
+            for (let i = 0; i < botCount * 3; i++) {
+                pos[topCount * 3 + i] = botPts[i];
+            }
+            return pos;
+        }
+
+        // Shape 3: Double Helix
+        function makeHelix() {
+            const pos = new Float32Array(PARTICLE_COUNT * 3);
+            const helixCount = PARTICLE_COUNT / 2;
+            for (let h = 0; h < 2; h++) {
+                const offset = h * Math.PI;
+                for (let i = 0; i < helixCount; i++) {
+                    const idx = (h * helixCount + i) * 3;
+                    const t = (i / helixCount) * Math.PI * 6 - Math.PI * 3;
+                    const r = 0.6;
+                    pos[idx]     = r * Math.cos(t + offset) + (Math.random() - 0.5) * 0.04;
+                    pos[idx + 1] = t * 0.25 + (Math.random() - 0.5) * 0.04;
+                    pos[idx + 2] = r * Math.sin(t + offset) + (Math.random() - 0.5) * 0.04;
+
+                    // Add connecting rungs every so often
+                    if (i % 200 < 10 && h === 0) {
+                        const rungT = Math.floor(i / 200) * 200;
+                        const rungAngle = (rungT / helixCount) * Math.PI * 6 - Math.PI * 3;
+                        const frac = (i % 200) / 10;
+                        pos[idx]     = r * Math.cos(rungAngle) * (1 - frac) + r * Math.cos(rungAngle + Math.PI) * frac;
+                        pos[idx + 2] = r * Math.sin(rungAngle) * (1 - frac) + r * Math.sin(rungAngle + Math.PI) * frac;
+                    }
+                }
+            }
+            return pos;
+        }
+
+        shapes.push(makeSkull());
+        shapes.push(makeHeart());
+        shapes.push(makeDiamond());
+        shapes.push(makeHelix());
+
+        // === PARTICLE SYSTEM ===
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(PARTICLE_COUNT * 3);
+        const colors = new Float32Array(PARTICLE_COUNT * 3);
+        const sizes = new Float32Array(PARTICLE_COUNT);
+        const randoms = new Float32Array(PARTICLE_COUNT);
+
+        // Initialize with first shape
+        positions.set(shapes[0]);
+
+        const c1 = new THREE.Color(0xf0d9b5);
+        const c2 = new THREE.Color(0xd4a574);
+        const c3 = new THREE.Color(0x7eb8e0);
+
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const ratio = i / PARTICLE_COUNT;
+            const color = ratio < 0.5 
+                ? c1.clone().lerp(c2, ratio * 2)
+                : c2.clone().lerp(c3, (ratio - 0.5) * 2);
+            colors[i * 3] = color.r;
+            colors[i * 3 + 1] = color.g;
+            colors[i * 3 + 2] = color.b;
+            sizes[i] = 0.018 + Math.random() * 0.028;
+            randoms[i] = Math.random();
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+        geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1));
+
+        // Custom shader for soft particles
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uPixelRatio: { value: renderer.getPixelRatio() },
+                uMorph: { value: 0 },
+                uMouse3D: { value: new THREE.Vector3(0, 0, 0) },
+                uMouseActive: { value: 0 },
+            },
+            vertexShader: `
+                attribute float aSize;
+                attribute float aRandom;
+                varying vec3 vColor;
+                varying float vAlpha;
+                uniform float uTime;
+                uniform float uPixelRatio;
+                uniform float uMorph;
+
+                uniform vec3 uMouse3D;
+                uniform float uMouseActive;
+
+                void main() {
+                    vColor = color;
+                    vec3 pos = position;
+                    
+                    // Subtle breathing
+                    float breath = sin(uTime * 0.5 + aRandom * 6.28) * 0.02;
+                    pos += normalize(pos) * breath;
+                    
+                    // During morph, particles scatter outward slightly
+                    float scatter = sin(uMorph * 3.14159) * 0.3;
+                    pos += normalize(pos + vec3(0.001)) * scatter * aRandom;
+
+                    // Mouse influence — swirl + push with depth-agnostic distance
+                    vec3 toParticle = pos - uMouse3D;
+                    // Use only XY distance so depth doesn't reduce influence
+                    float xyDist = length(toParticle.xy);
+                    float fullDist = length(toParticle);
+                    float mouseRadius = 1.4;
+                    float influence = 1.0 - smoothstep(0.0, mouseRadius, xyDist);
+                    influence = influence * influence * uMouseActive;
+                    
+                    if (influence > 0.001) {
+                        // Push away from mouse
+                        vec3 pushDir = fullDist > 0.001 ? normalize(toParticle) : vec3(0.0, 1.0, 0.0);
+                        float pushStrength = influence * 0.3;
+                        pos += pushDir * pushStrength;
+                        
+                        // Swirl around mouse (rotate in XY plane around mouse position)
+                        float swirlSpeed = uTime * 2.0 + aRandom * 6.28;
+                        float swirlStrength = influence * 0.25;
+                        vec2 radial = pos.xy - uMouse3D.xy;
+                        float angle = swirlStrength * (1.0 + sin(swirlSpeed) * 0.3);
+                        float cosA = cos(angle);
+                        float sinA = sin(angle);
+                        vec2 rotated = vec2(
+                            radial.x * cosA - radial.y * sinA,
+                            radial.x * sinA + radial.y * cosA
+                        );
+                        pos.xy = uMouse3D.xy + rotated;
+                        
+                        // Z-axis gentle orbit for depth feel
+                        pos.z += sin(swirlSpeed * 0.7 + aRandom * 3.14) * influence * 0.15;
+                        
+                        // Organic jitter
+                        float jitter = sin(uTime * 4.0 + aRandom * 18.0) * 0.02 * influence;
+                        pos += pushDir * jitter;
+                    }
+
+                    vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = aSize * uPixelRatio * 700.0 / -mvPos.z;
+                    gl_PointSize = max(gl_PointSize, 2.0);
+                    gl_Position = projectionMatrix * mvPos;
+                    
+                    vAlpha = 0.85 + 0.15 * (1.0 - smoothstep(0.0, 10.0, -mvPos.z));
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                varying float vAlpha;
+
+                void main() {
+                    float d = length(gl_PointCoord - vec2(0.5));
+                    if (d > 0.5) discard;
+                    float alpha = smoothstep(0.5, 0.0, d) * vAlpha;
+                    vec3 brightColor = vColor * 2.2 + 0.15;
+                    gl_FragColor = vec4(brightColor, alpha);
+                }
+            `,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            vertexColors: true,
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        // === MORPHING ===
+        let currentShape = 0;
+        let targetShape = 0;
+        let morphProgress = 0;
+        let isMorphing = false;
+        const morphDuration = 2.5;
+        let morphStartTime = 0;
+        const clock = new THREE.Clock();
+
+        function startMorph(targetIdx) {
+            if (isMorphing || targetIdx === currentShape) return;
+            targetShape = targetIdx;
+            isMorphing = true;
+            morphStartTime = clock.getElapsedTime();
+
+        }
+
+        // Morph progress bar
+        const morphProgressEl = document.getElementById('morph-progress');
+        let morphTimer = 0;
+        const morphInterval = 5;
+
+        // Auto-morph every 5 seconds
+        let autoMorphInterval = setInterval(() => {
+            const next = (currentShape + 1) % shapes.length;
+            startMorph(next);
+        }, 5000);
+
+        // Click dots to morph
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const idx = parseInt(dot.dataset.idx);
+                clearInterval(autoMorphInterval);
+                startMorph(idx);
+                autoMorphInterval = setInterval(() => {
+                    const next = (currentShape + 1) % shapes.length;
+                    startMorph(next);
+                }, 5000);
+            });
+        });
+
+        function updateUI(idx) {
+            morphNameEl.textContent = shapeNames[idx];
+            morphCounterEl.textContent = `0${idx + 1} / 0${shapes.length}`;
+            dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+        }
+
+        // === MOUSE RAYCASTING ===
+        const raycaster = new THREE.Raycaster();
+        const mouseNDC = new THREE.Vector2(9999, 9999);
+        const mousePlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+        const mouse3D = new THREE.Vector3();
+        let mouseOnScreen = false;
+        let mouseActiveSmooth = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            mouseOnScreen = true;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            mouseNDC.set(9999, 9999);
+            mouseOnScreen = false;
+        });
+
+        // === ANIMATION ===
+        // Pre-allocate reusable objects to avoid GC pressure
+        const _invMatrix = new THREE.Matrix4();
+        const _localMouse = new THREE.Vector3();
+        const _intersectPoint = new THREE.Vector3();
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        let lastUIUpdate = -1;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            const elapsed = clock.getElapsedTime();
+            material.uniforms.uTime.value = elapsed;
+
+            // Smooth mouse activation
+            const mouseTarget = mouseOnScreen ? 1 : 0;
+            mouseActiveSmooth += (mouseTarget - mouseActiveSmooth) * 0.08;
+            material.uniforms.uMouseActive.value = mouseActiveSmooth;
+
+            // Update mouse 3D position via raycasting onto a plane at z=0
+            raycaster.setFromCamera(mouseNDC, camera);
+            raycaster.ray.intersectPlane(mousePlane, _intersectPoint);
+            // Transform to particle local space (reuse matrices)
+            _invMatrix.copy(particles.matrixWorld).invert();
+            _localMouse.copy(_intersectPoint).applyMatrix4(_invMatrix);
+            material.uniforms.uMouse3D.value.copy(_localMouse);
+
+            if (isMorphing) {
+                const rawProgress = Math.min((elapsed - morphStartTime) / morphDuration, 1);
+                morphProgress = easeInOutCubic(rawProgress);
+                material.uniforms.uMorph.value = morphProgress;
+
+                const srcPositions = shapes[currentShape];
+                const tgtPositions = shapes[targetShape];
+                const posArray = geometry.attributes.position.array;
+                const len = PARTICLE_COUNT * 3;
+
+                // Optimized lerp loop
+                for (let i = 0; i < len; i++) {
+                    posArray[i] = srcPositions[i] + (tgtPositions[i] - srcPositions[i]) * morphProgress;
+                }
+                geometry.attributes.position.needsUpdate = true;
+
+                if (rawProgress >= 1) {
+                    isMorphing = false;
+                    currentShape = targetShape;
+                    material.uniforms.uMorph.value = 0;
+                    updateUI(currentShape);
+                    lastUIUpdate = -1;
+                }
+
+                // Update UI at midpoint (only once)
+                if (rawProgress > 0.4 && rawProgress < 0.6 && lastUIUpdate !== targetShape) {
+                    lastUIUpdate = targetShape;
+                    updateUI(targetShape);
+                }
+            }
+
+        // Scroll-based parallax + rotation
+        const scrollY = window.scrollY || 0;
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const scrollFraction = maxScroll > 0 ? scrollY / maxScroll : 0;
+
+        // Scroll: slowly drift upward + scale down so it stays hero-anchored
+        const scrollDrift = scrollFraction * 2.8;
+        particles.position.y = Math.sin(elapsed * 0.3) * 0.05 - scrollDrift;
+
+        // Fade out as user scrolls away from hero
+        const fadeStart = 0.18;
+        const fadeEnd   = 0.55;
+        const canvasOpacity = 1 - Math.max(0, Math.min(1, (scrollFraction - fadeStart) / (fadeEnd - fadeStart)));
+        container.style.opacity = canvasOpacity;
+
+        // Extra rotation driven by scroll
+        particles.rotation.y = elapsed * 0.05 + scrollFraction * Math.PI * 2.5;
+        particles.rotation.x = scrollFraction * Math.PI * 0.6;
+
+        // Subtle zoom
+        camera.position.z = 4.2 + scrollFraction * 1.8;
+        camera.updateProjectionMatrix();
+
+            // Light animation
+            const sinT = Math.sin(elapsed * 0.2);
+            const cosT = Math.cos(elapsed * 0.2);
+            keyLight.position.x = sinT * 4;
+            keyLight.position.z = cosT * 4;
+
+            // Update morph progress bar
+            if (!isMorphing) {
+                const barProgress = ((elapsed % morphInterval) / morphInterval) * 100;
+                if (morphProgressEl) morphProgressEl.style.width = barProgress + '%';
+            } else {
+                if (morphProgressEl) morphProgressEl.style.width = '0%';
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            material.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+        });
+
+        animate();
+    </script>
+
+    <script>
+        const blurLayer = document.querySelector('.layer-blur');
+        let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        let smoothX = mouseX, smoothY = mouseY;
+        let lastBlurX = '', lastBlurY = '';
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateBlur() {
+            smoothX += (mouseX - smoothX) * 0.1;
+            smoothY += (mouseY - smoothY) * 0.1;
+            // Only update DOM when value actually changes (rounded to 1 decimal)
+            const newX = (smoothX / window.innerWidth * 100).toFixed(1) + '%';
+            const newY = (smoothY / window.innerHeight * 100).toFixed(1) + '%';
+            if (newX !== lastBlurX || newY !== lastBlurY) {
+                lastBlurX = newX;
+                lastBlurY = newY;
+                blurLayer.style.setProperty('--x', newX);
+                blurLayer.style.setProperty('--y', newY);
+            }
+            requestAnimationFrame(animateBlur);
+        }
+        animateBlur();
+    </script>
+</body>
+</html>

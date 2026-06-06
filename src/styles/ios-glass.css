@@ -1,0 +1,201 @@
+/* iOS 26.5 Glass — unified design layer for /build/* pages */
+
+:root {
+  --glass-bg: color-mix(in oklab, hsl(var(--background)) 62%, transparent);
+  --glass-bg-strong: color-mix(in oklab, hsl(var(--background)) 82%, transparent);
+  --glass-stroke: color-mix(in oklab, hsl(var(--foreground)) 9%, transparent);
+  --glass-stroke-soft: color-mix(in oklab, hsl(var(--foreground)) 5%, transparent);
+  --glass-shadow: 0 1px 0 0 color-mix(in oklab, hsl(var(--foreground)) 4%, transparent) inset,
+                  0 12px 40px -12px color-mix(in oklab, hsl(var(--foreground)) 20%, transparent);
+  --glass-blur: blur(28px) saturate(180%);
+}
+
+.dark {
+  --glass-bg: color-mix(in oklab, hsl(var(--background)) 55%, transparent);
+  --glass-bg-strong: color-mix(in oklab, hsl(var(--background)) 78%, transparent);
+  --glass-stroke: color-mix(in oklab, hsl(var(--foreground)) 12%, transparent);
+  --glass-stroke-soft: color-mix(in oklab, hsl(var(--foreground)) 7%, transparent);
+}
+
+/* Surfaces — text on glass is always white (iOS 26 spec) */
+.ios-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-stroke);
+  color: #ffffff;
+}
+.ios-glass-strong {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-stroke);
+  color: #ffffff;
+}
+.ios-card {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-stroke);
+  border-radius: 22px;
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+  color: #ffffff;
+}
+.ios-card-row + .ios-card-row {
+  border-top: 1px solid var(--glass-stroke-soft);
+}
+.ios-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  min-height: 52px;
+  color: #ffffff;
+}
+
+/* Force white text on every descendant of a glass surface so theme-token
+   utilities (text-foreground, text-muted-foreground, etc.) stay readable
+   against the blurred backdrop. */
+.ios-glass, .ios-glass *,
+.ios-glass-strong, .ios-glass-strong *,
+.ios-card, .ios-card *,
+.ios-header, .ios-header *,
+.ios-fab, .ios-fab * {
+  color: #ffffff;
+}
+.ios-glass .text-muted-foreground,
+.ios-glass-strong .text-muted-foreground,
+.ios-card .text-muted-foreground,
+.ios-header .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+
+/* Header */
+.ios-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-stroke-soft);
+  color: #ffffff;
+}
+
+
+/* Buttons & controls */
+.ios-fab {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-stroke);
+  box-shadow: 0 10px 30px -10px color-mix(in oklab, hsl(var(--foreground)) 30%, transparent);
+  color: #ffffff;
+}
+
+/* Section titles */
+.ios-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, hsl(var(--foreground)) 55%, transparent);
+  padding: 0 6px 8px;
+}
+
+/* Aurora ambient backdrop */
+.ios-aurora {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.ios-aurora::before,
+.ios-aurora::after {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.45;
+}
+.ios-aurora::before {
+  top: -160px;
+  inset-inline-start: -120px;
+  background: color-mix(in oklab, hsl(var(--primary)) 55%, transparent);
+}
+.ios-aurora::after {
+  bottom: -180px;
+  inset-inline-end: -120px;
+  background: color-mix(in oklab, hsl(var(--primary)) 35%, transparent);
+  opacity: 0.35;
+}
+.dark .ios-aurora::before { opacity: 0.35; }
+.dark .ios-aurora::after { opacity: 0.25; }
+
+/* ──────────────────────────────────────────────────────────────
+   GLASS = THEME-AWARE TEXT
+   Glass surfaces follow the active theme: black text in light mode,
+   white text in dark mode.
+   ────────────────────────────────────────────────────────────── */
+.liquid-glass,
+.liquid-glass-subtle,
+.liquid-glass-button,
+.liquid-glass-milk,
+.liquid-glass-input,
+.liquid-glass-pill,
+.glass-panel,
+.glass-input,
+.ios-glass,
+.ios-glass-strong,
+.ios-card,
+.ios-header,
+.ios-fab,
+.liquid-glass *,
+.liquid-glass-subtle *,
+.liquid-glass-button *,
+.liquid-glass-milk *,
+.liquid-glass-input *,
+.liquid-glass-pill *,
+.glass-panel *,
+.glass-input *,
+.ios-glass *,
+.ios-glass-strong *,
+.ios-card *,
+.ios-header *,
+.ios-fab * {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Muted text on glass — still white, just softer */
+.liquid-glass .text-muted-foreground,
+.liquid-glass-subtle .text-muted-foreground,
+.liquid-glass-button .text-muted-foreground,
+.liquid-glass-milk .text-muted-foreground,
+.glass-panel .text-muted-foreground,
+.ios-glass .text-muted-foreground,
+.ios-glass-strong .text-muted-foreground,
+.ios-card .text-muted-foreground,
+.ios-header .text-muted-foreground,
+.ios-fab .text-muted-foreground {
+  color: hsl(var(--foreground) / 0.72) !important;
+}
+
+.ios-fab svg.mobile-header-icon-black,
+.ios-fab svg.mobile-header-icon-black * {
+  color: hsl(var(--foreground)) !important;
+  stroke: hsl(var(--foreground)) !important;
+}
+
+/* Placeholders on glass inputs */
+.glass-input::placeholder,
+.liquid-glass-input::placeholder,
+.ios-glass input::placeholder,
+.ios-card input::placeholder,
+.liquid-glass input::placeholder {
+  color: hsl(var(--foreground) / 0.55) !important;
+}

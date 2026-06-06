@@ -1,0 +1,5 @@
+ALTER TABLE public.projects
+  ADD COLUMN IF NOT EXISTS v0_chat_id TEXT,
+  ADD COLUMN IF NOT EXISTS v0_project_id TEXT,
+  ADD COLUMN IF NOT EXISTS v0_latest_version_id TEXT,
+  ADD COLUMN IF NOT EXISTS model_tier TEXT;

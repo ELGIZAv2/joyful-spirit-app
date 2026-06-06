@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Circle Of Water 3D Websi — Megsy Templates</title>
+  <style>
+    * { margin: 0; padding: 0; outline: none !important; box-sizing: border-box; }
+    canvas { display: block; outline: none !important; }
+  </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --cream: #ffffff;
+      --cream-dim: #ffffff;
+      --dark: #0a1a1f;
+      --accent: #5ecaae;
+      --accent-light: #7eddcc;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+    }
+
+    body {
+      background: #1a5a6a;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── Splash ── */
+    .splash {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      scroll-snap-align: start;
+    }
+
+    .splash .overline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 400;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 2rem;
+    }
+
+    .splash h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(4rem, 12vw, 10rem);
+      font-weight: 700;
+      font-style: normal;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      margin-bottom: 2rem;
+    }
+
+    .splash .subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(0.85rem, 1.6vw, 1.1rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .splash .rule {
+      width: 1px;
+      height: 60px;
+      background: rgba(255,255,255,0.5);
+      margin: 2.5rem auto;
+    }
+
+    .splash .scroll-hint {
+      margin-top: 2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .splash .scroll-hint::after {
+      content: '';
+      display: block;
+      width: 1px;
+      height: 50px;
+      background: rgba(255,255,255,0.5);
+      margin: 1rem auto 0;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.2; transform: scaleY(0.5); }
+      50% { opacity: 0.8; transform: scaleY(1); }
+    }
+
+    /* ── Sections ── */
+    .sections {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 0;
+      scroll-snap-align: start;
+    }
+
+    .section .number {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 300;
+      font-style: normal;
+      margin-bottom: 2rem;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .section:not(:first-child) h2 {
+      opacity: 1;
+    }
+
+    .section p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+      font-weight: 300;
+      line-height: 1.9;
+      color: #ffffff;
+      max-width: 500px;
+    }
+
+    .section .divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(255,255,255,0.5);
+      margin: 2.5rem auto;
+    }
+
+    .section .quote {
+      font-family: 'Space Grotesk', sans-serif;
+      font-style: normal;
+      font-weight: 300;
+      font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+      line-height: 1.8;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      max-width: 460px;
+      opacity: 1;
+    }
+
+    /* ── Finale ── */
+    .finale {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+      scroll-snap-align: start;
+    }
+
+    .finale .overline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: #ffffff;
+      margin-bottom: 2rem;
+    }
+
+    .finale h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 300;
+      font-style: normal;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin-bottom: 3rem;
+    }
+
+    .finale p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: #ffffff;
+      max-width: 440px;
+    }
+
+    .finale .cta {
+      display: inline-block;
+      margin-top: 3.5rem;
+      padding: 1em 3.5em;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--dark);
+      background: var(--cream);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .finale .cta:hover {
+      background: var(--accent-light);
+      color: var(--dark);
+      transform: translateY(-2px);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .section {
+        padding: 4rem 0;
+      }
+    }
+
+    /* ── Custom GUI Panel ── */
+    .gui-panel {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 9999;
+      width: 280px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: #e0dcd8;
+      user-select: none;
+      max-height: calc(100vh - 24px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .gui-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(18, 14, 12, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .gui-panel.collapsed .gui-panel-header {
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+    }
+
+    .gui-panel-header .gui-header-label {
+      transition: opacity 0.15s ease;
+    }
+
+    .gui-panel.collapsed .gui-header-label {
+      display: none;
+    }
+
+    .gui-panel-header .gui-chevron {
+      font-size: 14px;
+      opacity: 0.5;
+    }
+
+    .gui-panel.collapsed .gui-chevron {
+      display: none;
+    }
+
+    .gui-panel-header .gui-icon {
+      display: none;
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+
+    .gui-panel.collapsed .gui-icon {
+      display: block;
+    }
+
+    .gui-panel-body {
+      background: rgba(18, 14, 12, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      max-height: calc(100vh - 70px);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
+    }
+
+    .gui-panel.collapsed .gui-panel-body {
+      display: none;
+    }
+
+    .gui-panel-body::-webkit-scrollbar {
+      width: 4px;
+    }
+    .gui-panel-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .gui-panel-body::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.12);
+      border-radius: 2px;
+    }
+
+    .gui-folder {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .gui-folder-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #7eddcc;
+      transition: color 0.15s;
+    }
+
+    .gui-folder-header:hover {
+      color: #ffffff;
+    }
+
+    .gui-folder-header .folder-chevron {
+      font-size: 9px;
+      opacity: 0.4;
+      transition: transform 0.2s ease;
+    }
+
+    .gui-folder.closed .folder-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .gui-folder.closed .gui-folder-body {
+      display: none;
+    }
+
+    .gui-folder-body {
+      padding: 2px 0 6px;
+    }
+
+    .gui-row {
+      display: flex;
+      align-items: center;
+      padding: 3px 14px 3px 22px;
+      gap: 8px;
+      min-height: 26px;
+    }
+
+    .gui-row label {
+      flex: 0 0 auto;
+      width: 110px;
+      font-size: 10.5px;
+      color: #9a918a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gui-row .gui-control {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .gui-row input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .gui-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #7eddcc;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .gui-row input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .gui-row input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #7eddcc;
+      border: none;
+      cursor: pointer;
+    }
+
+    .gui-row .gui-value {
+      flex: 0 0 36px;
+      text-align: right;
+      font-size: 10px;
+      color: #7a726b;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gui-row input[type="color"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 18px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 3px;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .gui-row input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 1px;
+    }
+
+    .gui-row input[type="color"]::-webkit-color-swatch {
+      border: none;
+      border-radius: 2px;
+    }
+
+    .gui-row input[type="checkbox"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 3px;
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .gui-row input[type="checkbox"]:checked {
+      background: #7eddcc;
+      border-color: #7eddcc;
+    }
+
+    .gui-row input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -1px;
+      left: 2px;
+      font-size: 10px;
+      color: #0a1a1f;
+      font-weight: 600;
+    }
+
+    .gui-row select {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 3px;
+      color: #e0dcd8;
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      padding: 3px 6px;
+      cursor: pointer;
+      outline: none;
+      width: 100%;
+    }
+
+    .gui-row select option {
+      background: #1a1412;
+      color: #e0dcd8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Splash -->
+  <section class="splash">
+    <p class="overline">Spring / Summer 2026</p>
+    <h1>Circle<br>of Water</h1>
+    <div class="rule"></div>
+    <p class="subtitle">Where circles hold the sky</p>
+    <div class="scroll-hint">Scroll</div>
+  </section>
+
+  <!-- Content sections -->
+  <div class="sections">
+
+    <div class="section">
+      <p class="number">Chapter I</p>
+      <h2>Still waters<br>run deep</h2>
+      <div class="divider"></div>
+      <p>A meditation on the circle. The collection draws from ancient reflecting pools and sacred geometry — spaces where curves embrace water, and light bends to the rhythm of stone.</p>
+    </div>
+
+    <div class="section">
+      <p class="number">Chapter II</p>
+      <h2>Refracted<br>through stillness</h2>
+      <div class="divider"></div>
+      <p>Silhouettes that ripple like concentric rings. Each piece is shaped to echo the way light bends through a circular pool — layered, luminous, expanding outward with every breath.</p>
+      <div class="divider"></div>
+      <p class="quote">"A circle has no beginning. That is its beauty."</p>
+    </div>
+
+    <div class="section">
+      <p class="number">Chapter III</p>
+      <h2>The weight<br>of light</h2>
+      <div class="divider"></div>
+      <p>A palette drawn from water and mineral. Teal deepening into jade, amber dissolving into gold. These are the colours of a submerged courtyard, when caustics dance and stone remembers the sun.</p>
+    </div>
+
+  </div>
+
+  <!-- Finale -->
+  <div class="finale">
+    <p class="overline">The Collection</p>
+    <h2>Every circle<br>returns<br>to itself.</h2>
+    <p>Forty-two pieces. One orbit. A meditation on the space between surface and depth, between the ring of light and the silence beneath.</p>
+    <a class="cta" href="javascript:void(0)" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">Enter the Circle</a>
+  </div>
+
+  <!-- Custom GUI Panel -->
+  <div class="gui-panel collapsed" id="guiPanel">
+    <div class="gui-panel-header" id="guiPanelHeader">
+      <span class="gui-header-label">Properties</span>
+      <span class="gui-chevron">▼</span>
+      <svg class="gui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
+    <div class="gui-panel-body" id="guiPanelBody"></div>
+  </div>
+
+  <script type="module" src="/scene.js"></script>
+<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

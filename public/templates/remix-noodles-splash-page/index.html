@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Remix: Noodles Splash Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(ellipse at center, #212f78 0%, #0d122b 55%);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      color: #fff;
+    }
+
+    canvas {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    /* ── Splash ── */
+    .splash {
+      height: 100lvh;
+      position: relative;
+      overflow: clip;
+    }
+
+    /* ── Title ── */
+    .title-block {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+      opacity: 0;
+    }
+
+    .title-block h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(64px, 14vw, 200px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      color: #e0e0ff;
+      opacity: 0;
+      width: max-content;
+      margin: 0 auto;
+    }
+
+    .title-block .divider {
+      width: 40px;
+      height: 1px;
+      background: #ccc;
+      margin: 20px auto;
+    }
+
+    .title-block .tagline {
+      font-size: clamp(11px, 1.1vw, 15px);
+      font-weight: 300;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #999;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 32px 48px;
+      z-index: 2;
+      animation: fadeIn 0.8s ease-out 0.5s both;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #fff;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      position: absolute;
+      top: 96px;
+      right: 48px;
+      padding: 6px 16px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 100px;
+      z-index: 2;
+      animation: fadeIn 0.8s ease-out 0.8s both;
+    }
+
+    /* ── Side labels ── */
+    .side-label-left {
+      position: absolute;
+      left: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      animation: fadeIn 0.8s ease-out 0.6s both;
+    }
+
+    .side-label-left .num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      color: #bbb;
+      writing-mode: vertical-lr;
+    }
+
+    .side-label-right {
+      position: absolute;
+      right: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      animation: fadeIn 0.8s ease-out 0.6s both;
+    }
+
+    .side-label-right span {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    /* ── Bottom bar ── */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 32px 48px;
+      z-index: 2;
+      animation: fadeIn 0.8s ease-out 0.7s both;
+    }
+
+    .bottom-left,
+    .bottom-center,
+    .bottom-right {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #bbb;
+    }
+
+    /* ── Corner frames ── */
+    .frame-tl {
+      position: absolute;
+      top: 24px;
+      left: 32px;
+      width: 40px;
+      height: 40px;
+      border-top: 1px solid #ddd;
+      border-left: 1px solid #ddd;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .frame-br {
+      position: absolute;
+      bottom: 24px;
+      right: 32px;
+      width: 40px;
+      height: 40px;
+      border-bottom: 1px solid #ddd;
+      border-right: 1px solid #ddd;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* ── Horizontal rule ── */
+    .h-rule {
+      position: absolute;
+      bottom: 100px;
+      left: 48px;
+      right: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, #ddd 0%, transparent 30%, transparent 70%, #ddd 100%);
+      z-index: 2;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -45%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .top-bar { padding: 24px 24px; }
+      .bottom-bar { padding: 24px 24px; }
+      .side-label-left,
+      .side-label-right { display: none; }
+      .badge { right: 24px; top: 80px; }
+      .nav-links { gap: 20px; }
+      .frame-tl { left: 16px; top: 16px; }
+      .frame-br { right: 16px; bottom: 16px; }
+      .h-rule { left: 24px; right: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="splash">
+    <div class="frame-tl"></div>
+    <div class="frame-br"></div>
+
+    <nav class="top-bar">
+      <div class="logo">
+        <span class="dot"></span>
+        NOODLES
+      </div>
+      <div class="nav-links">
+        <a href="#">Work</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+    </nav>
+
+    <div class="badge">WebGPU</div>
+
+    <div class="side-label-left">
+      <span class="num">N&ordm; 001</span>
+    </div>
+
+    <div class="title-block">
+      <h1>OMMA</h1>
+      <div class="divider"></div>
+      <p class="tagline">A visual experiment in motion</p>
+    </div>
+
+    <div class="side-label-right">
+      <span>Est.</span>
+      <span>2026</span>
+    </div>
+
+    <div class="h-rule"></div>
+
+    <div class="bottom-bar">
+      <div class="bottom-left">Tokyo / Milano / NYC</div>
+      <div class="bottom-center">Always al dente</div>
+      <div class="bottom-right">&infin; flavours</div>
+    </div>
+  </section>
+
+  <script type="module" src="/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Megsy AI
+
+> All-in-one AI workspace for chat, image generation, video creation, slides, code, and research — built for creators and teams.
+
+Megsy AI brings together leading AI models for text, images, video, audio, and code in a single creative workspace. Generate content, build sites, run deep research, and collaborate with your team.
+
+## Pages
+
+- [Home](/): Overview of Megsy AI and what it can do.
+- [Pricing](/pricing): Plans, credits, and team pricing.
+- [Enterprise](/enterprise): Enterprise features, security, and SLAs.
+- [Contact](/contact): Get in touch with the team.
+- [Support](/support): Help center and customer support.
+- [About Egypt](/egypt): Megsy AI's commitment to Egypt and the region.
+- [Trust Center](/trust): Security, privacy, and compliance overview.
+- [Security](/security): Security practices and reporting.
+
+## Legal
+
+- [Terms](/terms): Terms of service.
+- [Privacy](/privacy): Privacy policy.
+- [Cookie Policy](/cookies): How we use cookies.
+- [Refund Policy](/refund): Refund terms.
+- [Content Policy](/policies/content): Acceptable content guidelines.
+- [AI Disclaimer](/legal/ai-disclaimer): Notes on AI-generated content.
+- [DMCA](/legal/dmca): Copyright takedown process.
+- [DPA](/legal/dpa): Data processing addendum.
+- [Affiliate Terms](/legal/affiliate): Affiliate program terms.

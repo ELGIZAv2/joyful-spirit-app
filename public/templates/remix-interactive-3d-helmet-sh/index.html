@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive 3D Helmet Sh — Megsy Templates</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #e0deda;
+      --text: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --accent: #c45d3e;
+      --light: #eae7e2;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    canvas#helmetCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: auto;
+      cursor: grab;
+    }
+
+    canvas#helmetCanvas:active {
+      cursor: grabbing;
+    }
+
+    .scroll-container {
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .scroll-container section {
+      pointer-events: auto;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 24px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: difference;
+    }
+
+    nav .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    nav .nav-links {
+      display: flex;
+      gap: 32px;
+      margin-right: 60px;
+    }
+
+    nav .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* DARK MODE TOGGLE */
+    .mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 48px;
+      z-index: 200;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.15);
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.4s, border-color 0.4s;
+    }
+
+    .mode-toggle:hover {
+      background: rgba(255,255,255,0.45);
+    }
+
+    .mode-toggle svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--text);
+      transition: fill 0.4s;
+    }
+
+    .mode-toggle .icon-moon { display: block; }
+    .mode-toggle .icon-sun { display: none; }
+
+    body.dark-mode .mode-toggle {
+      border-color: rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.35);
+    }
+
+    body.dark-mode .mode-toggle:hover {
+      background: rgba(0,0,0,0.55);
+    }
+
+    body.dark-mode .mode-toggle .icon-moon { display: none; }
+    body.dark-mode .mode-toggle .icon-sun { display: block; }
+
+    /* DARK MODE OVERRIDES */
+    body.dark-mode {
+      --bg: #141414;
+      --text: #e8e8e8;
+      --text-secondary: #888888;
+      --accent: #e07050;
+      --light: #1e1e1e;
+    }
+
+    body.dark-mode .specs-grid {
+      background: rgba(255,255,255,0.08);
+    }
+
+    body.dark-mode .spec-cell {
+      background: var(--bg);
+    }
+
+    body.dark-mode .feature-list li {
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+
+    body.dark-mode .footer {
+      border-top-color: rgba(255,255,255,0.08);
+    }
+
+    /* HERO */
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 48px;
+      position: relative;
+    }
+
+    .hero-content {
+      max-width: 500px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -3px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 380px;
+    }
+
+    .hero .scroll-hint {
+      position: absolute;
+      bottom: 48px;
+      right: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .scroll-hint span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-secondary);
+      writing-mode: vertical-rl;
+    }
+
+    .scroll-hint .line {
+      width: 1px;
+      height: 60px;
+      background: var(--text-secondary);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+      50% { opacity: 1; transform: scaleY(1); }
+    }
+
+    /* SECTIONS */
+    .info-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 80px 48px;
+      position: relative;
+    }
+
+    .info-section .text-block {
+      max-width: 420px;
+    }
+
+    .info-section.left .text-block {
+      margin-right: auto;
+    }
+
+    .info-section.right .text-block {
+      margin-left: auto;
+    }
+
+    .info-section .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .info-section h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .info-section p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    .info-section .stats {
+      display: flex;
+      gap: 40px;
+      margin-top: 32px;
+    }
+
+    .info-section .stat-item .number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .info-section .stat-item .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* SPECS BAR */
+    .specs-strip {
+      min-height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 48px;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .spec-cell {
+      background: var(--bg);
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .spec-cell .spec-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .spec-cell .spec-name {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-secondary);
+    }
+
+    /* FEATURES LIST */
+    .features-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 80px 48px;
+    }
+
+    .features-section .text-block {
+      max-width: 420px;
+      margin-left: auto;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin-top: 32px;
+    }
+
+    .feature-list li {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    .feature-list li .feat-icon {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* FOOTER */
+    .footer {
+      padding: 60px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      background: rgba(224, 222, 218, 0.8);
+      backdrop-filter: blur(8px);
+    }
+
+    body.dark-mode .footer {
+      background: rgba(20, 20, 20, 0.8);
+    }
+
+    .footer .footer-logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: -1px;
+    }
+
+    .footer .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer .footer-links a {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .footer .footer-copy {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* FADE IN ANIMATIONS */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+      @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      nav .nav-links { display: none; }
+      .mode-toggle { right: 24px; top: 12px; }
+      .hero { padding: 24px; }
+      .hero h1 { font-size: 48px; }
+      .info-section { padding: 60px 24px; }
+      .info-section h2 { font-size: 32px; }
+      .specs-grid { grid-template-columns: repeat(2, 1fr); }
+      .features-section { padding: 60px 24px; }
+      .footer { padding: 40px 24px; flex-direction: column; gap: 24px; align-items: flex-start; }
+      .hero .scroll-hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="helmetCanvas"></canvas>
+
+  <button class="mode-toggle" id="modeToggle" aria-label="Toggle dark mode">
+    <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+    <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><g stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></g></svg>
+  </button>
+
+  <nav>
+    <div class="logo">Aethon</div>
+    <div class="nav-links">
+      <a href="#">Overview</a>
+      <a href="#">Specs</a>
+      <a href="#">Technology</a>
+    </div>
+  </nav>
+
+  <div class="scroll-container">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content fade-in">
+        <h1>Engineered<br>Protection</h1>
+        <p>Precision-crafted headgear merging aerospace-grade materials with uncompromising design. Built for those who refuse to choose between safety and style.</p>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <div class="line"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — Structure -->
+    <section class="info-section left">
+      <div class="text-block fade-in">
+        <div class="label">01 — Structure</div>
+        <h2>Multi-Layer Shell Architecture</h2>
+        <p>A composite outer shell bonds carbon fiber with advanced polymers, distributing impact energy across the entire surface. Each layer is engineered to absorb, redirect, and dissipate force before it reaches you.</p>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="number">6</div>
+            <div class="stat-label">Layers</div>
+          </div>
+          <div class="stat-item">
+            <div class="number">1.2kg</div>
+            <div class="stat-label">Weight</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — Visor -->
+    <section class="info-section right">
+      <div class="text-block fade-in">
+        <div class="label">02 — Visor</div>
+        <h2>Optical Clarity Beyond Standard</h2>
+        <p>Anti-scratch polycarbonate visor with photochromic tinting that adapts to ambient light in real time. Peripheral vision spans 210°, eliminating blind spots without distortion.</p>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="number">210°</div>
+            <div class="stat-label">Field of View</div>
+          </div>
+          <div class="stat-item">
+            <div class="number">99.7%</div>
+            <div class="stat-label">UV Block</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SPECS STRIP -->
+    <section class="specs-strip">
+      <div class="specs-grid fade-in">
+        <div class="spec-cell">
+          <div class="spec-value">ECE 22.06</div>
+          <div class="spec-name">Certification</div>
+        </div>
+        <div class="spec-cell">
+          <div class="spec-value">XS — XXL</div>
+          <div class="spec-name">Size Range</div>
+        </div>
+        <div class="spec-cell">
+          <div class="spec-value">42 dB</div>
+          <div class="spec-name">Noise Reduction</div>
+        </div>
+        <div class="spec-cell">
+          <div class="spec-value">135 mb</div>
+          <div class="spec-name">App Size</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — Ventilation -->
+    <section class="info-section left">
+      <div class="text-block fade-in">
+        <div class="label">03 — Ventilation</div>
+        <h2>Channeled Airflow System</h2>
+        <p>Fourteen intake ports channel air through internal ducts mapped by computational fluid dynamics. Heat and moisture are expelled through rear exhausts, maintaining a cool and dry interior at any speed.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — Features -->
+    <section class="features-section">
+      <div class="text-block fade-in">
+        <div class="label">04 — Features</div>
+        <h2>Every Detail Considered</h2>
+        <ul class="feature-list">
+          <li><span>Emergency quick-release cheek pads</span><span class="feat-icon"></span></li>
+          <li><span>Bluetooth 5.3 communication module</span><span class="feat-icon"></span></li>
+          <li><span>Pinlock-ready anti-fog insert</span><span class="feat-icon"></span></li>
+          <li><span>Removable washable liner</span><span class="feat-icon"></span></li>
+          <li><span>Integrated rear LED safety light</span><span class="feat-icon"></span></li>
+          <li><span>Double-D ring titanium closure</span><span class="feat-icon"></span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="footer-logo">Aethon</div>
+      <div class="footer-links">
+        <a href="#">Twitter</a>
+        <a href="#">Mail</a>
+        <a href="#">LinkedIn</a>
+      </div>
+      <div class="footer-copy">© 2026 Megsy. All rights reserved.</div>
+    </footer>
+
+  </div>
+
+  <!-- THREE.JS -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+    const canvas = document.getElementById('helmetCanvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.setClearColor(0xe0deda, 1);
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 3);
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 2.5);
+    dirLight1.position.set(5, 5, 5);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xc4a882, 1.2);
+    dirLight2.position.set(-3, 2, -2);
+    scene.add(dirLight2);
+
+    const dirLight3 = new THREE.DirectionalLight(0x8899bb, 0.8);
+    dirLight3.position.set(0, -3, 4);
+    scene.add(dirLight3);
+
+    // Environment maps
+    const HDRI_LIGHT = 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/citrus_orchard_road_puresky_1k.hdr';
+    const HDRI_DARK = 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/qwantani_dusk_2_1k.hdr';
+    const hdriCache = {};
+
+    function loadHDRI(url) {
+      return new Promise((resolve) => {
+        if (hdriCache[url]) { resolve(hdriCache[url]); return; }
+        new RGBELoader().load(url, (texture) => {
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          hdriCache[url] = texture;
+          resolve(texture);
+        });
+      });
+    }
+
+    // Load initial light HDRI
+    loadHDRI(HDRI_LIGHT).then((texture) => {
+      scene.environment = texture;
+    });
+
+    // Pre-load dark HDRI in background
+    loadHDRI(HDRI_DARK);
+
+    // Dark mode toggle
+    let isDark = false;
+    const BG_LIGHT = 0xe0deda;
+    const BG_DARK = 0x141414;
+
+    document.getElementById('modeToggle').addEventListener('click', async () => {
+      isDark = !isDark;
+      document.body.classList.toggle('dark-mode', isDark);
+
+      const hdri = await loadHDRI(isDark ? HDRI_DARK : HDRI_LIGHT);
+      scene.environment = hdri;
+      renderer.setClearColor(isDark ? BG_DARK : BG_LIGHT, 1);
+      renderer.toneMappingExposure = isDark ? 1.2 : 1.0;
+    });
+
+    let helmet = null;
+
+    const loader = new GLTFLoader();
+    loader.load('https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf', (gltf) => {
+      helmet = gltf.scene;
+      helmet.scale.set(1.2, 1.2, 1.2);
+      scene.add(helmet);
+    });
+
+    // Scroll-based camera/model positions
+    const sections = [
+      { scrollStart: 0, scrollEnd: 0.15, posX: 0.5, posY: 0, rotX: 0, rotY: 0, rotZ: 0, camZ: 3, scale: 1.2 },
+      { scrollStart: 0.15, scrollEnd: 0.35, posX: 1.5, posY: 0, rotX: 0.2, rotY: 0.8, rotZ: 0.1, camZ: 2.6, scale: 1.3 },
+      { scrollStart: 0.35, scrollEnd: 0.55, posX: -1.0, posY: 0, rotX: -0.1, rotY: 2.2, rotZ: -0.05, camZ: 2.4, scale: 1.35 },
+      { scrollStart: 0.55, scrollEnd: 0.7, posX: 0, posY: 0, rotX: 0, rotY: Math.PI, rotZ: 0, camZ: 3, scale: 1.1 },
+      { scrollStart: 0.7, scrollEnd: 0.85, posX: 0.8, posY: -0.1, rotX: 0.3, rotY: 4.5, rotZ: 0.15, camZ: 2.2, scale: 1.4 },
+      { scrollStart: 0.85, scrollEnd: 1.0, posX: -0.8, posY: 0, rotX: -0.15, rotY: Math.PI * 2, rotZ: 0.1, camZ: 2.8, scale: 1.2 },
+    ];
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function smoothstep(a, b, t) {
+      const x = Math.max(0, Math.min(1, (t - a) / (b - a)));
+      return x * x * (3 - 2 * x);
+    }
+
+    let scrollProgress = 0;
+    let targetScrollProgress = 0;
+
+    // Drag-to-orbit state
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let orbitX = 0; // horizontal orbit offset (Y rotation)
+    let orbitY = 0; // vertical orbit offset (X rotation)
+    let targetOrbitX = 0;
+    let targetOrbitY = 0;
+    const DRAG_SENSITIVITY = 0.006;
+    const ORBIT_DECAY = 0.03; // how fast orbit returns to scroll-driven pose
+
+    window.addEventListener('pointerdown', (e) => {
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      const dy = e.clientY - dragStartY;
+      targetOrbitX = dx * DRAG_SENSITIVITY;
+      targetOrbitY = dy * DRAG_SENSITIVITY;
+    });
+
+    window.addEventListener('pointerup', () => {
+      if (isDragging) {
+        isDragging = false;
+        dragStartX = 0;
+        dragStartY = 0;
+      }
+    });
+
+    window.addEventListener('scroll', () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      targetScrollProgress = scrollHeight > 0 ? window.scrollY / scrollHeight : 0;
+    });
+
+    // Fade-in observer
+    const fadeEls = document.querySelectorAll('.fade-in');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15 });
+    fadeEls.forEach(el => observer.observe(el));
+
+    // Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Animate
+    function animate() {
+      requestAnimationFrame(animate);
+
+      scrollProgress += (targetScrollProgress - scrollProgress) * 0.06;
+
+      if (helmet) {
+        let currentSection = sections[0];
+        let nextSection = sections[1] || sections[0];
+        let localT = 0;
+
+        for (let i = 0; i < sections.length; i++) {
+          if (scrollProgress >= sections[i].scrollStart && scrollProgress <= sections[i].scrollEnd) {
+            currentSection = sections[i];
+            nextSection = sections[Math.min(i + 1, sections.length - 1)];
+            localT = smoothstep(currentSection.scrollStart, currentSection.scrollEnd, scrollProgress);
+            break;
+          }
+          if (i === sections.length - 1) {
+            currentSection = sections[i];
+            nextSection = sections[i];
+            localT = 1;
+          }
+        }
+
+        const posX = lerp(currentSection.posX, nextSection.posX, localT);
+        const posY = lerp(currentSection.posY, nextSection.posY, localT);
+        const rotX = lerp(currentSection.rotX, nextSection.rotX, localT);
+        const rotY = lerp(currentSection.rotY, nextSection.rotY, localT);
+        const rotZ = lerp(currentSection.rotZ, nextSection.rotZ, localT);
+        const camZ = lerp(currentSection.camZ, nextSection.camZ, localT);
+        const scale = lerp(currentSection.scale, nextSection.scale, localT);
+
+        // Smoothly blend orbit offsets
+        if (isDragging) {
+          orbitX += (targetOrbitX - orbitX) * 0.12;
+          orbitY += (targetOrbitY - orbitY) * 0.12;
+        } else {
+          // Decay orbit back to scroll-driven pose
+          orbitX += (0 - orbitX) * ORBIT_DECAY;
+          orbitY += (0 - orbitY) * ORBIT_DECAY;
+          targetOrbitX += (0 - targetOrbitX) * ORBIT_DECAY;
+          targetOrbitY += (0 - targetOrbitY) * ORBIT_DECAY;
+        }
+
+        helmet.position.x = posX;
+        helmet.position.y = posY;
+        helmet.rotation.x = rotX + orbitY;
+        helmet.rotation.y = rotY + Math.sin(Date.now() * 0.0003) * 0.05 + orbitX;
+        helmet.rotation.z = rotZ;
+        helmet.scale.setScalar(scale);
+
+        camera.position.z = camZ;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Trigger initial fade
+    setTimeout(() => {
+      document.querySelector('.hero .fade-in')?.classList.add('visible');
+    }, 300);
+  </script>
+
+<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

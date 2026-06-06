@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Portfolio For Ui De — Megsy Templates</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #00FF88;
+      --black: #0D0D0D;
+      --dark: #111111;
+      --gray: #1a1a1a;
+      --light-gray: #2a2a2a;
+      --text: #e0e0e0;
+      --text-dim: #888888;
+      --white: #f5f5f5;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection { background: var(--green); color: var(--black); }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 80px); }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 24px clamp(20px, 5vw, 80px);
+      display: flex; justify-content: space-between; align-items: center;
+      mix-blend-mode: difference;
+      transition: padding 0.3s;
+    }
+
+    .nav-logo {
+      font-size: 18px; font-weight: 700; letter-spacing: -0.5px;
+      color: var(--white);
+    }
+
+    .nav-logo span { color: var(--green); }
+
+    .nav-links { display: flex; gap: 36px; align-items: center; }
+
+    .nav-links a {
+      font-size: 13px; font-weight: 400; letter-spacing: 0.5px;
+      text-transform: uppercase; color: var(--white);
+      position: relative; padding: 4px 0;
+      transition: color 0.3s;
+    }
+
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 1px; background: var(--green);
+      transition: width 0.3s;
+    }
+
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links a:hover { color: var(--green); }
+
+    .nav-number { font-size: 11px; color: var(--text-dim); margin-right: 4px; }
+
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; z-index: 1001; background: none; border: none;
+    }
+
+    .hamburger span {
+      width: 24px; height: 1.5px; background: var(--white);
+      transition: 0.3s;
+    }
+
+    /* MOBILE MENU */
+    .mobile-menu {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: var(--black); flex-direction: column;
+      justify-content: center; align-items: center; gap: 32px;
+      opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    }
+
+    .mobile-menu.active { opacity: 1; pointer-events: all; }
+
+    .mobile-menu a {
+      font-size: 32px; font-weight: 300; letter-spacing: -0.5px;
+      color: var(--white); transition: color 0.3s;
+    }
+
+    .mobile-menu a:hover { color: var(--green); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: flex-end; padding-bottom: 60px;
+      position: relative;
+    }
+
+    .hero-top {
+      position: absolute; top: 120px; left: clamp(20px, 5vw, 80px);
+      right: clamp(20px, 5vw, 80px);
+      display: flex; justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .hero-meta {
+      font-size: 13px; color: var(--text-dim);
+      line-height: 1.8; text-align: right;
+    }
+
+    .hero-year { font-size: 13px; color: var(--text-dim); }
+
+    .hero-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 8vw, 120px);
+      font-weight: 700; line-height: 0.95;
+      letter-spacing: -2px; color: var(--white);
+      text-transform: uppercase;
+      margin-bottom: 40px;
+      opacity: 0; transform: translateY(60px);
+      animation: fadeUp 1s ease forwards 0.3s;
+    }
+
+    .hero-headline em {
+      font-style: italic; color: var(--green);
+      font-family: 'Playfair Display', serif;
+    }
+
+    .hero-headline .outline {
+      -webkit-text-stroke: 1.5px var(--white);
+      color: transparent;
+    }
+
+    .hero-dot {
+      display: inline-block; width: clamp(16px, 2.5vw, 40px);
+      height: clamp(16px, 2.5vw, 40px); background: var(--green);
+      border-radius: 50%; vertical-align: middle;
+      margin-left: 8px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+      50% { box-shadow: 0 0 20px 10px rgba(0,255,136,0.1); }
+    }
+
+    .scroll-indicator {
+      position: absolute; bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; opacity: 0;
+      animation: fadeIn 1s ease forwards 1.5s;
+    }
+
+    .scroll-indicator span {
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: 3px; color: var(--text-dim);
+    }
+
+    .scroll-line {
+      width: 1px; height: 40px; background: var(--light-gray);
+      position: relative; overflow: hidden;
+    }
+
+    .scroll-line::after {
+      content: ''; position: absolute; top: -100%; left: 0;
+      width: 100%; height: 100%; background: var(--green);
+      animation: scrollDown 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scrollDown {
+      0% { top: -100%; }
+      100% { top: 100%; }
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* SECTIONS */
+    section { padding: 120px 0; }
+
+    .section-label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 4px; color: var(--green);
+      margin-bottom: 48px; display: flex; align-items: center; gap: 12px;
+    }
+
+    .section-label::before {
+      content: ''; width: 40px; height: 1px; background: var(--green);
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 700; color: var(--white);
+      letter-spacing: -1px; line-height: 1.1;
+      margin-bottom: 32px;
+    }
+
+    /* ABOUT */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: start;
+    }
+
+    .about-text {
+      font-size: 18px; line-height: 1.8; color: var(--text-dim);
+      font-weight: 300;
+    }
+
+    .about-text strong { color: var(--white); font-weight: 500; }
+
+    .skills-cards {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .skill-card {
+      background: var(--gray);
+      border: 1px solid var(--light-gray);
+      border-radius: 12px; padding: 28px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default;
+      opacity: 0; transform: translateY(30px);
+    }
+
+    .skill-card.visible {
+      opacity: 1; transform: translateY(0);
+    }
+
+    .skill-card:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 30px rgba(0,255,136,0.08);
+      transform: translateY(-4px);
+    }
+
+    .skill-card-icon {
+      font-size: 24px; margin-bottom: 16px;
+      width: 44px; height: 44px; display: flex;
+      align-items: center; justify-content: center;
+      background: rgba(0,255,136,0.08);
+      border-radius: 10px; color: var(--green);
+    }
+
+    .skill-card h4 {
+      font-size: 14px; font-weight: 600;
+      color: var(--white); margin-bottom: 8px;
+    }
+
+    .skill-card p {
+      font-size: 12px; color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* WORK / CASE STUDIES */
+    .work-list { display: flex; flex-direction: column; gap: 2px; }
+
+    .work-item {
+      border-top: 1px solid var(--light-gray);
+      padding: 48px 0; cursor: pointer;
+      transition: all 0.4s;
+    }
+
+    .work-item:last-child { border-bottom: 1px solid var(--light-gray); }
+
+    .work-item-header {
+      display: flex; justify-content: space-between;
+      align-items: center;
+    }
+
+    .work-item-left { flex: 1; }
+
+    .work-item-number {
+      font-size: 12px; color: var(--green);
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 12px; letter-spacing: 1px;
+    }
+
+    .work-item-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 700; color: var(--white);
+      letter-spacing: -1px;
+      transition: color 0.3s;
+    }
+
+    .work-item:hover .work-item-title { color: var(--green); }
+
+    .work-item-tags {
+      display: flex; gap: 8px; margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px; padding: 6px 14px;
+      border: 1px solid var(--light-gray);
+      border-radius: 100px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .work-item-arrow {
+      width: 56px; height: 56px; border: 1px solid var(--light-gray);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; transition: all 0.4s;
+      flex-shrink: 0;
+    }
+
+    .work-item:hover .work-item-arrow {
+      background: var(--green); border-color: var(--green);
+    }
+
+    .work-item-arrow svg { transition: transform 0.3s; }
+    .work-item:hover .work-item-arrow svg { transform: rotate(-45deg); }
+
+    /* CASE STUDY DETAIL */
+    .case-study-detail {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .case-study-detail.open { max-height: 2000px; }
+
+    .case-study-content {
+      padding: 48px 0 24px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px;
+    }
+
+    .cs-section { margin-bottom: 32px; }
+
+    .cs-section h5 {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 3px; color: var(--green);
+      margin-bottom: 16px;
+    }
+
+    .cs-section p {
+      font-size: 15px; line-height: 1.8;
+      color: var(--text-dim); font-weight: 300;
+    }
+
+    .cs-visual {
+      background: var(--gray); border-radius: 16px;
+      aspect-ratio: 16/10; display: flex;
+      align-items: center; justify-content: center;
+      border: 1px solid var(--light-gray);
+      position: relative; overflow: hidden;
+    }
+
+    .cs-visual-label {
+      font-size: 12px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    .cs-mockup-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; padding: 24px;
+      width: 100%; height: 100%;
+    }
+
+    .cs-mockup-block {
+      background: var(--light-gray);
+      border-radius: 8px; position: relative;
+      overflow: hidden;
+    }
+
+    .cs-mockup-block::after {
+      content: ''; position: absolute; inset: 8px;
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius: 4px;
+    }
+
+    .cs-mockup-block:first-child {
+      grid-column: span 2;
+    }
+
+    .cs-phases {
+      display: flex; gap: 16px; margin-top: 16px;
+    }
+
+    .cs-phase {
+      flex: 1; background: var(--gray);
+      border: 1px solid var(--light-gray);
+      border-radius: 10px; padding: 20px;
+      text-align: center;
+    }
+
+    .cs-phase-num {
+      font-size: 20px; font-weight: 700;
+      color: var(--green); margin-bottom: 6px;
+    }
+
+    .cs-phase-label {
+      font-size: 11px; color: var(--text-dim);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    /* SKILLS GRID */
+    .skills-section { background: var(--dark); }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .skill-item {
+      background: var(--gray);
+      border: 1px solid var(--light-gray);
+      border-radius: 12px; padding: 32px 24px;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default;
+    }
+
+    .skill-item:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 40px rgba(0,255,136,0.1);
+      transform: translateY(-6px);
+    }
+
+    .skill-item-icon {
+      font-size: 28px; margin-bottom: 16px;
+    }
+
+    .skill-item h4 {
+      font-size: 13px; font-weight: 600;
+      color: var(--white); margin-bottom: 6px;
+    }
+
+    .skill-item p {
+      font-size: 11px; color: var(--text-dim);
+    }
+
+    /* RESUME */
+    .resume-section .resume-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: start;
+    }
+
+    .resume-preview {
+      background: var(--gray);
+      border: 1px solid var(--light-gray);
+      border-radius: 16px; padding: 48px;
+      aspect-ratio: 8.5/11;
+      display: flex; flex-direction: column;
+      gap: 20px; position: relative;
+      overflow: hidden;
+    }
+
+    .resume-preview::before {
+      content: 'RESUME PREVIEW';
+      position: absolute; top: 16px; right: 16px;
+      font-size: 9px; letter-spacing: 2px;
+      color: var(--text-dim); text-transform: uppercase;
+    }
+
+    .rp-header {
+      border-bottom: 1px solid var(--light-gray);
+      padding-bottom: 16px;
+    }
+
+    .rp-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--white); margin-bottom: 4px;
+    }
+
+    .rp-subtitle { font-size: 11px; color: var(--green); }
+
+    .rp-section-title {
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .rp-line {
+      height: 8px; background: var(--light-gray);
+      border-radius: 4px; margin-bottom: 6px;
+    }
+
+    .rp-line.short { width: 60%; }
+    .rp-line.med { width: 80%; }
+
+    .resume-info h3 {
+      font-size: 14px; color: var(--white);
+      font-weight: 600; margin-bottom: 8px;
+    }
+
+    .resume-info p {
+      font-size: 14px; color: var(--text-dim);
+      line-height: 1.8; margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 36px; border-radius: 100px;
+      font-size: 13px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none; cursor: pointer;
+      position: relative; overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--green); color: var(--black);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 30px rgba(0,255,136,0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent; color: var(--white);
+      border: 1px solid var(--light-gray);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--green); color: var(--green);
+    }
+
+    /* CONTACT */
+    .contact-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px;
+    }
+
+    .contact-form { display: flex; flex-direction: column; gap: 24px; }
+
+    .form-group { position: relative; }
+
+    .form-group label {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--text-dim);
+      margin-bottom: 10px; display: block;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%; background: var(--gray);
+      border: 1px solid var(--light-gray);
+      border-radius: 10px; padding: 16px 20px;
+      color: var(--white); font-family: 'Inter', sans-serif;
+      font-size: 14px; transition: border-color 0.3s;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 20px rgba(0,255,136,0.05);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 140px; }
+
+    .contact-info { padding-top: 8px; }
+
+    .contact-info p {
+      font-size: 16px; line-height: 1.8;
+      color: var(--text-dim); margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    .social-links { display: flex; flex-direction: column; gap: 16px; }
+
+    .social-link {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 14px; color: var(--text-dim);
+      transition: color 0.3s; padding: 8px 0;
+    }
+
+    .social-link:hover { color: var(--green); }
+
+    .social-link-icon {
+      width: 40px; height: 40px;
+      border: 1px solid var(--light-gray);
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .social-link:hover .social-link-icon {
+      border-color: var(--green);
+      background: rgba(0,255,136,0.05);
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 40px clamp(20px, 5vw, 80px);
+      border-top: 1px solid var(--light-gray);
+      display: flex; justify-content: space-between;
+      align-items: center;
+    }
+
+    footer span {
+      font-size: 12px; color: var(--text-dim);
+    }
+
+    footer span a { color: var(--green); }
+
+    /* ANIMATIONS */
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1; transform: translateY(0);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .about-grid,
+      .case-study-content,
+      .resume-section .resume-grid,
+      .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .hero-top { flex-direction: column; gap: 12px; }
+      .hero-meta { text-align: left; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .mobile-menu { display: flex; }
+
+      .hero-headline { letter-spacing: -1px; }
+
+      .skills-cards { grid-template-columns: 1fr; }
+      .skills-grid { grid-template-columns: repeat(2, 1fr); }
+
+      .work-item-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .work-item-arrow { width: 44px; height: 44px; }
+
+      .cs-phases { flex-direction: column; }
+      .cs-mockup-grid { grid-template-columns: 1fr; }
+      .cs-mockup-block:first-child { grid-column: span 1; }
+
+      section { padding: 80px 0; }
+
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+
+    @media (max-width: 480px) {
+      .skills-grid { grid-template-columns: 1fr; }
+      .work-item-tags { gap: 6px; }
+      .tag { font-size: 10px; padding: 4px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">arun<span>.</span></a>
+    <div class="nav-links">
+      <a href="#about"><span class="nav-number">01.</span>Profile</a>
+      <a href="#work"><span class="nav-number">02.</span>Work</a>
+      <a href="#skills"><span class="nav-number">03.</span>Skills</a>
+      <a href="#resume"><span class="nav-number">04.</span>Resume</a>
+      <a href="#contact">✦ Contact</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#about" onclick="toggleMenu()">Profile</a>
+    <a href="#work" onclick="toggleMenu()">Work</a>
+    <a href="#skills" onclick="toggleMenu()">Skills</a>
+    <a href="#resume" onclick="toggleMenu()">Resume</a>
+    <a href="#contact" onclick="toggleMenu()">Contact</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-top">
+        <div class="hero-year">2026<br>Portfolio</div>
+        <div class="hero-meta">
+          Arun Singh<br>
+          Delhi, India<br>
+          arunsingh.work05@gmail.com
+        </div>
+      </div>
+      <h1 class="hero-headline">
+        Crafting <em>Interfaces</em><br>
+        <span class="outline">& Experiences</span> That<br>
+        Feel Effortless<span class="hero-dot"></span>
+      </h1>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <div class="section-label reveal">About Me</div>
+      <div class="about-grid">
+        <div class="reveal">
+          <h2 class="section-title">Designing with<br>empathy & intent</h2>
+          <p class="about-text">
+            I'm a <strong>UI/UX designer</strong> based in Delhi with a fresh perspective
+            on digital product design. With a foundation in <strong>visual design</strong>,
+            <strong>user research</strong>, and <strong>interaction design</strong>, I focus
+            on creating experiences that are both beautiful and functional.<br><br>
+            My approach blends analytical thinking with creative exploration — every pixel
+            serves a purpose, every interaction tells a story. I believe great design is
+            invisible; it just <strong>works</strong>.
+          </p>
+        </div>
+        <div class="skills-cards">
+          <div class="skill-card" style="transition-delay: 0.1s;">
+            <div class="skill-card-icon">◎</div>
+            <h4>User Research</h4>
+            <p>Understanding user needs through interviews, surveys, and usability testing</p>
+          </div>
+          <div class="skill-card" style="transition-delay: 0.2s;">
+            <div class="skill-card-icon">◐</div>
+            <h4>UI Design</h4>
+            <p>Crafting clean, modern interfaces with strong visual hierarchy</p>
+          </div>
+          <div class="skill-card" style="transition-delay: 0.3s;">
+            <div class="skill-card-icon">△</div>
+            <h4>Prototyping</h4>
+            <p>Building interactive prototypes for testing and validation</p>
+          </div>
+          <div class="skill-card" style="transition-delay: 0.4s;">
+            <div class="skill-card-icon">⬡</div>
+            <h4>Design Systems</h4>
+            <p>Creating scalable component libraries and style guides</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK -->
+  <section id="work">
+    <div class="container">
+      <div class="section-label reveal">Selected Work</div>
+      <h2 class="section-title reveal">Case Studies</h2>
+      <div class="work-list">
+
+        <!-- Case Study 1 -->
+        <div class="work-item reveal" onclick="toggleCaseStudy(0)">
+          <div class="work-item-header">
+            <div class="work-item-left">
+              <div class="work-item-number">01</div>
+              <div class="work-item-title">Zepto Essentials — Smart Grocery Planning</div>
+              <div class="work-item-tags">
+                <span class="tag">Service Design</span>
+                <span class="tag">UX Research</span>
+                <span class="tag">Interaction Design</span>
+              </div>
+            </div>
+            <div class="work-item-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7M17 7H7M17 7V17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="case-study-detail" id="cs0">
+            <div class="case-study-content">
+              <div>
+                <div class="cs-section">
+                  <h5>Tagline</h5>
+                  <p style="color: var(--green); font-weight: 500; font-style: italic; font-size: 16px;">"Turning repetitive grocery runs into one-tap convenience."</p>
+                </div>
+                <div class="cs-section">
+                  <h5>The Problem</h5>
+                  <p>Monthly grocery shopping on quick-commerce apps is repetitive and time-consuming. Users reorder the same essentials every month yet navigate the full catalog each time. There's no smart planning layer — leading to missed items, multiple orders, and decision fatigue.</p>
+                </div>
+                <div class="cs-section">
+                  <h5>My Approach</h5>
+                  <p>Conducted contextual inquiries with 15+ users to map monthly grocery habits. Designed a smart "Essentials Planner" feature — an AI-driven monthly basket that learns from past orders, auto-suggests replenishments, and allows one-tap reordering. Created service blueprints, user flows, and a high-fidelity prototype tested across two iterations.</p>
+                </div>
+                <div class="cs-phases">
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">15+</div>
+                    <div class="cs-phase-label">Interviews</div>
+                  </div>
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">-60%</div>
+                    <div class="cs-phase-label">Reorder Time</div>
+                  </div>
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">2</div>
+                    <div class="cs-phase-label">Iterations</div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="cs-visual">
+                  <div class="cs-mockup-grid">
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                  </div>
+                </div>
+                <div class="cs-section" style="margin-top: 24px;">
+                  <h5>Outcome</h5>
+                  <p>The Essentials Planner reduced average monthly reorder time by 60% in usability testing. Users described the experience as "effortless" and "finally how grocery apps should work." The service design framework also uncovered backend optimization opportunities for delivery batching.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Study 2 -->
+        <div class="work-item reveal" onclick="toggleCaseStudy(1)">
+          <div class="work-item-header">
+            <div class="work-item-left">
+              <div class="work-item-number">02</div>
+              <div class="work-item-title">Safe Choice — Safer & Simpler Decisions</div>
+              <div class="work-item-tags">
+                <span class="tag">UX Design</span>
+                <span class="tag">Trust & Safety</span>
+                <span class="tag">User Testing</span>
+              </div>
+            </div>
+            <div class="work-item-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7M17 7H7M17 7V17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="case-study-detail" id="cs1">
+            <div class="case-study-content">
+              <div>
+                <div class="cs-section">
+                  <h5>Tagline</h5>
+                  <p style="color: var(--green); font-weight: 500; font-style: italic; font-size: 16px;">"Clear choices. Confident decisions."</p>
+                </div>
+                <div class="cs-section">
+                  <h5>The Problem</h5>
+                  <p>Users often face critical everyday decisions — from product safety to service reliability — without clear, trustworthy information. Existing platforms overload with reviews and ratings but lack structured clarity, leading to hesitation, second-guessing, and poor choices driven by information overload.</p>
+                </div>
+                <div class="cs-section">
+                  <h5>My Approach</h5>
+                  <p>Designed a trust-first decision framework with layered information architecture. Built clarity-driven UI patterns: safety scores, visual comparison cards, and confidence indicators. Conducted 12 user tests focused on decision speed and post-decision satisfaction. Iterated on hierarchy and micro-copy to maximize trust signals.</p>
+                </div>
+                <div class="cs-phases">
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">12</div>
+                    <div class="cs-phase-label">User Tests</div>
+                  </div>
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">+73%</div>
+                    <div class="cs-phase-label">Confidence</div>
+                  </div>
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">35+</div>
+                    <div class="cs-phase-label">Screens</div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="cs-visual">
+                  <div class="cs-mockup-grid">
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                  </div>
+                </div>
+                <div class="cs-section" style="margin-top: 24px;">
+                  <h5>Outcome</h5>
+                  <p>User testing showed a 73% increase in decision confidence and 40% faster decision-making compared to baseline. Participants highlighted the safety scores and comparison cards as "game changers" for building trust. The project was recognized for its innovative approach to designing for user confidence.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Study 3 -->
+        <div class="work-item reveal" onclick="toggleCaseStudy(2)">
+          <div class="work-item-header">
+            <div class="work-item-left">
+              <div class="work-item-number">03</div>
+              <div class="work-item-title">Prayass — Empowering Through Design</div>
+              <div class="work-item-tags">
+                <span class="tag">End-to-End</span>
+                <span class="tag">Accessibility</span>
+                <span class="tag">Social Impact</span>
+              </div>
+            </div>
+            <div class="work-item-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 17L17 7M17 7H7M17 7V17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="case-study-detail" id="cs2">
+            <div class="case-study-content">
+              <div>
+                <div class="cs-section">
+                  <h5>Tagline</h5>
+                  <p style="color: var(--green); font-weight: 500; font-style: italic; font-size: 16px;">"Small efforts. Big impact."</p>
+                </div>
+                <div class="cs-section">
+                  <h5>The Problem</h5>
+                  <p>Underserved communities often lack access to intuitive digital tools that address their real-world challenges. Existing solutions are either too complex, not localized, or designed without empathy for the end user's constraints — from low digital literacy to limited connectivity.</p>
+                </div>
+                <div class="cs-section">
+                  <h5>My Approach</h5>
+                  <p>Followed an empathy-driven design process starting with field research and stakeholder interviews. Designed an accessible, multilingual interface with minimal cognitive load — large touch targets, icon-first navigation, and offline-friendly architecture. Built the full experience from research through high-fidelity prototype, validated with community testing sessions.</p>
+                </div>
+                <div class="cs-phases">
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">50+</div>
+                    <div class="cs-phase-label">Screens</div>
+                  </div>
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">Field</div>
+                    <div class="cs-phase-label">Research</div>
+                  </div>
+                  <div class="cs-phase">
+                    <div class="cs-phase-num">A11y</div>
+                    <div class="cs-phase-label">Focused</div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="cs-visual">
+                  <div class="cs-mockup-grid">
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                    <div class="cs-mockup-block"></div>
+                  </div>
+                </div>
+                <div class="cs-section" style="margin-top: 24px;">
+                  <h5>Outcome</h5>
+                  <p>Community testing achieved a 91% task completion rate among first-time digital users. The icon-first navigation and simplified flows were praised for making technology feel approachable. Prayass was selected for a social impact design showcase and recognized for its meaningful, human-centered approach.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="skills-section">
+    <div class="container">
+      <div class="section-label reveal">Toolkit</div>
+      <h2 class="section-title reveal">Skills & Tools</h2>
+      <div class="skills-grid">
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">🎨</div>
+          <h4>Figma</h4>
+          <p>Primary tool</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">✦</div>
+          <h4>Adobe XD</h4>
+          <p>Prototyping</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">◆</div>
+          <h4>Sketch</h4>
+          <p>UI Design</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">▲</div>
+          <h4>Photoshop</h4>
+          <p>Image editing</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">○</div>
+          <h4>Illustrator</h4>
+          <p>Vector art</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">⬡</div>
+          <h4>Framer</h4>
+          <p>Interactions</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">⟐</div>
+          <h4>HTML/CSS</h4>
+          <p>Front-end basics</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">◎</div>
+          <h4>Notion</h4>
+          <p>Documentation</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">⊞</div>
+          <h4>Miro</h4>
+          <p>Collaboration</p>
+        </div>
+        <div class="skill-item reveal">
+          <div class="skill-item-icon">⧫</div>
+          <h4>After Effects</h4>
+          <p>Motion design</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESUME -->
+  <section id="resume" class="resume-section">
+    <div class="container">
+      <div class="section-label reveal">Resume</div>
+      <h2 class="section-title reveal">Download my<br>resume</h2>
+      <div class="resume-grid">
+        <div class="resume-preview reveal">
+          <div class="rp-header">
+          <div class="rp-name">Arun Singh</div>
+          <div class="rp-subtitle">UI/UX Designer — Delhi, India</div>
+          </div>
+          <div>
+            <div class="rp-section-title">Experience</div>
+            <div class="rp-line"></div>
+            <div class="rp-line med"></div>
+            <div class="rp-line short"></div>
+          </div>
+          <div>
+            <div class="rp-section-title">Education</div>
+            <div class="rp-line"></div>
+            <div class="rp-line med"></div>
+          </div>
+          <div>
+            <div class="rp-section-title">Skills</div>
+            <div class="rp-line short"></div>
+            <div class="rp-line"></div>
+            <div class="rp-line med"></div>
+          </div>
+          <div>
+            <div class="rp-section-title">Projects</div>
+            <div class="rp-line"></div>
+            <div class="rp-line short"></div>
+          </div>
+        </div>
+        <div class="resume-info reveal">
+          <h3>Arun Singh</h3>
+          <p>
+            UI/UX Designer with a fresh perspective on digital product design. Skilled in
+            Figma, Adobe Creative Suite, user research, wireframing, prototyping, and
+            design systems. Passionate about creating accessible, human-centered digital
+            experiences.
+          </p>
+          <h3>Education</h3>
+          <p>
+            B.Des in Interaction Design<br>
+            National Institute of Design, Delhi, 2026
+          </p>
+          <h3>Certifications</h3>
+          <p>
+            Google UX Design Certificate<br>
+            Interaction Design Foundation — UX Fundamentals
+          </p>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <a href="#" class="btn btn-primary" onclick="event.stopPropagation();">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+              </svg>
+              Download PDF
+            </a>
+            <a href="#contact" class="btn btn-outline" onclick="event.stopPropagation();">Get in Touch</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-label reveal">Get in Touch</div>
+      <h2 class="section-title reveal">Let's work<br>together</h2>
+      <div class="contact-grid">
+        <form class="contact-form reveal" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" placeholder="John Doe" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea placeholder="Tell me about your project..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="align-self: flex-start;">
+            Send Message
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </form>
+        <div class="contact-info reveal">
+          <p>
+            I'm currently open to freelance projects, internships, and full-time
+            opportunities. Whether you have a project in mind or just want to say
+            hello, I'd love to hear from you.
+          </p>
+          <div class="social-links">
+            <a href="#" class="social-link">
+              <span class="social-link-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+                  <circle cx="4" cy="4" r="2"/>
+                </svg>
+              </span>
+              LinkedIn
+            </a>
+            <a href="#" class="social-link">
+              <span class="social-link-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
+                </svg>
+              </span>
+              Twitter / X
+            </a>
+            <a href="#" class="social-link">
+              <span class="social-link-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 22v-4a4.8 4.8 0 00-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 004 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65S8.93 17.38 9 18v4"/>
+                  <path d="M9 18c-4.51 2-5-2-7-2"/>
+                </svg>
+              </span>
+              GitHub
+            </a>
+            <a href="#" class="social-link">
+              <span class="social-link-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                </svg>
+              </span>
+              Behance
+            </a>
+            <a href="#" class="social-link">
+              <span class="social-link-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zM17.5 6.5h.01"/>
+                </svg>
+              </span>
+              Instagram
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>© 2026 Megsy. All rights reserved.<a href="#">arun.</a> — All rights reserved</span>
+    <span>Designed with ✦ in Delhi</span>
+  </footer>
+
+  <script>
+    // Scroll Reveal
+    const revealElements = document.querySelectorAll('.reveal, .skill-card');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    revealElements.forEach(el => observer.observe(el));
+
+    // Case Study Toggle
+    function toggleCaseStudy(index) {
+      const detail = document.getElementById('cs' + index);
+      const allDetails = document.querySelectorAll('.case-study-detail');
+
+      allDetails.forEach((d, i) => {
+        if (i !== index) d.classList.remove('open');
+      });
+
+      detail.classList.toggle('open');
+    }
+
+    // Mobile Menu
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const hamburger = document.querySelector('.hamburger');
+      menu.classList.toggle('active');
+
+      const spans = hamburger.querySelectorAll('span');
+      if (menu.classList.contains('active')) {
+        spans[0].style.transform = 'rotate(45deg) translate(4px, 4px)';
+        spans[1].style.opacity = '0';
+        spans[2].style.transform = 'rotate(-45deg) translate(4px, -4px)';
+      } else {
+        spans[0].style.transform = 'none';
+        spans[1].style.opacity = '1';
+        spans[2].style.transform = 'none';
+      }
+    }
+
+    // Form Submit
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '✓ Sent!';
+      btn.style.background = 'transparent';
+      btn.style.border = '1px solid var(--green)';
+      btn.style.color = 'var(--green)';
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.style.background = '';
+        btn.style.border = '';
+        btn.style.color = '';
+        e.target.reset();
+      }, 2500);
+    }
+
+    // Smooth anchor scroll offset for fixed nav
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          const offset = 80;
+          const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Parallax-style nav shrink
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('nav');
+      if (window.scrollY > 100) {
+        nav.style.padding = '16px ' + getComputedStyle(document.documentElement).getPropertyValue('--nav-px') || 'clamp(20px, 5vw, 80px)';
+        nav.style.background = 'rgba(13,13,13,0.9)';
+        nav.style.backdropFilter = 'blur(20px)';
+        nav.style.mixBlendMode = 'normal';
+      } else {
+        nav.style.padding = '24px clamp(20px, 5vw, 80px)';
+        nav.style.background = 'transparent';
+        nav.style.backdropFilter = 'none';
+        nav.style.mixBlendMode = 'difference';
+      }
+      lastScroll = window.scrollY;
+    });
+  </script>
+<div style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;font-family:Inter,system-ui,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);pointer-events:none">Megsy Templates</div></body>
+</html>

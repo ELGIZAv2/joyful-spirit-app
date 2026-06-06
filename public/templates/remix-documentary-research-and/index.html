@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScriptForge™ — Documentary Research & Scriptwriting</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --muted: #888888;
+      --accent: #ffffff;
+      --border: #1a1a1a;
+      --card-bg: #0a0a0a;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    ::selection { background: #fff; color: #000; }
+
+    /* ─── HEADER ─── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: center;
+      mix-blend-mode: difference;
+      transition: padding 0.4s ease;
+    }
+
+    header.scrolled { padding: 1rem 3rem; }
+
+    .header-left { font-size: 0.8rem; letter-spacing: 0.05em; color: var(--muted); }
+    .header-center { text-align: center; }
+    .header-center a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: opacity 0.3s;
+    }
+    .header-center a:hover { opacity: 0.6; }
+    .header-center a .arrow { transition: transform 0.3s; }
+    .header-center a:hover .arrow { transform: translateY(3px); }
+
+    .header-right {
+      text-align: right;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .live-time { font-variant-numeric: tabular-nums; }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 3rem;
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(4rem, 12vw, 11rem);
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+      padding-top: 8rem;
+      position: relative;
+    }
+
+    .hero-title .tm {
+      font-size: 0.15em;
+      vertical-align: super;
+      font-weight: 400;
+      margin-left: 0.1em;
+    }
+
+    .hero-bottom {
+      padding-bottom: 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .hero-description {
+      font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+      line-height: 1.45;
+      max-width: 620px;
+      margin-left: auto;
+      font-weight: 400;
+    }
+
+    /* ─── SECTION STYLES ─── */
+    section {
+      padding: 6rem 3rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
+      max-width: 800px;
+    }
+
+    .section-text {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.7;
+    }
+
+    /* ─── PROCESS ─── */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      margin-top: 3rem;
+    }
+
+    .process-card {
+      background: var(--bg);
+      padding: 2.5rem;
+      position: relative;
+      transition: background 0.4s ease;
+    }
+
+    .process-card:hover { background: var(--card-bg); }
+
+    .process-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1;
+      margin-bottom: 1.5rem;
+      transition: color 0.4s;
+    }
+
+    .process-card:hover .process-number { color: #333; }
+
+    .process-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .process-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ─── FEATURES ─── */
+    .features-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      margin-top: 3rem;
+    }
+
+    .feature-item {
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: padding-left 0.3s;
+    }
+
+    .feature-item:hover { padding-left: 1rem; }
+
+    .feature-item h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-item p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ─── TOOL SECTION ─── */
+    .tool-section {
+      background: var(--card-bg);
+    }
+
+    .tool-container {
+      max-width: 900px;
+    }
+
+    .input-group { margin-bottom: 1.5rem; }
+
+    .input-group label {
+      display: block;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      background: #111;
+      border: 1px solid #222;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      border-radius: 0;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus,
+    .input-group textarea:focus { border-color: #444; }
+
+    .input-group textarea { resize: vertical; min-height: 120px; }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .btn-generate {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.1rem 2.5rem;
+      background: #fff;
+      color: #000;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1rem;
+    }
+
+    .btn-generate:hover { background: #ddd; gap: 1rem; }
+    .btn-generate:active { transform: scale(0.98); }
+
+    .btn-generate .arrow-r { transition: transform 0.3s; }
+    .btn-generate:hover .arrow-r { transform: translateX(4px); }
+
+    /* ─── OUTPUT ─── */
+    .output-area {
+      margin-top: 3rem;
+      display: none;
+    }
+
+    .output-area.visible { display: block; }
+
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .output-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+    }
+
+    .btn-copy {
+      padding: 0.6rem 1.5rem;
+      background: transparent;
+      border: 1px solid #333;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-copy:hover { border-color: #666; }
+
+    .output-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 0.8rem 1.5rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.3s;
+    }
+
+    .tab-btn.active { color: var(--text); }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0;
+      height: 1px;
+      background: var(--text);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .output-block {
+      background: #111;
+      border: 1px solid #1a1a1a;
+      padding: 2rem;
+      font-size: 0.92rem;
+      line-height: 1.8;
+      color: #ccc;
+      white-space: pre-wrap;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .output-block::-webkit-scrollbar { width: 4px; }
+    .output-block::-webkit-scrollbar-track { background: #111; }
+    .output-block::-webkit-scrollbar-thumb { background: #333; }
+
+    .output-block h4 {
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    .output-block h4:first-child { margin-top: 0; }
+
+    .output-block .highlight {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    /* ─── LOADING ─── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .loading-overlay.active { display: flex; }
+
+    .loader {
+      width: 40px; height: 40px;
+      border: 2px solid #222;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer .footer-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    footer .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    footer .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+    }
+
+    footer .footer-links a:hover { color: var(--text); }
+
+    /* ─── REVEAL ANIMATION ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      header { padding: 1rem 1.5rem; grid-template-columns: 1fr 1fr; }
+      .header-center { display: none; }
+      .hero { padding: 0 1.5rem; }
+      .hero-bottom { grid-template-columns: 1fr; }
+      .hero-description { margin-left: 0; }
+      section { padding: 4rem 1.5rem; }
+      .process-grid { grid-template-columns: 1fr; }
+      .features-layout { grid-template-columns: 1fr; gap: 0; }
+      .input-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+      footer .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+
+    @media (max-width: 500px) {
+      .hero-title { font-size: 3.2rem; padding-top: 6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header id="mainHeader">
+    <div class="header-left">Documentary Research Engine</div>
+    <div class="header-center">
+      <a href="#tool">Start Writing <span class="arrow">↓</span></a>
+    </div>
+    <div class="header-right">
+      Local time → <span class="live-time" id="liveTime">00:00:00 AM</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1 class="hero-title reveal">
+      Script<br>Forge<span class="tm">™</span>
+    </h1>
+    <div class="hero-bottom">
+      <div></div>
+      <p class="hero-description reveal">
+        Transforming raw topics into deeply researched, viral-ready documentary scripts using professional frameworks and cinematic storytelling.
+      </p>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section>
+    <div class="section-label">Process</div>
+    <h2 class="section-title reveal">Six-stage research architecture. Zero guesswork.</h2>
+    <p class="section-text reveal">Every script passes through a rigorous pipeline — from topic deconstruction to viral packaging — ensuring depth, accuracy, and audience grip.</p>
+
+    <div class="process-grid reveal">
+      <div class="process-card">
+        <div class="process-number">01</div>
+        <h3>Topic Deconstruction</h3>
+        <p>Define the subject, classify its domain, and identify why it matters right now. Context is everything.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-number">02</div>
+        <h3>5W1H Deep Research</h3>
+        <p>Kipling Method applied — Who, What, When, Where, Why, How — answered with forensic detail.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-number">03</div>
+        <h3>Horizontal & Vertical Logic</h3>
+        <p>Breadth covers all angles. Depth uncovers root causes, hidden psychology, and systemic forces.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-number">04</div>
+        <h3>Fact Verification</h3>
+        <p>Cross-referenced against reliable sources. Facts separated from assumptions. No misinformation.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-number">05</div>
+        <h3>Script Engineering</h3>
+        <p>Cinematic structure — Hook, Intro, Story, Analysis, Conclusion — written in natural Hinglish.</p>
+      </div>
+      <div class="process-card">
+        <div class="process-number">06</div>
+        <h3>Viral Packaging</h3>
+        <p>Clickbait titles, thumbnail concepts, music cues, editing guidance, and retention strategies.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section>
+    <div class="section-label">Capabilities</div>
+    <h2 class="section-title reveal">Built for creators who refuse to be boring.</h2>
+
+    <div class="features-layout reveal">
+      <div>
+        <div class="feature-item">
+          <h3>Hinglish Narration</h3>
+          <p>Scripts written in natural spoken Hinglish — the way top Indian YouTubers actually talk. No robotic tone, no textbook language.</p>
+        </div>
+        <div class="feature-item">
+          <h3>Curiosity Loops</h3>
+          <p>Strategic open loops planted throughout the script to keep viewers watching. Every 60 seconds, a new reason to stay.</p>
+        </div>
+        <div class="feature-item">
+          <h3>Source-Backed Research</h3>
+          <p>Every claim traced back to credible sources — research papers, verified reports, established journalism.</p>
+        </div>
+      </div>
+      <div>
+        <div class="feature-item">
+          <h3>Cinematic Structure</h3>
+          <p>Hook → Tension → Revelation → Impact. The same narrative architecture used in Netflix documentaries.</p>
+        </div>
+        <div class="feature-item">
+          <h3>Thumbnail & Title Strategy</h3>
+          <p>Five clickbait title variations and thumbnail text ideas optimized for CTR and algorithmic reach.</p>
+        </div>
+        <div class="feature-item">
+          <h3>Production Notes</h3>
+          <p>Background music mood suggestions, editing techniques, sound effect cues, and pacing recommendations included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOL -->
+  <section class="tool-section" id="tool">
+    <div class="section-label">Generate</div>
+    <h2 class="section-title reveal">Enter your topic. Get a complete documentary.</h2>
+
+    <div class="tool-container reveal">
+      <div class="input-group">
+        <label>Topic</label>
+        <input type="text" id="topicInput" placeholder="e.g. The Dark Side of Dubai's Luxury Economy">
+      </div>
+
+      <div class="input-row">
+        <div class="input-group">
+          <label>Category</label>
+          <select id="categorySelect">
+            <option value="auto">Auto-detect</option>
+            <option value="history">History</option>
+            <option value="crime">Crime / True Crime</option>
+            <option value="science">Science / Technology</option>
+            <option value="mystery">Mystery / Unexplained</option>
+            <option value="geopolitics">Geopolitics</option>
+            <option value="business">Business / Economy</option>
+            <option value="psychology">Psychology / Society</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Script Length</label>
+          <select id="lengthSelect">
+            <option value="medium">Medium (10–15 min)</option>
+            <option value="short">Short (5–8 min)</option>
+            <option value="long">Long (20–30 min)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Additional Context ​</label>
+        <textarea id="contextInput" placeholder="Any specific angle, key points, or references you want included..."></textarea>
+      </div>
+
+      <button class="btn-generate" id="generateBtn">
+        Generate Script <span class="arrow-r">→</span>
+      </button>
+
+      <!-- OUTPUT -->
+      <div class="output-area" id="outputArea">
+        <div class="output-header">
+          <h3>Your Documentary Package</h3>
+          <button class="btn-copy" id="copyBtn">Copy All</button>
+        </div>
+
+        <div class="output-tabs">
+          <button class="tab-btn active" data-tab="research">Research</button>
+          <button class="tab-btn" data-tab="script">Script</button>
+          <button class="tab-btn" data-tab="viral">Viral Kit</button>
+        </div>
+
+        <div class="tab-content active" id="tab-research">
+          <div class="output-block" id="researchOutput"></div>
+        </div>
+        <div class="tab-content" id="tab-script">
+          <div class="output-block" id="scriptOutput"></div>
+        </div>
+        <div class="tab-content" id="tab-viral">
+          <div class="output-block" id="viralOutput"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">ScriptForge™</div>
+    <div class="footer-links">
+      <a href="#">Process</a>
+      <a href="#">Capabilities</a>
+      <a href="#tool">Generate</a>
+      <a href="#">© 2026</a>
+    </div>
+  </footer>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+    <div class="loading-text">RESEARCHING & WRITING...</div>
+  </div>
+
+  <script>
+    // ─── LIVE TIME ───
+    function updateTime() {
+      const now = new Date();
+      let h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      document.getElementById('liveTime').textContent =
+        `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ampm}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // ─── HEADER SCROLL ───
+    window.addEventListener('scroll', () => {
+      document.getElementById('mainHeader').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ─── REVEAL ON SCROLL ───
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ─── TABS ───
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // ─── GENERATE ───
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const topic = document.getElementById('topicInput').value.trim();
+      if (!topic) {
+        document.getElementById('topicInput').style.borderColor = '#ff4444';
+        setTimeout(() => document.getElementById('topicInput').style.borderColor = '#222', 2000);
+        return;
+      }
+
+      const category = document.getElementById('categorySelect').value;
+      const length = document.getElementById('lengthSelect').value;
+      const context = document.getElementById('contextInput').value.trim();
+
+      const loading = document.getElementById('loadingOverlay');
+      loading.classList.add('active');
+
+      const lengthLabel = { short: '5–8 minute', medium: '10–15 minute', long: '20–30 minute' }[length];
+      const catLabel = category === 'auto' ? detectCategory(topic) : category;
+
+      setTimeout(() => {
+        const research = generateResearch(topic, catLabel, context);
+        const script = generateScript(topic, catLabel, lengthLabel, context);
+        const viral = generateViralKit(topic);
+
+        document.getElementById('researchOutput').innerHTML = research;
+        document.getElementById('scriptOutput').innerHTML = script;
+        document.getElementById('viralOutput').innerHTML = viral;
+
+        loading.classList.remove('active');
+        const output = document.getElementById('outputArea');
+        output.classList.add('visible');
+        output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 2500);
+    });
+
+    // ─── COPY ───
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      const active = document.querySelector('.tab-content.active .output-block');
+      navigator.clipboard.writeText(active.innerText).then(() => {
+        this.textContent = 'Copied ✓';
+        setTimeout(() => this.textContent = 'Copy All', 2000);
+      });
+    });
+
+    // ─── CATEGORY DETECTION ───
+    function detectCategory(topic) {
+      const t = topic.toLowerCase();
+      if (/murder|crime|killer|scam|fraud|theft|mafia/.test(t)) return 'crime';
+      if (/war|politics|country|government|military|geopolit/.test(t)) return 'geopolitics';
+      if (/history|ancient|empire|dynasty|century|historical/.test(t)) return 'history';
+      if (/science|space|ai|tech|quantum|physics|biology/.test(t)) return 'science';
+      if (/mystery|alien|ufo|unexplained|paranormal|bermuda/.test(t)) return 'mystery';
+      if (/business|economy|market|company|startup|billion/.test(t)) return 'business';
+      if (/psychology|mind|mental|social|behav/.test(t)) return 'psychology';
+      return 'general';
+    }
+
+    // ─── RESEARCH GENERATOR ───
+    function generateResearch(topic, category, context) {
+      return `<h4>━━ STEP 1: TOPIC UNDERSTANDING ━━</h4>
+<span class="highlight">Topic:</span> ${topic}
+<span class="highlight">Category:</span> ${category.charAt(0).toUpperCase() + category.slice(1)}
+<span class="highlight">Relevance:</span> This topic intersects with current cultural discourse and has significant public interest due to its complexity, hidden layers, and emotional resonance. It carries viral potential because it challenges mainstream narratives.
+
+${context ? `<span class="highlight">Additional Context:</span> ${context}\n` : ''}
+<h4>━━ STEP 2: 5W1H DEEP RESEARCH (Kipling Method) ━━</h4>
+<span class="highlight">WHO:</span> Identify all key players — the protagonists, antagonists, institutions, whistleblowers, victims, and silent beneficiaries. Map their relationships and motivations. Look for the person behind the person.
+
+<span class="highlight">WHAT:</span> Define the core event or phenomenon with precision. What actually happened vs. what the public was told? Distinguish between the surface narrative and the underlying reality.
+
+<span class="highlight">WHEN:</span> Build a comprehensive timeline — not just the main event, but the precursors (months/years before), the escalation points, and the aftermath. Time context changes everything.
+
+<span class="highlight">WHERE:</span> Geographic and institutional context. Physical locations, jurisdictions involved, and why the location itself matters to the story.
+
+<span class="highlight">WHY:</span> Root cause analysis. Go beyond the obvious. Examine financial incentives, power dynamics, ideological conflicts, systemic failures, and human psychology.
+
+<span class="highlight">HOW:</span> Step-by-step reconstruction. How did events unfold in sequence? What decisions were made at each critical juncture? What could have gone differently?
+
+<h4>━━ STEP 3: HORIZONTAL & VERTICAL LOGIC ━━</h4>
+<span class="highlight">HORIZONTAL (Breadth):</span>
+→ Background context and historical precedents
+→ Related events happening simultaneously
+→ How different stakeholders experienced the same event
+→ Media coverage analysis — what was amplified, what was buried
+→ International parallels or comparisons
+
+<span class="highlight">VERTICAL (Depth):</span>
+→ Systemic root causes (not just surface triggers)
+→ Psychological drivers of key decision-makers
+→ Institutional incentive structures that enabled the event
+→ Second and third-order consequences
+→ The "invisible hand" — who benefited from the status quo?
+
+<h4>━━ STEP 4: FACT CHECK & SOURCES ━━</h4>
+<span class="highlight">Recommended Source Categories:</span>
+1. Academic papers / peer-reviewed research (Google Scholar, JSTOR)
+2. Investigative journalism (Reuters, BBC, The Wire, Scroll.in)
+3. Government reports / official data (public records, RTI data)
+4. Books by domain experts
+5. Primary source documents (court filings, leaked memos, transcripts)
+
+<span class="highlight">⚠ Verification Rules:</span>
+— Cross-reference every major claim with 2+ independent sources
+— Clearly label speculation vs. confirmed facts in the script
+— Date-stamp all referenced events
+— Avoid single-source narratives`;
+    }
+
+    // ─── SCRIPT GENERATOR ───
+    function generateScript(topic, category, length, context) {
+      return `<h4>━━ DOCUMENTARY SCRIPT: ${topic.toUpperCase()} ━━</h4>
+<span class="highlight">Format:</span> YouTube Documentary | ${length} | Hinglish
+<span class="highlight">Tone:</span> Investigative + Storytelling | High Retention
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+<h4>🎬 HOOK (0:00 – 0:15)</h4>
+[DRAMATIC MUSIC FADES IN]
+
+"Agar main aapko bolu ki ${topic.toLowerCase()}... iske peeche ek aisi kahani hai jo aapko raat ko neend nahi aane degi — toh kya aap believe karoge?"
+
+[BEAT DROP — TITLE CARD]
+
+"Yeh story hai power ki, deception ki, aur ek aise system ki jise koi question nahi karta."
+
+<h4>📖 INTRO (0:15 – 1:30)</h4>
+"Toh chaliye samajhte hain. ${topic} — yeh naam sunte hi dimag mein bohot saari cheezein aati hain. Lekin aaj hum surface level pe nahi rukhne wale. Aaj hum deep dive karenge."
+
+"Is video mein hum dekhenge — yeh sab kaise shuru hua, kaun involved tha, aur sabse important — WHY. Kyunki 'why' samajh aaya toh pura picture clear ho jayega."
+
+[TRANSITION — subtle woosh SFX]
+
+"Lekin pehle, ek request — agar yeh video aapko kuch naya sikhaye, toh like aur subscribe zaroor kar dena. Chaliye shuru karte hain."
+
+<h4>📕 MAIN STORY — ACT 1: THE SETUP (1:30 – 4:00)</h4>
+"Kahani shuru hoti hai [TIME PERIOD] mein, jab duniya bilkul alag thi. Us waqt [CONTEXT]. Koi soch bhi nahi sakta tha ki yahan se ek aisi chain of events shuru hogi jo sab kuch badal degi."
+
+[INSERT: archival footage / relevant B-roll suggestion]
+
+"[KEY PERSON/ENTITY] — yeh naam yaad rakhna. Kyunki inhone ek decision liya... jo aaj tak impact kar raha hai."
+
+"Unka background tha [DESCRIBE]. Aur unke saamne ek choice thi — [DESCRIBE THE DILEMMA]. Unhone choose kiya [DESCRIBE]. Aur yahan se game change ho gaya."
+
+[CURIOSITY LOOP]: "Lekin jis cheez ne sab kuch actually trigger kiya — woh toh abhi aana baaki hai."
+
+<h4>📗 MAIN STORY — ACT 2: THE ESCALATION (4:00 – 7:30)</h4>
+"Ab yahan se cheezein intense hoti hain."
+
+"[DESCRIBE the chain of events — each one building tension]. Har step pe lagta tha ki ab ruk jayega. Lekin nahi. System ne allow kiya. Log chup rahe. Media ne ignore kiya."
+
+"Aur phir ek din... [THE TURNING POINT]. Iss moment ne sab kuch badal diya."
+
+[SFX: tension riser → silence → impact sound]
+
+"Jab yeh news baahar aayi, toh reactions — imagine karo. [DESCRIBE public/media reaction]."
+
+[CURIOSITY LOOP]: "Lekin asli revelation toh tab aaya jab [TEASE NEXT SECTION]..."
+
+<h4>📘 MAIN STORY — ACT 3: THE REVELATION (7:30 – 10:00)</h4>
+"Yeh woh part hai jahan most log galat samajhte hain."
+
+"Surface level pe toh lagta hai ki [COMMON NARRATIVE]. Lekin jab aap deeper dekhte ho — documents mein, data mein, patterns mein — toh ek bilkul alag picture emerge hota hai."
+
+"[REVEAL THE DEEPER TRUTH]. Haan, sahi suna aapne."
+
+"Iska matlab yeh hai ki [EXPLAIN IMPLICATIONS]. Basically, jo hum sochte the woh tha hi nahi. Asli game toh peeche chal raha tha."
+
+<h4>🔬 ANALYSIS (10:00 – 12:00)</h4>
+"Ab baat karte hain — iska MATLAB kya hai? Bigger picture mein yeh kyun matter karta hai?"
+
+"Dekho, yeh sirf ek isolated event nahi hai. Yeh ek PATTERN ka hissa hai. [EXPLAIN THE SYSTEMIC ISSUE]. Aur yeh pattern — yeh har jagah dikhai deta hai agar aap dhyan se dekho."
+
+"[EXPERT/SOURCE REFERENCE]: According to [SOURCE], [KEY FINDING]. Yeh confirm karta hai ki yeh koi coincidence nahi tha."
+
+"Iska impact — short term mein [DESCRIBE]. Long term mein [DESCRIBE]. Aur sabse scary part? [DESCRIBE ONGOING RELEVANCE]."
+
+<h4>🎬 CONCLUSION (12:00 – END)</h4>
+"Toh yeh thi kahani — ${topic}."
+
+"Ek kahani jo humein sikhati hai ki [CORE LESSON]. Ki hum jis duniya mein rehte hain, wahan cheezein hamesha woh nahi hoti jo dikhti hain."
+
+[PAUSE — let it breathe]
+
+"Aapko kya lagta hai? Comment mein bataao. Aur agar is topic pe aur detail chahiye — Part 2 banau? Bata do."
+
+"Milte hain next video mein. Tab tak — curious rehna, questioning rehna."
+
+[END CARD — subscribe animation]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<span class="highlight">SCRIPT NOTES:</span>
+— Replace all [BRACKETED] sections with specific researched content
+— Maintain 140–160 words per minute for natural pacing
+— Mark timestamp targets for editor reference
+— Include B-roll/visual suggestions at each section break`;
+    }
+
+    // ─── VIRAL KIT ───
+    function generateViralKit(topic) {
+      const short = topic.length > 40 ? topic.substring(0, 40) + '...' : topic;
+      return `<h4>━━ VIRAL PACKAGING KIT ━━</h4>
+
+<h4>🎯 CLICKBAIT TITLE IDEAS</h4>
+1. "${short} — Jo Koi Nahi Batata | Full Documentary"
+2. "Yeh Sach Jaanke Aap Shocked Ho Jaoge | ${short}"
+3. "${short}: Sabse Bada Expose 🔥"
+4. "Kaise ${short} Ne Sab Kuch Badal Diya? | Hidden Truth"
+5. "${short} — India's Biggest [CATEGORY] Story Nobody Talks About"
+
+<h4>🖼️ THUMBNAIL TEXT IDEAS</h4>
+1. "EXPOSED 🔴" + shocked face + dark background
+2. "YEH SACH HAI?" + red arrow pointing to key visual
+3. "SABSE BADA SCAM" + money/document imagery
+4. "NOBODY KNOWS THIS" + magnifying glass on hidden detail  
+5. "FULL STORY →" + split image (before/after or hero/villain)
+
+<span class="highlight">Thumbnail Rules:</span>
+— Max 3-4 words on thumbnail
+— High contrast colors (red, yellow, white on dark)
+— One clear focal point + one emotion (shock, curiosity, fear)
+— Face with exaggerated expression = +30% CTR
+
+<h4>🎵 BACKGROUND MUSIC SUGGESTIONS</h4>
+<span class="highlight">By Mood/Section:</span>
+
+Hook → Dark cinematic drone + bass hit
+  (Search: "dark documentary intro music no copyright")
+
+Setup → Slow building tension, minimal piano
+  (Search: "investigation background music")
+
+Escalation → Rhythmic pulse, rising strings
+  (Search: "suspense building music cinematic")
+
+Revelation → Silence → single piano note → full orchestra hit
+  (Search: "plot twist reveal music")
+
+Conclusion → Reflective, emotional, slightly hopeful
+  (Search: "emotional documentary ending music")
+
+<span class="highlight">Recommended Sources:</span> Epidemic Sound, Artlist, YouTube Audio Library
+
+<h4>✂️ EDITING TIPS</h4>
+<span class="highlight">Cuts & Pacing:</span>
+— Cut every 3-5 seconds during high-energy sections
+— Use J-cuts (audio before video) for smooth transitions
+— Slow zoom on key reveals (0.5x speed, 110% → 100% scale)
+— Jump cuts on narrator for energy, smooth cuts on B-roll
+
+<span class="highlight">Sound Design:</span>
+— Woosh SFX on every major transition
+— Subtle bass drop before reveals
+— Typewriter/keyboard SFX on text overlays
+— Silence (0.5-1 sec) before the biggest revelation — it hits harder
+
+<span class="highlight">Visual Techniques:</span>
+— Ken Burns effect on static images
+— Glitch transition when shifting narratives
+— Split screen for before/after comparisons
+— Lower thirds for names/dates/sources (minimal, clean)
+— Red circle/arrow ONLY on thumbnail, never in video
+
+<h4>📈 AUDIENCE RETENTION TRICKS</h4>
+1. <span class="highlight">Open Loop at 0:05</span> — Tease the biggest reveal in the first 5 seconds. "Iske peeche ki asli wajah toh end tak pata chalegi."
+
+2. <span class="highlight">Pattern Interrupt Every 60s</span> — Change visual style, add SFX, switch camera angle, show a meme, or change music energy.
+
+3. <span class="highlight">Mid-Roll Curiosity Bomb</span> — At the 40-50% mark, drop a mini-revelation that teases an even bigger one. "Lekin yeh toh kuch bhi nahi hai compared to what comes next."
+
+4. <span class="highlight">"Comment karke batao" Hooks</span> — Ask opinion questions at natural pause points. This boosts comments AND watch time.
+
+5. <span class="highlight">End Screen Setup at 80%</span> — Start building toward the conclusion, but tease Part 2 or a related video. "Agar yeh aapko interesting laga, toh yeh wali video dekhna — woh aur bhi crazy hai."
+
+6. <span class="highlight">First 30 Seconds Rule</span> — No intro animation, no "hey guys welcome back." Start with the story. Immediately. Name, branding, subscribe CTA — all comes AFTER the hook.
+
+7. <span class="highlight">Emotional Anchoring</span> — Connect the topic to something personal or universal every 2-3 minutes. "Socho agar yeh tumhare saath hota toh?"`;
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,2 @@
+ALTER TABLE public.e2b_executions DROP CONSTRAINT e2b_executions_kind_check;
+ALTER TABLE public.e2b_executions ADD CONSTRAINT e2b_executions_kind_check CHECK (kind = ANY (ARRAY['execute_code'::text, 'generate_document'::text, 'data_analysis'::text, 'edit_pptx_template'::text]));

@@ -1,0 +1,95 @@
+/* Slide typography lockdown — semantic classes that all slide renderers must
+   use. Prevents arbitrary text-[Npx] sprinkled across templates. Sizes are
+   tuned for the 1920×1080 canvas (scaled to fit at render time). */
+
+.slide-content {
+  /* Type scale */
+  --slide-title-lg: 104px;
+  --slide-title:    88px;
+  --slide-subtitle: 52px;
+  --slide-body-lg:  40px;
+  --slide-body:     32px;
+  --slide-caption:  24px;
+  --slide-kicker:   22px;
+  --slide-chrome:   20px;
+
+  font-family: var(--slide-body-family, "Inter", system-ui, sans-serif);
+  color: hsl(var(--slide-fg, 240 6% 10%));
+  background: hsl(var(--slide-bg, 0 0% 100%));
+}
+
+.slide-content :is(h1, h2, h3, h4, h5, h6),
+.slide-content .slide-title-lg,
+.slide-content .slide-title,
+.slide-content .slide-subtitle,
+.slide-content .slide-kicker {
+  font-family: var(--slide-heading-family, "Inter Display", system-ui, sans-serif);
+  letter-spacing: var(--slide-heading-tracking, -0.03em);
+  text-wrap: balance;
+}
+
+.slide-title-lg { font-size: var(--slide-title-lg); line-height: 1.0;  font-weight: 700; }
+.slide-title    { font-size: var(--slide-title);    line-height: 1.05; font-weight: 700; }
+.slide-subtitle { font-size: var(--slide-subtitle); line-height: 1.15; font-weight: 500; letter-spacing: -0.025em; }
+.slide-body-lg  { font-size: var(--slide-body-lg);  line-height: 1.22; }
+.slide-body     { font-size: var(--slide-body);     line-height: 1.28; }
+.slide-caption  { font-size: var(--slide-caption);  line-height: 1.25; opacity: 0.7; }
+.slide-kicker   {
+  font-size: var(--slide-kicker);
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.slide-chrome,
+.slide-badge,
+.slide-footer,
+.slide-page {
+  font-size: var(--slide-chrome);
+  line-height: 1.15;
+  font-family: var(--slide-body-family, "Inter", system-ui, sans-serif);
+}
+.slide-badge,
+.slide-page { white-space: nowrap; }
+
+/* Hanging punctuation for headings */
+.slide-title, .slide-title-lg, .slide-subtitle {
+  hanging-punctuation: first last;
+}
+
+/* Drop caps for prose paragraphs */
+.slide-prose > p:first-of-type::first-letter {
+  float: inline-start;
+  font-size: 4.2em;
+  line-height: 0.85;
+  padding-inline-end: 0.08em;
+  padding-block-start: 0.05em;
+  font-weight: 700;
+  font-family: var(--slide-heading-family, inherit);
+  color: hsl(var(--slide-primary, 211 100% 50%));
+}
+
+/* Pull quote helper */
+.slide-pull-quote {
+  font-family: var(--slide-heading-family, Georgia, serif);
+  font-size: var(--slide-subtitle);
+  line-height: 1.2;
+  font-style: italic;
+  font-weight: 500;
+  text-wrap: balance;
+  position: relative;
+  padding-inline-start: 0.6em;
+  border-inline-start: 4px solid hsl(var(--slide-primary, 211 100% 50%));
+}
+
+/* RTL niceties */
+.slide-content[dir="rtl"] .slide-title,
+.slide-content[dir="rtl"] .slide-title-lg,
+.slide-content[dir="rtl"] .slide-subtitle {
+  letter-spacing: 0;
+}
+.slide-content[dir="rtl"] .slide-prose > p:first-of-type::first-letter {
+  float: right;
+}

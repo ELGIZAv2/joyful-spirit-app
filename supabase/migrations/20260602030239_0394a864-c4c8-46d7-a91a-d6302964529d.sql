@@ -1,0 +1,1 @@
+ALTER TABLE public.operator_runs REPLICA IDENTITY DEFAULT;

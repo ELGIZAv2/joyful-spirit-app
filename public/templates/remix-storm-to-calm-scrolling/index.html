@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>After the Storm</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+      background: #0a0a12;
+    }
+
+    canvas#storm-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .scroll-container {
+      position: relative;
+      z-index: 1;
+    }
+
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      position: relative;
+    }
+
+    /* Hero */
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(3rem, 8vw, 7rem);
+      letter-spacing: -0.02em;
+      text-align: center;
+      line-height: 1.05;
+      text-shadow: 0 0 60px rgba(140, 160, 255, 0.4);
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards 0.3s;
+    }
+
+    .hero p {
+      margin-top: 20px;
+      font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards 0.8s;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: fadeInUp 1.5s ease forwards 1.3s;
+    }
+
+    .scroll-hint span {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .scroll-hint .arrow {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Transition section */
+    .transition-section {
+      min-height: 150vh;
+    }
+
+    .transition-section .content-card {
+      max-width: 560px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 60px 40px;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .transition-section .content-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .content-card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .content-card p {
+      font-weight: 300;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.55);
+    }
+
+    /* Calm section */
+    .calm-section {
+      min-height: 100vh;
+      background: transparent;
+    }
+
+    .calm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    @media (max-width: 680px) {
+      .calm-grid { grid-template-columns: 1fr; max-width: 400px; }
+    }
+
+    .calm-card {
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 40px 28px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .calm-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .calm-card:hover {
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.12);
+    }
+
+    .calm-card .icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .calm-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .calm-card p {
+      font-size: 0.82rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* Quote section */
+    .quote-section {
+      min-height: 80vh;
+    }
+
+    .quote-block {
+      max-width: 640px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .quote-block.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .quote-block blockquote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 300;
+      line-height: 1.5;
+      font-style: italic;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .quote-block cite {
+      display: block;
+      margin-top: 24px;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      font-style: normal;
+    }
+
+    /* Verse section */
+    .verse-section {
+      min-height: 90vh;
+    }
+
+    .verse-block {
+      max-width: 580px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .verse-block.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .verse-block h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .verse-block p {
+      font-weight: 300;
+      font-size: 0.92rem;
+      line-height: 2;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* Two-col section */
+    .two-col-section {
+      min-height: 100vh;
+    }
+
+    .two-col-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      .two-col-grid { grid-template-columns: 1fr; max-width: 420px; }
+    }
+
+    .two-col-card {
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 44px 32px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .two-col-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .two-col-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .two-col-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: 1.5rem;
+      margin-bottom: 14px;
+    }
+
+    .two-col-card p {
+      font-weight: 300;
+      font-size: 0.85rem;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* Wide card section */
+    .wide-section {
+      min-height: 80vh;
+    }
+
+    .wide-card {
+      max-width: 700px;
+      width: 100%;
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 64px 48px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .wide-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .wide-card h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      margin-bottom: 20px;
+      line-height: 1.15;
+    }
+
+    .wide-card p {
+      font-weight: 300;
+      font-size: 0.92rem;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.48);
+    }
+
+    /* List section */
+    .list-section {
+      min-height: 90vh;
+    }
+
+    .list-block {
+      max-width: 560px;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .list-block.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .list-block h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .list-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 28px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .list-item .num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      color: rgba(255,255,255,0.15);
+      min-width: 28px;
+      line-height: 1;
+      padding-top: 2px;
+    }
+
+    .list-item .text h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: 1.15rem;
+      margin-bottom: 6px;
+    }
+
+    .list-item .text p {
+      font-size: 0.82rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Closing section */
+    .closing-section {
+      min-height: 80vh;
+    }
+
+    .closing-block {
+      max-width: 500px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .closing-block.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .closing-block h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      margin-bottom: 18px;
+      line-height: 1.1;
+    }
+
+    .closing-block p {
+      font-size: 0.85rem;
+      font-weight: 300;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 10px;
+    }
+
+    .closing-divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+      margin: 28px auto;
+    }
+
+    .closing-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 0.8; transform: scaleY(1.2); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="storm-canvas"></canvas>
+
+  <div class="scroll-container">
+    <section class="hero">
+      <h1>Through<br>the Storm</h1>
+      <p>Scroll to find the calm</p>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <div class="arrow"></div>
+      </div>
+    </section>
+
+    <section class="transition-section">
+      <div class="content-card" data-reveal>
+        <h2>Every storm runs out of rain</h2>
+        <p>The chaos above is temporary. Lightning fractures the sky, thunder shakes the earth — but beneath it all, stillness waits. Keep scrolling, and watch the tempest dissolve into peace.</p>
+      </div>
+    </section>
+
+    <section class="calm-section">
+      <div class="calm-grid">
+        <div class="calm-card" data-reveal data-delay="0">
+          <h3>Stillness</h3>
+          <p>In the absence of noise, clarity emerges. The mind settles like dust after wind.</p>
+        </div>
+        <div class="calm-card" data-reveal data-delay="150">
+          <h3>Renewal</h3>
+          <p>After the downpour, the earth breathes deeper. Growth begins in the quiet that follows.</p>
+        </div>
+        <div class="calm-card" data-reveal data-delay="300">
+          <h3>Clarity</h3>
+          <p>The air after a storm is the cleanest you'll ever breathe. Perspective sharpens.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="quote-section">
+      <div class="quote-block" data-reveal>
+        <blockquote>"Here, fire turns into water; Here, the dancing of the rain declares the sun. There's no opposition in existence, no contradiction; Everything supports everything else."</blockquote>
+        <cite>— The Way It Is</cite>
+      </div>
+    </section>
+
+    <section class="verse-section">
+      <div class="verse-block" data-reveal>
+        <h2>The Language of Rain</h2>
+        <p>
+          Rain speaks in a tongue older than memory.<br>
+          It does not ask permission to fall,<br>
+          nor does it apologize for the floods it leaves behind.<br><br>
+          It simply descends — relentless, honest, complete.<br>
+          And in its descent, it cleanses everything<br>
+          it has the courage to touch.
+        </p>
+      </div>
+    </section>
+
+    <section class="two-col-section">
+      <div class="two-col-grid">
+        <div class="two-col-card" data-reveal data-delay="0">
+          <h3>The Eye of the Storm</h3>
+          <p>At the center of every tempest lies a pocket of impossible quiet. A circle of calm ringed by chaos. Some say this is where the storm breathes — the brief pause between destruction and dissolution.</p>
+        </div>
+        <div class="two-col-card" data-reveal data-delay="120">
+          <h3>What Thunder Teaches</h3>
+          <p>Thunder arrives after lightning — always. The sound lags behind the light. A reminder that consequence follows action not in the same instant, but in its own measured time. Patience is built into the physics of storms.</p>
+        </div>
+        <div class="two-col-card" data-reveal data-delay="240">
+          <h3>Petrichor</h3>
+          <p>The scent released when rain meets dry earth has a name: petrichor. It is the smell of geosmin, a compound produced by bacteria in soil. Even the fragrance of a storm is alive — a signal from the ground that it has been heard.</p>
+        </div>
+        <div class="two-col-card" data-reveal data-delay="360">
+          <h3>The Clearing</h3>
+          <p>After the storm passes, the sky does not simply return to what it was. It becomes something new — washed, rearranged. The clouds part in formations they have never held before. Every clearing is a first.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wide-section">
+      <div class="wide-card" data-reveal>
+        <h2>Nothing is lost in a storm</h2>
+        <p>What the wind scatters, the rain gathers. What the lightning splits, the silence slowly heals. The storm does not take — it redistributes. Energy moves from one form into another, from pressure into motion, from cloud into river, from grief into something quieter and harder to name. You do not come out of a storm the same person who entered it. That is not loss. That is the whole point.</p>
+      </div>
+    </section>
+
+    <section class="list-section">
+      <div class="list-block" data-reveal>
+        <h2>After the Rain</h2>
+        <div class="list-item">
+          <span class="num">I</span>
+          <div class="text">
+            <h4>The ground remembers</h4>
+            <p>Soil holds the record of every rainfall. Each layer is a page. The earth is a library of storms, and we walk its aisles every day without knowing it.</p>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="num">II</span>
+          <div class="text">
+            <h4>Light returns differently</h4>
+            <p>The angle of sun through post-storm air creates colors that only exist in those specific moments — a palette available nowhere else, at no other time.</p>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="num">III</span>
+          <div class="text">
+            <h4>Sound travels further</h4>
+            <p>Cool, damp air carries sound with less resistance. After a storm, the world is briefly louder — birdsong, footsteps, the drip of runoff from leaves.</p>
+          </div>
+        </div>
+        <div class="list-item">
+          <span class="num">IV</span>
+          <div class="text">
+            <h4>Roots hold tighter</h4>
+            <p>Trees that survive storms develop stronger root systems. Resistance builds structure. The same wind that tests the branches deepens the anchor.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="quote-section">
+      <div class="quote-block" data-reveal>
+        <blockquote>"The storm is not punishment. It is not reward. It is simply weather — indifferent, immense, and always passing."</blockquote>
+        <cite>— Unnamed</cite>
+      </div>
+    </section>
+
+    <section class="closing-section">
+      <div class="closing-block" data-reveal>
+        <h2>The calm<br>was always here</h2>
+        <div class="closing-divider"></div>
+        <p>It did not arrive after the storm.<br>It did not wait for permission.<br>It was present at every moment —<br>beneath the noise, beneath the weather,<br>beneath the fear of the next strike.</p>
+        <div class="closing-divider"></div>
+        <div class="closing-label">Petrichor — The scent of earth after rain</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ========== AMBIENT THUNDER AUDIO ==========
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx, thunderGain, rainGain, windGain, audioStarted = false;
+
+    function initAudio() {
+      if (audioStarted) return;
+      audioStarted = true;
+      audioCtx = new AudioCtx();
+
+      // Master gain
+      const master = audioCtx.createGain();
+      master.gain.value = 0.35;
+      master.connect(audioCtx.destination);
+
+      // --- Deep thunder rumble (brown noise filtered low) ---
+      const thunderBufferSize = audioCtx.sampleRate * 4;
+      const thunderBuffer = audioCtx.createBuffer(1, thunderBufferSize, audioCtx.sampleRate);
+      const thunderData = thunderBuffer.getChannelData(0);
+      let lastOut = 0;
+      for (let i = 0; i < thunderBufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        lastOut = (lastOut + (0.02 * white)) / 1.02;
+        thunderData[i] = lastOut * 3.5;
+      }
+      const thunderSrc = audioCtx.createBufferSource();
+      thunderSrc.buffer = thunderBuffer;
+      thunderSrc.loop = true;
+
+      const thunderLow = audioCtx.createBiquadFilter();
+      thunderLow.type = 'lowpass';
+      thunderLow.frequency.value = 80;
+      thunderLow.Q.value = 0.7;
+
+      thunderGain = audioCtx.createGain();
+      thunderGain.gain.value = 0.8;
+
+      thunderSrc.connect(thunderLow);
+      thunderLow.connect(thunderGain);
+      thunderGain.connect(master);
+      thunderSrc.start();
+
+      // --- Rain hiss (pink-ish noise, bandpassed) ---
+      const rainBufferSize = audioCtx.sampleRate * 2;
+      const rainBuffer = audioCtx.createBuffer(1, rainBufferSize, audioCtx.sampleRate);
+      const rainData = rainBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < rainBufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        rainData[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+        b6 = white * 0.115926;
+      }
+      const rainSrc = audioCtx.createBufferSource();
+      rainSrc.buffer = rainBuffer;
+      rainSrc.loop = true;
+
+      const rainBand = audioCtx.createBiquadFilter();
+      rainBand.type = 'bandpass';
+      rainBand.frequency.value = 3000;
+      rainBand.Q.value = 0.4;
+
+      rainGain = audioCtx.createGain();
+      rainGain.gain.value = 0.5;
+
+      rainSrc.connect(rainBand);
+      rainBand.connect(rainGain);
+      rainGain.connect(master);
+      rainSrc.start();
+
+      // --- Wind (low-mid filtered noise with slow modulation) ---
+      const windBufferSize = audioCtx.sampleRate * 3;
+      const windBuffer = audioCtx.createBuffer(1, windBufferSize, audioCtx.sampleRate);
+      const windData = windBuffer.getChannelData(0);
+      let wLast = 0;
+      for (let i = 0; i < windBufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        wLast = (wLast + (0.04 * white)) / 1.04;
+        windData[i] = wLast * 5;
+      }
+      const windSrc = audioCtx.createBufferSource();
+      windSrc.buffer = windBuffer;
+      windSrc.loop = true;
+
+      const windFilter = audioCtx.createBiquadFilter();
+      windFilter.type = 'bandpass';
+      windFilter.frequency.value = 250;
+      windFilter.Q.value = 0.5;
+
+      // LFO to modulate wind for gusting effect
+      const windLfo = audioCtx.createOscillator();
+      const windLfoGain = audioCtx.createGain();
+      windLfo.frequency.value = 0.15;
+      windLfoGain.gain.value = 120;
+      windLfo.connect(windLfoGain);
+      windLfoGain.connect(windFilter.frequency);
+      windLfo.start();
+
+      windGain = audioCtx.createGain();
+      windGain.gain.value = 0.4;
+
+      windSrc.connect(windFilter);
+      windFilter.connect(windGain);
+      windGain.connect(master);
+      windSrc.start();
+    }
+
+    // Start audio on first user interaction
+    function startAudioOnce() {
+      initAudio();
+      document.removeEventListener('click', startAudioOnce);
+      document.removeEventListener('scroll', startAudioOnce);
+      document.removeEventListener('touchstart', startAudioOnce);
+    }
+    document.addEventListener('click', startAudioOnce);
+    document.addEventListener('scroll', startAudioOnce);
+    document.addEventListener('touchstart', startAudioOnce);
+
+    // Helper: generate brown noise buffer
+    function makeBrownNoise(duration, coeff, amp) {
+      if (!audioCtx) return null;
+      const sz = Math.floor(audioCtx.sampleRate * duration);
+      const buf = audioCtx.createBuffer(1, sz, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < sz; i++) {
+        const w = Math.random() * 2 - 1;
+        last = (last + coeff * w) / (1 + coeff);
+        d[i] = last * amp;
+      }
+      return buf;
+    }
+
+    // Helper: generate white noise buffer
+    function makeWhiteNoise(duration) {
+      if (!audioCtx) return null;
+      const sz = Math.floor(audioCtx.sampleRate * duration);
+      const buf = audioCtx.createBuffer(1, sz, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < sz; i++) d[i] = Math.random() * 2 - 1;
+      return buf;
+    }
+
+    // === PRE-RUMBLE: starts BEFORE the bolt, peaks when bolt begins drawing ===
+    function triggerPreRumble(intensity, preRumbleMs) {
+      if (!audioStarted || !audioCtx) return;
+      const t = audioCtx.currentTime;
+      const peakTime = t + preRumbleMs / 1000; // when bolt starts drawing = peak
+      const totalDur = (preRumbleMs / 1000) + 3.0; // continues well after crack
+
+      const rumbleSrc = audioCtx.createBufferSource();
+      rumbleSrc.buffer = makeBrownNoise(totalDur, 0.015, 8);
+
+      const rumbleLp = audioCtx.createBiquadFilter();
+      rumbleLp.type = 'lowpass';
+      rumbleLp.frequency.value = 90 + Math.random() * 30;
+      rumbleLp.Q.value = 1.2;
+
+      const rumbleLp2 = audioCtx.createBiquadFilter();
+      rumbleLp2.type = 'lowpass';
+      rumbleLp2.frequency.value = 120 + Math.random() * 40;
+      rumbleLp2.Q.value = 0.8;
+
+      // LFO modulates filter cutoff for organic rolling quality
+      const rumbleLfo = audioCtx.createOscillator();
+      const rumbleLfoGain = audioCtx.createGain();
+      rumbleLfo.frequency.value = 0.8 + Math.random() * 1.5;
+      rumbleLfoGain.gain.value = 45 + Math.random() * 35;
+      rumbleLfo.connect(rumbleLfoGain);
+      rumbleLfoGain.connect(rumbleLp.frequency);
+      rumbleLfo.start(t);
+      rumbleLfo.stop(t + totalDur);
+
+      // Envelope: fade in from silence, peak when bolt starts, then slow decay
+      const rumbleEnv = audioCtx.createGain();
+      const rumblePeak = 4.5 * intensity;
+      rumbleEnv.gain.setValueAtTime(0.001, t);
+      // Swell up to peak over the pre-rumble duration
+      rumbleEnv.gain.linearRampToValueAtTime(rumblePeak, peakTime);
+      // Hold briefly at peak then slow fade out
+      rumbleEnv.gain.setValueAtTime(rumblePeak, peakTime + 0.1);
+      rumbleEnv.gain.setTargetAtTime(0.001, peakTime + 0.2, 0.9);
+
+      rumbleSrc.connect(rumbleLp);
+      rumbleLp.connect(rumbleLp2);
+      rumbleLp2.connect(rumbleEnv);
+      rumbleEnv.connect(audioCtx.destination);
+      rumbleSrc.start(t);
+      rumbleSrc.stop(t + totalDur);
+    }
+
+    function triggerThunderCrack(intensity) {
+      if (!audioStarted || !audioCtx || intensity < 0.1) return;
+      const t = audioCtx.currentTime;
+
+      // At this point the pre-rumble has already peaked.
+      // We only handle: crack, thump, echoes, boom, and rolling tail.
+
+      // === SHARP CRACK: fires immediately (bolt is already fully displayed) ===
+      const crackTime = t + 0.03;
+      const crackLen = 0.12 + Math.random() * 0.12;
+
+      const crackSrc = audioCtx.createBufferSource();
+      crackSrc.buffer = makeWhiteNoise(crackLen);
+
+      // Highpass removes mud, lowpass with sweep gives "tearing air" quality
+      const crackHp = audioCtx.createBiquadFilter();
+      crackHp.type = 'highpass';
+      crackHp.frequency.value = 600 + Math.random() * 400;
+      crackHp.Q.value = 0.5;
+
+      const crackLp = audioCtx.createBiquadFilter();
+      crackLp.type = 'lowpass';
+      // Doppler sweep: start bright, sweep down as sound expands
+      crackLp.frequency.setValueAtTime(8000 + Math.random() * 4000, crackTime);
+      crackLp.frequency.exponentialRampToValueAtTime(1500, crackTime + crackLen);
+      crackLp.Q.value = 0.6;
+
+      // Sharp attack envelope — instant onset, exponential decay
+      const crackEnv = audioCtx.createGain();
+      crackEnv.gain.setValueAtTime(0.001, crackTime);
+      crackEnv.gain.linearRampToValueAtTime(0.75 * intensity, crackTime + 0.003);
+      crackEnv.gain.exponentialRampToValueAtTime(0.001, crackTime + crackLen);
+
+      crackSrc.connect(crackHp);
+      crackHp.connect(crackLp);
+      crackLp.connect(crackEnv);
+      crackEnv.connect(audioCtx.destination);
+      crackSrc.start(crackTime);
+      crackSrc.stop(crackTime + crackLen);
+
+      // === 2a. SUB-BASS THUMP: single-cycle sine pulse you feel in your chest ===
+      const thumpFreq = 30 + Math.random() * 20; // 30-50 Hz
+      const thumpDur = 1 / thumpFreq; // exactly one cycle
+      const thumpOsc = audioCtx.createOscillator();
+      thumpOsc.type = 'sine';
+      thumpOsc.frequency.value = thumpFreq;
+
+      const thumpGain = audioCtx.createGain();
+      const thumpPeak = 0.9 * intensity;
+      thumpGain.gain.setValueAtTime(0.001, crackTime);
+      thumpGain.gain.linearRampToValueAtTime(thumpPeak, crackTime + 0.002);
+      thumpGain.gain.exponentialRampToValueAtTime(0.001, crackTime + thumpDur + 0.06);
+
+      thumpOsc.connect(thumpGain);
+      thumpGain.connect(audioCtx.destination);
+      thumpOsc.start(crackTime);
+      thumpOsc.stop(crackTime + thumpDur + 0.07);
+
+      // === 2b. CRACK ECHO: muffled reflection 300-600ms later ===
+      const echoDelay = 0.3 + Math.random() * 0.3;
+      const echoTime = crackTime + echoDelay;
+      const echoLen = crackLen * 1.5;
+
+      const echoSrc = audioCtx.createBufferSource();
+      echoSrc.buffer = makeWhiteNoise(echoLen);
+
+      const echoLp = audioCtx.createBiquadFilter();
+      echoLp.type = 'lowpass';
+      echoLp.frequency.value = 1000 + Math.random() * 600;
+      echoLp.Q.value = 0.3;
+
+      const echoEnv = audioCtx.createGain();
+      echoEnv.gain.setValueAtTime(0.001, echoTime);
+      echoEnv.gain.linearRampToValueAtTime(0.18 * intensity, echoTime + 0.008);
+      echoEnv.gain.exponentialRampToValueAtTime(0.001, echoTime + echoLen);
+
+      echoSrc.connect(echoLp);
+      echoLp.connect(echoEnv);
+      echoEnv.connect(audioCtx.destination);
+      echoSrc.start(echoTime);
+      echoSrc.stop(echoTime + echoLen);
+
+      // Second terrain bounce echo (~60% chance)
+      if (Math.random() > 0.4) {
+        const e2Time = echoTime + 0.25 + Math.random() * 0.35;
+        const e2Len = crackLen * 2;
+        const e2Src = audioCtx.createBufferSource();
+        e2Src.buffer = makeWhiteNoise(e2Len);
+        const e2Lp = audioCtx.createBiquadFilter();
+        e2Lp.type = 'lowpass';
+        e2Lp.frequency.value = 600 + Math.random() * 300;
+        e2Lp.Q.value = 0.3;
+        const e2Env = audioCtx.createGain();
+        e2Env.gain.setValueAtTime(0.001, e2Time);
+        e2Env.gain.linearRampToValueAtTime(0.08 * intensity, e2Time + 0.01);
+        e2Env.gain.exponentialRampToValueAtTime(0.001, e2Time + e2Len);
+        e2Src.connect(e2Lp);
+        e2Lp.connect(e2Env);
+        e2Env.connect(audioCtx.destination);
+        e2Src.start(e2Time);
+        e2Src.stop(e2Time + e2Len);
+      }
+
+      // === 3. DEEP BOOM: low-freq impact right after crack ===
+      // Simulates the explosive expansion compression wave (~40-80 Hz)
+      const boomTime = crackTime + 0.015;
+      const boomLen = 0.4 + Math.random() * 0.5;
+
+      const boomSrc = audioCtx.createBufferSource();
+      boomSrc.buffer = makeBrownNoise(boomLen, 0.02, 4);
+
+      const boomLp = audioCtx.createBiquadFilter();
+      boomLp.type = 'lowpass';
+      boomLp.frequency.value = 100 + Math.random() * 30;
+      boomLp.Q.value = 0.9;
+
+      const boomEnv = audioCtx.createGain();
+      boomEnv.gain.setValueAtTime(0.001, boomTime);
+      boomEnv.gain.linearRampToValueAtTime(0.65 * intensity, boomTime + 0.01);
+      boomEnv.gain.exponentialRampToValueAtTime(0.001, boomTime + boomLen);
+
+      boomSrc.connect(boomLp);
+      boomLp.connect(boomEnv);
+      boomEnv.connect(audioCtx.destination);
+      boomSrc.start(boomTime);
+      boomSrc.stop(boomTime + boomLen);
+
+      // === 4. ROLLING TAIL: long decaying low rumble ===
+      // Sound from the full length of the tortuous channel, arriving over 2-4 seconds
+      // with constructive/destructive interference creating the fluctuating roll
+      const tailDur = 2.0 + Math.random() * 1.5;
+      const tailStart = boomTime + 0.08;
+
+      const tailSrc = audioCtx.createBufferSource();
+      tailSrc.buffer = makeBrownNoise(tailDur, 0.01, 4.5);
+
+      const tailLp = audioCtx.createBiquadFilter();
+      tailLp.type = 'lowpass';
+      tailLp.frequency.value = 80 + Math.random() * 20;
+      tailLp.Q.value = 0.5;
+
+      // Slow LFO on the tail to simulate overlapping wavefronts from channel segments
+      const tailLfo = audioCtx.createOscillator();
+      const tailLfoGain = audioCtx.createGain();
+      tailLfo.frequency.value = 1.5 + Math.random() * 2.5;
+      tailLfoGain.gain.value = 25 + Math.random() * 20;
+      tailLfo.connect(tailLfoGain);
+      tailLfoGain.connect(tailLp.frequency);
+      tailLfo.start(tailStart);
+      tailLfo.stop(tailStart + tailDur);
+
+      const tailEnv = audioCtx.createGain();
+      tailEnv.gain.setValueAtTime(0.001, tailStart);
+      tailEnv.gain.linearRampToValueAtTime(0.3 * intensity, tailStart + 0.12);
+      // Gradual decay over several seconds
+      tailEnv.gain.setTargetAtTime(0.001, tailStart + 0.3, tailDur * 0.28);
+
+      tailSrc.connect(tailLp);
+      tailLp.connect(tailEnv);
+      tailEnv.connect(audioCtx.destination);
+      tailSrc.start(tailStart);
+      tailSrc.stop(tailStart + tailDur);
+    }
+
+    function updateAudio(intensity) {
+      if (!audioStarted || !audioCtx) return;
+      const t = audioCtx.currentTime;
+      // Smooth ramp to avoid clicks
+      thunderGain.gain.setTargetAtTime(0.8 * intensity, t, 0.15);
+      rainGain.gain.setTargetAtTime(0.5 * intensity, t, 0.12);
+      windGain.gain.setTargetAtTime(0.4 * Math.pow(intensity, 0.7), t, 0.2);
+    }
+
+    // ========== STORM CANVAS ==========
+    const canvas = document.getElementById('storm-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Scroll progress (0 = top, 1 = bottom)
+    let scrollProgress = 0;
+    window.addEventListener('scroll', () => {
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      scrollProgress = Math.min(1, window.scrollY / maxScroll);
+    });
+
+    // Storm intensity derived from scroll (1 at top, 0 at bottom)
+    function getStormIntensity() {
+      // Storm is full until 10% scroll, then fades out by 60%
+      if (scrollProgress < 0.08) return 1;
+      if (scrollProgress > 0.55) return 0;
+      return 1 - (scrollProgress - 0.08) / (0.55 - 0.08);
+    }
+
+    // ---- Rain ----
+    class Raindrop {
+      constructor() { this.reset(true); }
+      reset(init) {
+        this.x = Math.random() * W + 200;
+        this.y = init ? Math.random() * H : -10;
+        this.len = 14 + Math.random() * 22;
+        this.speed = 12 + Math.random() * 10;
+        this.opacity = 0.15 + Math.random() * 0.25;
+        this.wind = -3 - Math.random() * 3;
+      }
+    }
+
+    const drops = [];
+    for (let i = 0; i < 350; i++) drops.push(new Raindrop());
+
+    function drawRain(intensity) {
+      if (intensity < 0.01) return;
+      const count = Math.floor(drops.length * intensity);
+      ctx.lineWidth = 1;
+      for (let i = 0; i < count; i++) {
+        const d = drops[i];
+        ctx.strokeStyle = `rgba(180,195,255,${d.opacity * intensity})`;
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + d.wind * 2, d.y + d.len);
+        ctx.stroke();
+        d.x += d.wind * 0.8;
+        d.y += d.speed;
+        if (d.y > H + 20 || d.x < -20) d.reset(false);
+      }
+    }
+
+    // ---- Lightning ----
+    let lightningFlash = 0;
+    let lightningBolts = [];
+    let nextLightningTime = performance.now() + 2000 + Math.random() * 5000;
+
+    function scheduleNextLightning() {
+      // Random interval between 5 and 15 seconds
+      const minDelay = 5000;
+      const maxDelay = 15000;
+      nextLightningTime = performance.now() + minDelay + Math.random() * (maxDelay - minDelay);
+    }
+
+    function buildBoltTree(x, y, angle, depth, parentSide) {
+      if (depth > 4) return [];
+      const branch = [];
+      let cx = x, cy = y;
+      // Longer bolts: main trunk ~350-500px, branches scale down per depth
+      const len = depth === 0 ? 300 + Math.random() * 200 : (100 + Math.random() * 80) / (depth * 0.7);
+      const steps = depth === 0 ? 14 + Math.floor(Math.random() * 6) : 4 + Math.floor(Math.random() * 4);
+      const jitter = depth === 0 ? 28 : 18 - depth * 2;
+      let branchCount = 0;
+      const maxBranches = depth === 0 ? 4 : depth === 1 ? 2 : 1;
+
+      for (let i = 0; i < steps; i++) {
+        const nx = cx + Math.cos(angle) * (len / steps) + (Math.random() - 0.5) * jitter;
+        const ny = cy + Math.sin(angle) * (len / steps) + Math.random() * 14;
+        const seg = { x1: cx, y1: cy, x2: nx, y2: ny, children: [] };
+
+        // Branch logic: spread out along trunk, alternate sides to avoid overlap
+        const canBranch = branchCount < maxBranches && i > 1 && i < steps - 1;
+        const branchChance = depth === 0 ? 0.35 : depth === 1 ? 0.3 : 0.2;
+        const minSpacing = depth === 0 ? 3 : 2;
+        
+        if (canBranch && i % minSpacing === 0 && Math.random() < branchChance) {
+          // Alternate sides: even branches go right, odd go left (relative to trunk)
+          // If parent forced a side, go opposite to avoid overlap
+          const side = parentSide ? -parentSide : (branchCount % 2 === 0 ? 1 : -1);
+          const branchAngle = angle + side * (0.35 + Math.random() * 0.45);
+          seg.children = buildBoltTree(nx, ny, branchAngle, depth + 1, side);
+          branchCount++;
+        }
+        branch.push(seg);
+        cx = nx; cy = ny;
+      }
+      return branch;
+    }
+
+    function triggerLightning() {
+      const x = W * 0.15 + Math.random() * W * 0.7;
+      const tree = buildBoltTree(x, 0, Math.PI / 2 + (Math.random() - 0.5) * 0.4, 0, 0);
+      // Flatten tree into a list of segments with reveal times
+      const allSegs = [];
+      let revealTime = 0;
+      const segDelay = 18; // ms between each segment appearing
+
+      function flatten(branch, depth) {
+        branch.forEach(seg => {
+          allSegs.push({
+            x1: seg.x1, y1: seg.y1, x2: seg.x2, y2: seg.y2,
+            revealAt: revealTime,
+            width: Math.max(0.3, 1.0 - depth * 0.18),
+            alpha: 0
+          });
+          revealTime += segDelay;
+          if (seg.children.length > 0) {
+            const savedTime = revealTime;
+            flatten(seg.children, depth + 1);
+            revealTime = savedTime + segDelay;
+          }
+        });
+      }
+      flatten(tree, 0);
+
+      // Pre-rumble delay: rumble starts now, bolt drawing is delayed
+      const preRumbleMs = 800 + Math.random() * 600; // 0.8-1.4s of rumble before bolt
+
+      // Start the rumble immediately, it peaks at preRumbleMs then fades after crack
+      const intensity = getStormIntensity();
+      if (intensity >= 0.1) triggerPreRumble(intensity, preRumbleMs);
+
+      lightningBolts.push({
+        segments: allSegs,
+        birthTime: performance.now() + preRumbleMs, // delay bolt drawing
+        peakAlpha: 1,
+        fadeAlpha: 1,
+        totalRevealDuration: revealTime,
+        hasFlashed: false,
+        hasCracked: false,
+        afterglow: false,
+        afterglowAlpha: 0,
+        flickerStart: null,
+        flickerDone: false,
+        flickerCount: 0
+      });
+    }
+
+    function drawLightning(intensity) {
+      if (intensity < 0.05) { lightningBolts = []; return; }
+
+      const now = performance.now();
+
+      // Check if it's time for a new strike
+      if (now >= nextLightningTime) {
+        triggerLightning();
+        scheduleNextLightning();
+      }
+
+      // Flash overlay
+      if (lightningFlash > 0) {
+        ctx.fillStyle = `rgba(200,210,255,${lightningFlash * 0.12 * intensity})`;
+        ctx.fillRect(0, 0, W, H);
+        lightningFlash *= 0.88;
+        if (lightningFlash < 0.01) lightningFlash = 0;
+      }
+
+      // Draw bolts
+      for (let b = lightningBolts.length - 1; b >= 0; b--) {
+        const bolt = lightningBolts[b];
+        const elapsed = now - bolt.birthTime;
+        const allRevealed = elapsed > bolt.totalRevealDuration;
+
+        // Trigger flash and thunder once bolt is mostly built
+        if (!bolt.hasFlashed && allRevealed) {
+          lightningFlash = 1;
+          bolt.hasFlashed = true;
+        }
+        if (!bolt.hasCracked && allRevealed) {
+          triggerThunderCrack(intensity);
+          bolt.hasCracked = true;
+        }
+
+        // Flicker phase: 2-3 rapid brightness oscillations in first 100ms after full reveal
+        if (allRevealed && !bolt.flickerDone) {
+          if (!bolt.flickerStart) {
+            bolt.flickerStart = now;
+            bolt.flickerCount = 2 + Math.floor(Math.random() * 2); // 2-3 flickers
+          }
+          const flickerElapsed = now - bolt.flickerStart;
+          if (flickerElapsed < 100) {
+            // Rapid sine oscillation between 0.3 and 1.0
+            const freq = bolt.flickerCount * Math.PI * 2 / 100;
+            bolt.fadeAlpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(flickerElapsed * freq));
+          } else {
+            bolt.fadeAlpha = 1;
+            bolt.flickerDone = true;
+          }
+        }
+
+        // After all segments revealed, start fading
+        if (allRevealed && bolt.flickerDone) {
+          bolt.fadeAlpha *= 0.94;
+          // Once main bolt is nearly gone, switch to afterglow phase
+          if (bolt.fadeAlpha < 0.03 && !bolt.afterglow) {
+            bolt.afterglow = true;
+            bolt.afterglowAlpha = 0.9;
+          }
+          if (!bolt.afterglow && bolt.fadeAlpha < 0.01) { lightningBolts.splice(b, 1); continue; }
+          if (bolt.afterglow) {
+            bolt.afterglowAlpha *= 0.975;
+            if (bolt.afterglowAlpha < 0.003) { lightningBolts.splice(b, 1); continue; }
+          }
+        }
+
+        // Draw afterglow (ghostly imprint)
+        if (bolt.afterglow) {
+          bolt.segments.forEach(seg => {
+            const a = bolt.afterglowAlpha * intensity;
+            if (a < 0.002) return;
+            // Wider, softer, purple-tinted glow
+            ctx.strokeStyle = `rgba(160,150,220,${a})`;
+            ctx.lineWidth = seg.width + 1.5;
+            ctx.shadowColor = `rgba(130,120,200,${a * 0.6})`;
+            ctx.shadowBlur = 30;
+            ctx.beginPath();
+            ctx.moveTo(seg.x1, seg.y1);
+            ctx.lineTo(seg.x2, seg.y2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+          });
+          continue; // skip normal drawing for afterglow-phase bolts
+        }
+
+        // Draw each segment (normal phase)
+        bolt.segments.forEach(seg => {
+          if (elapsed < seg.revealAt) return; // not yet revealed
+
+          const segAge = elapsed - seg.revealAt;
+          // Segment fades in rapidly over 30ms
+          const segLocalAlpha = Math.min(1, segAge / 30);
+          const alpha = segLocalAlpha * bolt.fadeAlpha * intensity;
+
+          if (alpha < 0.005) return;
+
+          // Outer glow layer
+          ctx.strokeStyle = `rgba(150,170,255,${alpha * 0.3})`;
+          ctx.lineWidth = seg.width + 4;
+          ctx.shadowColor = `rgba(140,160,255,${alpha * 0.9})`;
+          ctx.shadowBlur = 50 * alpha;
+          ctx.beginPath();
+          ctx.moveTo(seg.x1, seg.y1);
+          ctx.lineTo(seg.x2, seg.y2);
+          ctx.stroke();
+
+          // Mid glow layer
+          ctx.strokeStyle = `rgba(190,200,255,${alpha * 0.5})`;
+            ctx.lineWidth = seg.width + 1.5;
+          ctx.shadowColor = `rgba(170,185,255,${alpha})`;
+          ctx.shadowBlur = 25 * alpha;
+          ctx.beginPath();
+          ctx.moveTo(seg.x1, seg.y1);
+          ctx.lineTo(seg.x2, seg.y2);
+          ctx.stroke();
+
+          // Core bright line
+          ctx.strokeStyle = `rgba(230,235,255,${alpha})`;
+          ctx.lineWidth = seg.width;
+          ctx.shadowColor = 'rgba(200,215,255,0.9)';
+          ctx.shadowBlur = 12 * alpha;
+          ctx.beginPath();
+          ctx.moveTo(seg.x1, seg.y1);
+          ctx.lineTo(seg.x2, seg.y2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        });
+      }
+    }
+
+    // ---- Clouds ----
+    const clouds = [];
+    for (let i = 0; i < 18; i++) {
+      clouds.push({
+        x: Math.random() * W,
+        y: Math.random() * H * 0.45,
+        r: 80 + Math.random() * 180,
+        speed: 0.15 + Math.random() * 0.3,
+        opacity: 0.08 + Math.random() * 0.12
+      });
+    }
+
+    function drawClouds(intensity) {
+      clouds.forEach(c => {
+        const stormAlpha = c.opacity * intensity;
+        const calmAlpha = c.opacity * 0.3 * (1 - intensity);
+        const alpha = stormAlpha + calmAlpha;
+
+        const stormR = 25, stormG = 28, stormB = 45;
+        const calmR = 40, calmG = 50, calmB = 70;
+        const r = Math.floor(stormR + (calmR - stormR) * (1 - intensity));
+        const g = Math.floor(stormG + (calmG - stormG) * (1 - intensity));
+        const b = Math.floor(stormB + (calmB - stormB) * (1 - intensity));
+
+        const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(c.x - c.r, c.y - c.r, c.r * 2, c.r * 2);
+        c.x += c.speed * (0.3 + intensity * 0.7);
+        if (c.x - c.r > W) c.x = -c.r;
+      });
+    }
+
+    // ---- Stars (appear as storm fades) ----
+    const stars = [];
+    for (let i = 0; i < 200; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H * 0.6,
+        r: 0.4 + Math.random() * 1.2,
+        twinkleSpeed: 0.005 + Math.random() * 0.02,
+        twinkleOffset: Math.random() * Math.PI * 2,
+        baseOpacity: 0.3 + Math.random() * 0.7
+      });
+    }
+
+    let time = 0;
+    function drawStars(intensity) {
+      const starOpacity = Math.max(0, 1 - intensity * 2.5);
+      if (starOpacity < 0.01) return;
+      time += 1;
+      stars.forEach(s => {
+        const twinkle = 0.5 + 0.5 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset);
+        const alpha = s.baseOpacity * twinkle * starOpacity;
+        ctx.fillStyle = `rgba(220,230,255,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    // ---- Moon (appears in calm) ----
+    function drawMoon(intensity) {
+      const moonOpacity = Math.max(0, 1 - intensity * 3);
+      if (moonOpacity < 0.01) return;
+      const mx = W * 0.78, my = H * 0.15, mr = 40;
+
+      // Glow
+      const glow = ctx.createRadialGradient(mx, my, mr * 0.5, mx, my, mr * 5);
+      glow.addColorStop(0, `rgba(180,200,230,${0.08 * moonOpacity})`);
+      glow.addColorStop(1, `rgba(180,200,230,0)`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(mx - mr * 5, my - mr * 5, mr * 10, mr * 10);
+
+      // Moon body
+      ctx.fillStyle = `rgba(220,225,240,${0.9 * moonOpacity})`;
+      ctx.beginPath();
+      ctx.arc(mx, my, mr, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Crescent shadow
+      ctx.fillStyle = `rgba(15,18,35,${0.85 * moonOpacity})`;
+      ctx.beginPath();
+      ctx.arc(mx + 14, my - 6, mr * 0.85, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ---- Background gradient ----
+    function drawBackground(intensity) {
+      // Storm: dark indigo. Calm: deep navy with slight warmth
+      const r1 = Math.floor(10 + (12 - 10) * (1 - intensity));
+      const g1 = Math.floor(10 + (16 - 10) * (1 - intensity));
+      const b1 = Math.floor(18 + (32 - 18) * (1 - intensity));
+
+      const r2 = Math.floor(15 + (18 - 15) * (1 - intensity));
+      const g2 = Math.floor(14 + (22 - 14) * (1 - intensity));
+      const b2 = Math.floor(30 + (42 - 30) * (1 - intensity));
+
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, `rgb(${r1},${g1},${b1})`);
+      grad.addColorStop(1, `rgb(${r2},${g2},${b2})`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // ---- Main Loop ----
+    function animate() {
+      const intensity = getStormIntensity();
+
+      drawBackground(intensity);
+      drawStars(intensity);
+      drawMoon(intensity);
+      drawClouds(intensity);
+      drawRain(intensity);
+      drawLightning(intensity);
+
+      updateAudio(intensity);
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // ========== SCROLL REVEAL ==========
+    const reveals = document.querySelectorAll('[data-reveal]');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = entry.target.dataset.delay || 0;
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, delay);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    reveals.forEach(el => observer.observe(el));
+
+    // Handle resize for stars
+    window.addEventListener('resize', () => {
+      stars.forEach(s => {
+        s.x = Math.random() * W;
+        s.y = Math.random() * H * 0.6;
+      });
+    });
+  </script>
+</body>
+</html>

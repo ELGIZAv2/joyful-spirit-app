@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Visible — Future-Proof Your Search Presence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --coral:   #E84C2B;
+      --coral-light: #F2705A;
+      --blush:   #F5DDD8;
+      --cream:   #FBF7F5;
+      --dark:    #1A1614;
+      --mid:     #4A3F3A;
+      --muted:   #9B8880;
+      --white:   #FFFFFF;
+      --border:  rgba(232,76,43,0.15);
+      --radius:  18px;
+      --ease:    cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--cream); }
+    ::-webkit-scrollbar-thumb { background: var(--coral); border-radius: 3px; }
+
+    nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 48px);
+      max-width: 1200px;
+      z-index: 1000;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(232,76,43,0.12);
+      border-radius: 60px;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: slideDown 0.8s var(--ease) both;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .nav-logo-dot {
+      width: 8px; height: 8px;
+      background: var(--coral);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1); opacity:1; }
+      50% { transform: scale(1.4); opacity:0.7; }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--mid);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 30px;
+      transition: all 0.3s var(--ease);
+    }
+
+    .nav-links a:hover {
+      color: var(--coral);
+      background: var(--blush);
+    }
+
+    .nav-cta {
+      background: var(--coral) !important;
+      color: var(--white) !important;
+      font-weight: 600 !important;
+      padding: 10px 22px !important;
+    }
+
+    .nav-cta:hover {
+      background: #c73a1e !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(232,76,43,0.35) !important;
+    }
+
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 5px;
+      padding: 4px;
+    }
+
+    .nav-menu-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--dark);
+      border-radius: 2px;
+      transition: all 0.3s var(--ease);
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 160px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-word {
+      position: absolute;
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(120px, 22vw, 320px);
+      color: rgba(232,76,43,0.06);
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      animation: bgWordFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes bgWordFloat {
+      0%,100% { transform: translate(-50%, -50%) scale(1); }
+      50%      { transform: translate(-50%, -52%) scale(1.015); }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--blush);
+      border: 1px solid var(--border);
+      color: var(--coral);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      border-radius: 30px;
+      margin-bottom: 40px;
+      animation: fadeUp 0.8s 0.2s var(--ease) both;
+    }
+
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: var(--coral);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    .hero-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(52px, 9vw, 120px);
+      line-height: 1.0;
+      letter-spacing: -2px;
+      color: var(--dark);
+      max-width: 900px;
+      animation: fadeUp 0.8s 0.3s var(--ease) both;
+    }
+
+    .hero-headline em {
+      font-style: italic;
+      color: var(--coral);
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--muted);
+      max-width: 520px;
+      margin: 28px auto 48px;
+      line-height: 1.6;
+      font-weight: 400;
+      animation: fadeUp 0.8s 0.4s var(--ease) both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.5s var(--ease) both;
+    }
+
+    .btn-primary {
+      background: var(--coral);
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 16px 36px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover {
+      background: #c73a1e;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(232,76,43,0.4);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--dark);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 16px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: 1.5px solid rgba(26,22,20,0.15);
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+      background: var(--blush);
+      transform: translateY(-2px);
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      animation: fadeUp 1s 1s var(--ease) both;
+      cursor: pointer;
+    }
+
+    .hero-scroll-arrow {
+      width: 32px;
+      height: 32px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bounceDown 2s infinite;
+    }
+
+    @keyframes bounceDown {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(5px); }
+    }
+
+    .logos-strip {
+      padding: 40px 24px;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+    }
+
+    .logos-label {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .logos-track {
+      display: flex;
+      gap: 64px;
+      animation: scrollLogos 18s linear infinite;
+      width: max-content;
+    }
+
+    @keyframes scrollLogos {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .logo-item {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+      letter-spacing: -0.3px;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+
+    .logo-item:hover { opacity: 1; color: var(--coral); }
+
+    section {
+      padding: 100px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 24px;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: var(--coral);
+      border-radius: 2px;
+    }
+
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      color: var(--dark);
+      max-width: 700px;
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: var(--coral);
+    }
+
+    .section-desc {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-top: 20px;
+    }
+
+    .problem-strip {
+      background: var(--dark);
+      padding: 80px 24px;
+      margin: 0;
+      max-width: 100%;
+    }
+
+    .problem-strip-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      margin-top: 64px;
+    }
+
+    .problem-item {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: all 0.7s var(--ease);
+    }
+
+    .problem-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .problem-stat {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(48px, 6vw, 72px);
+      color: var(--coral);
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .problem-stat-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .problem-strip .section-title {
+      color: var(--white);
+      max-width: 560px;
+    }
+
+    .problem-strip .section-desc {
+      color: rgba(255,255,255,0.5);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 64px;
+      background: var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .step-card {
+      background: var(--white);
+      padding: 48px 36px;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s var(--ease);
+    }
+
+    .step-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .step-card:hover {
+      background: var(--blush);
+      z-index: 2;
+    }
+
+    .step-number {
+      font-family: 'DM Serif Display', serif;
+      font-size: 64px;
+      color: var(--blush);
+      line-height: 1;
+      margin-bottom: 24px;
+      transition: color 0.3s;
+    }
+
+    .step-card:hover .step-number { color: var(--coral); opacity: 0.3; }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .step-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--blush);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      font-size: 20px;
+      transition: all 0.3s var(--ease);
+    }
+
+    .step-card:hover .step-icon {
+      background: var(--coral);
+      transform: scale(1.1) rotate(-5deg);
+    }
+
+    .services-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+      margin-top: 0;
+    }
+
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 48px;
+    }
+
+    .service-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateX(-16px);
+      transition: all 0.5s var(--ease);
+      text-decoration: none;
+    }
+
+    .service-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .service-item:hover .service-arrow { transform: translate(4px, -4px); color: var(--coral); }
+    .service-item:hover .service-name { color: var(--coral); }
+
+    .service-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+      transition: color 0.3s;
+    }
+
+    .service-price {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-left: auto;
+      margin-right: 16px;
+    }
+
+    .service-arrow {
+      font-size: 18px;
+      color: var(--muted);
+      transition: all 0.3s var(--ease);
+    }
+
+    .services-sticky {
+      position: sticky;
+      top: 120px;
+    }
+
+    .service-visual {
+      background: var(--blush);
+      border-radius: var(--radius);
+      padding: 48px;
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      overflow: hidden;
+      margin-top: 40px;
+    }
+
+    .service-visual-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 140px;
+      color: rgba(232,76,43,0.08);
+      pointer-events: none;
+    }
+
+    .service-visual-tag {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      animation: floatCard 3s ease-in-out infinite;
+    }
+
+    @keyframes floatCard {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+
+    .service-visual-dot {
+      width: 10px; height: 10px;
+      background: #22C55E;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .pricing-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      position: relative;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: all 0.6s var(--ease);
+    }
+
+    .pricing-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .pricing-card:hover {
+      border-color: var(--coral);
+      box-shadow: 0 20px 60px rgba(232,76,43,0.12);
+      transform: translateY(-4px);
+    }
+
+    .pricing-card.featured {
+      background: var(--dark);
+      border-color: var(--dark);
+    }
+
+    .pricing-card.featured:hover {
+      border-color: var(--coral);
+      box-shadow: 0 20px 60px rgba(232,76,43,0.2);
+    }
+
+    .pricing-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--coral);
+      color: var(--white);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+
+    .pricing-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .pricing-card.featured .pricing-name { color: rgba(255,255,255,0.5); }
+
+    .pricing-price {
+      font-family: 'DM Serif Display', serif;
+      font-size: 52px;
+      color: var(--dark);
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .pricing-card.featured .pricing-price { color: var(--white); }
+
+    .pricing-period {
+      font-size: 14px;
+      color: var(--muted);
+      margin-left: 4px;
+      font-weight: 400;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .pricing-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    .pricing-card.featured .pricing-divider { background: rgba(255,255,255,0.1); }
+
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 36px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.5;
+    }
+
+    .pricing-card.featured .pricing-features li { color: rgba(255,255,255,0.7); }
+
+    .pricing-check {
+      width: 18px;
+      height: 18px;
+      background: var(--blush);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-size: 10px;
+      color: var(--coral);
+    }
+
+    .pricing-card.featured .pricing-check {
+      background: rgba(232,76,43,0.2);
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .testimonial-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s var(--ease);
+    }
+
+    .testimonial-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .testimonial-card:hover {
+      border-color: var(--coral);
+      box-shadow: 0 12px 40px rgba(232,76,43,0.1);
+    }
+
+    .testimonial-stars {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .star { color: var(--coral); font-size: 16px; }
+
+    .testimonial-text {
+      font-size: 16px;
+      color: var(--dark);
+      line-height: 1.7;
+      font-style: italic;
+      margin-bottom: 28px;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--blush);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--coral);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .author-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .about-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-visual {
+      background: var(--blush);
+      border-radius: var(--radius);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 120px;
+      color: var(--coral);
+      opacity: 0.4;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .about-visual::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      width: 140px;
+      height: 140px;
+      background: var(--coral);
+      border-radius: 50%;
+      opacity: 0.12;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .about-stat {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .about-stat-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 40px;
+      color: var(--coral);
+      letter-spacing: -1px;
+    }
+
+    .about-stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .blog-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s var(--ease);
+      cursor: pointer;
+    }
+
+    .blog-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .blog-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+      border-color: var(--coral);
+    }
+
+    .blog-thumb {
+      background: var(--blush);
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      transition: all 0.5s var(--ease);
+    }
+
+    .blog-card:hover .blog-thumb { background: var(--coral); }
+
+    .blog-body { padding: 28px; }
+
+    .blog-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--coral);
+      margin-bottom: 12px;
+    }
+
+    .blog-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.45;
+      margin-bottom: 12px;
+      letter-spacing: -0.2px;
+    }
+
+    .blog-excerpt {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .local-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+    }
+
+    .local-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s var(--ease);
+      cursor: pointer;
+    }
+
+    .local-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .local-card:hover {
+      border-color: var(--coral);
+      background: var(--blush);
+      transform: translateY(-4px);
+    }
+
+    .local-icon { font-size: 32px; margin-bottom: 20px; }
+    .local-title { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 10px; }
+    .local-desc { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+    .cta-banner {
+      background: var(--coral);
+      border-radius: 24px;
+      padding: 80px 64px;
+      text-align: center;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: 'Visible.';
+      position: absolute;
+      font-family: 'DM Serif Display', serif;
+      font-size: 200px;
+      color: rgba(255,255,255,0.06);
+      top: -20px;
+      left: -20px;
+      pointer-events: none;
+    }
+
+    .cta-banner h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(32px, 5vw, 56px);
+      color: var(--white);
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .cta-banner p {
+      font-size: 17px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 40px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .btn-white {
+      background: var(--white);
+      color: var(--coral);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px 40px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .contact-form { display: flex; flex-direction: column; gap: 20px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--mid);
+      letter-spacing: 0.03em;
+    }
+
+    .form-input {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+    }
+
+    .form-input:focus {
+      border-color: var(--coral);
+      box-shadow: 0 0 0 4px rgba(232,76,43,0.1);
+    }
+
+    .form-input::placeholder { color: var(--muted); }
+    textarea.form-input { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+    .contact-info { display: flex; flex-direction: column; gap: 32px; padding-top: 16px; }
+
+    .contact-info-item { display: flex; gap: 16px; align-items: flex-start; }
+
+    .contact-info-icon {
+      width: 48px; height: 48px;
+      background: var(--blush);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+
+    .contact-info-label {
+      font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); margin-bottom: 4px;
+    }
+
+    .contact-info-value { font-size: 15px; font-weight: 600; color: var(--dark); }
+
+    footer { background: var(--dark); padding: 80px 24px 40px; }
+
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 64px;
+    }
+
+    .footer-brand h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px; color: var(--white);
+      margin-bottom: 16px; letter-spacing: -0.5px;
+    }
+
+    .footer-brand p { font-size: 14px; color: rgba(255,255,255,0.45); line-height: 1.7; max-width: 260px; }
+
+    .footer-col h4 {
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.35); margin-bottom: 20px;
+    }
+
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+    .footer-col a { font-size: 14px; color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.3s; }
+    .footer-col a:hover { color: var(--coral); }
+
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .footer-copy { font-size: 13px; color: rgba(255,255,255,0.3); }
+    .footer-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,0.3); }
+
+    .sticky-cta {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 998;
+      background: var(--coral);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 14px 22px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 28px rgba(232,76,43,0.4);
+      opacity: 0;
+      transform: translateY(16px);
+      pointer-events: none;
+      transition: opacity 0.4s var(--ease), transform 0.4s var(--ease), box-shadow 0.3s var(--ease), background 0.3s var(--ease);
+      text-decoration: none;
+    }
+
+    .sticky-cta.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    .sticky-cta:hover {
+      background: #c73a1e;
+      box-shadow: 0 12px 36px rgba(232,76,43,0.55);
+      transform: translateY(-2px);
+    }
+
+    .sticky-cta-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--white);
+      border-radius: 50%;
+      opacity: 0.85;
+      animation: pulse 1.8s infinite;
+    }
+
+    @media (max-width: 600px) {
+      .sticky-cta { bottom: 20px; right: 16px; font-size: 12px; padding: 12px 18px; }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { opacity: 0; transform: translateY(24px); transition: all 0.7s var(--ease); }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    .mobile-menu {
+      position: fixed; inset: 0;
+      background: var(--white); z-index: 999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 32px; opacity: 0; pointer-events: none;
+      transition: opacity 0.4s var(--ease);
+    }
+
+    .mobile-menu.open { opacity: 1; pointer-events: all; }
+
+    .mobile-menu a {
+      font-family: 'DM Serif Display', serif;
+      font-size: 40px; color: var(--dark);
+      text-decoration: none; transition: color 0.3s;
+    }
+
+    .mobile-menu a:hover { color: var(--coral); }
+
+    .mobile-close {
+      position: absolute; top: 32px; right: 32px;
+      background: var(--blush); border: none;
+      font-size: 24px; cursor: pointer; color: var(--dark);
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+    }
+
+    @media (max-width: 900px) {
+      .problem-grid, .steps-grid, .pricing-grid, .testimonials-grid,
+      .blog-grid, .local-grid { grid-template-columns: 1fr 1fr; }
+      .services-layout, .about-layout, .contact-layout { grid-template-columns: 1fr; gap: 48px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .nav-links { display: none; }
+      .nav-menu-btn { display: flex; }
+      .cta-banner { padding: 60px 40px; }
+    }
+
+    @media (max-width: 600px) {
+      .problem-grid, .steps-grid, .pricing-grid,
+      .blog-grid, .local-grid, .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+      .hero-headline { letter-spacing: -1px; }
+      .cta-banner { padding: 48px 28px; }
+      .about-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">✕</button>
+  <a href="#" onclick="navigate('home');closeMobile()">Home</a>
+  <a href="#" onclick="navigate('services');closeMobile()">Services</a>
+  <a href="#" onclick="navigate('local');closeMobile()">Local</a>
+  <a href="#" onclick="navigate('blog');closeMobile()">Blog</a>
+  <a href="#" onclick="navigate('about');closeMobile()">About</a>
+  <a href="#" onclick="navigate('contact');closeMobile()">Contact</a>
+</div>
+
+<nav id="mainNav">
+  <a href="#" class="nav-logo" onclick="navigate('home')">
+    <span class="nav-logo-dot"></span>
+    AI Visible
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" onclick="navigate('home')">Home</a></li>
+    <li><a href="#" onclick="navigate('services')">Services</a></li>
+    <li><a href="#" onclick="navigate('local')">Local</a></li>
+    <li><a href="#" onclick="navigate('blog')">Insights</a></li>
+    <li><a href="#" onclick="navigate('about')">About</a></li>
+    <li><a href="#" class="nav-cta" onclick="navigate('contact')">Free Audit →</a></li>
+  </ul>
+  <button class="nav-menu-btn" id="menuBtn">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-bg-word">Visible</div>
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      AI Search is Here — Are You Ready?
+    </div>
+    <h1 class="hero-headline">Be Found by<br><em>AI Search</em><br>Engines</h1>
+    <p class="hero-sub">ChatGPT, Perplexity, and Google SGE are reshaping discovery. We make your business machine-readable — so AI recommends you, not your competitors.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary" onclick="navigate('contact')">Get Free AI Audit <span>→</span></a>
+      <a href="#" class="btn-ghost" onclick="navigate('services')">View Services</a>
+    </div>
+    <a href="#problem" class="hero-scroll">
+      <div class="hero-scroll-arrow">↓</div>
+      Explore our work
+    </a>
+  </div>
+
+  <div class="logos-strip">
+    <div class="logos-label">Trusted by forward-thinking businesses across the UK</div>
+    <div style="overflow:hidden;">
+      <div class="logos-track">
+        <span class="logo-item">ChatGPT Ready</span>
+        <span class="logo-item">Google SGE</span>
+        <span class="logo-item">Perplexity AI</span>
+        <span class="logo-item">Schema Markup</span>
+        <span class="logo-item">Bing Copilot</span>
+        <span class="logo-item">AI Search</span>
+        <span class="logo-item">Structured Data</span>
+        <span class="logo-item">GEO Optimised</span>
+        <span class="logo-item">ChatGPT Ready</span>
+        <span class="logo-item">Google SGE</span>
+        <span class="logo-item">Perplexity AI</span>
+        <span class="logo-item">Schema Markup</span>
+        <span class="logo-item">Bing Copilot</span>
+        <span class="logo-item">AI Search</span>
+        <span class="logo-item">Structured Data</span>
+        <span class="logo-item">GEO Optimised</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="problem-strip" id="problem">
+    <div class="problem-strip-inner">
+      <div class="section-label" style="color:var(--coral)">The Challenge</div>
+      <h2 class="section-title" style="color:var(--white)">Traditional SEO<br>is <em>losing ground</em></h2>
+      <p class="section-desc">AI-powered search experiences are fundamentally changing how people discover businesses — and most UK companies are invisible to them.</p>
+      <div class="problem-grid">
+        <div class="problem-item">
+          <div class="problem-stat">64%</div>
+          <div class="problem-stat-label">drop in click-through rates for businesses not optimised for AI search</div>
+        </div>
+        <div class="problem-item">
+          <div class="problem-stat">3x</div>
+          <div class="problem-stat-label">more likely to be recommended by AI assistants with proper schema markup</div>
+        </div>
+        <div class="problem-item">
+          <div class="problem-stat">£49</div>
+          <div class="problem-stat-label">introductory price to get fully optimised and AI-visible — starting today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Simple process,<br><em>powerful results</em></h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-icon">🔍</div>
+        <div class="step-number">01</div>
+        <div class="step-title">Free AI Audit</div>
+        <div class="step-desc">We analyse exactly how ChatGPT, Google SGE, and Perplexity currently understand your business — delivered within 24 hours, no obligation.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">⚙️</div>
+        <div class="step-number">02</div>
+        <div class="step-title">Schema Implementation</div>
+        <div class="step-desc">We write and deploy structured data (JSON-LD) that explicitly tells AI systems who you are, what you offer, and why you're trustworthy.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">🚀</div>
+        <div class="step-number">03</div>
+        <div class="step-title">AI Visibility Boost</div>
+        <div class="step-desc">Your business becomes machine-readable and citation-worthy — appearing in AI-generated answers when customers search for your services.</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0;">
+    <div class="services-layout">
+      <div>
+        <div class="section-label">Services</div>
+        <h2 class="section-title">Everything you need to<br><em>dominate AI search</em></h2>
+        <div class="services-list">
+          <a href="#" class="service-item" onclick="navigate('services')">
+            <span class="service-name">AI Visibility Audit</span>
+            <span class="service-price">Free</span>
+            <span class="service-arrow">↗</span>
+          </a>
+          <a href="#" class="service-item" onclick="navigate('services')">
+            <span class="service-name">Homepage Schema Setup</span>
+            <span class="service-price">From £49</span>
+            <span class="service-arrow">↗</span>
+          </a>
+          <a href="#" class="service-item" onclick="navigate('services')">
+            <span class="service-name">Multi-Page Schema Package</span>
+            <span class="service-price">From £149</span>
+            <span class="service-arrow">↗</span>
+          </a>
+          <a href="#" class="service-item" onclick="navigate('services')">
+            <span class="service-name">Local Business Visibility</span>
+            <span class="service-price">From £99</span>
+            <span class="service-arrow">↗</span>
+          </a>
+          <a href="#" class="service-item" onclick="navigate('services')">
+            <span class="service-name">GEO Strategy Consultation</span>
+            <span class="service-price">Bespoke</span>
+            <span class="service-arrow">↗</span>
+          </a>
+        </div>
+      </div>
+      <div class="services-sticky">
+        <div class="service-visual">
+          <div class="service-visual-bg">AI</div>
+          <div class="service-visual-tag">
+            <span class="service-visual-dot"></span>
+            Your business is now AI-visible
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:var(--white); max-width:100%; padding:100px 24px;">
+    <div style="max-width:1200px; margin:0 auto;">
+      <div class="section-label">Testimonials</div>
+      <h2 class="section-title">Businesses that made<br>the <em>switch</em></h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+          <p class="testimonial-text">"Within two weeks of getting schema implemented, our business started appearing in ChatGPT responses when people asked about our services. Extraordinary ROI."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">SM</div>
+            <div><div class="author-name">Sarah Mitchell</div><div class="author-role">Director, Bright Spaces Cleaning</div></div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+          <p class="testimonial-text">"Lee explained AI visibility in plain English and delivered exactly what he promised. Our knowledge graph profile now shows correctly in Google's AI Overview."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">JR</div>
+            <div><div class="author-name">James Rafferty</div><div class="author-role">Owner, Rafferty Plumbing</div></div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+          <p class="testimonial-text">"The free audit alone was eye-opening. We had zero structured data on 14 pages. After the fix, Perplexity is now citing us in three key service categories."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">AK</div>
+            <div><div class="author-name">Amira Khan</div><div class="author-role">Marketing Lead, Verdant Law</div></div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+          <p class="testimonial-text">"Highly recommend for any local business. The schema for our DBS checks and service areas made a tangible difference in how AI search engines present us."</p>
+          <div class="testimonial-author">
+            <div class="author-avatar">TC</div>
+            <div><div class="author-name">Tom Clarke</div><div class="author-role">MD, Premier Contract Cleaning</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="padding:100px 24px;">
+    <div class="cta-banner fade-up">
+      <h2>Ready to become<br>AI-visible?</h2>
+      <p>Get your free AI Visibility Snapshot in 24 hours. No commitment, no jargon — just clarity on where you stand.</p>
+      <a href="#" class="btn-white" onclick="navigate('contact')">Get My Free Snapshot →</a>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<div class="page" id="page-services">
+  <div style="height:120px;"></div>
+  <section>
+    <div class="section-label">Services</div>
+    <h1 class="section-title">Schema & AI Visibility<br><em>packages</em></h1>
+    <p class="section-desc">Structured data that makes your business legible to AI systems — delivered fast, with zero tech headaches on your end.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-name">Starter</div>
+        <div class="pricing-price">£49<span class="pricing-period">one-time</span></div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check">✓</span>Homepage schema only (JSON-LD)</li>
+          <li><span class="pricing-check">✓</span>LocalBusiness / Organisation markup</li>
+          <li><span class="pricing-check">✓</span>Free AI Visibility Snapshot</li>
+          <li><span class="pricing-check">✓</span>Google Search Console check</li>
+          <li><span class="pricing-check">✓</span>Delivery within 5 business days</li>
+        </ul>
+        <a href="#" class="btn-primary" style="width:100%;justify-content:center;" onclick="navigate('contact')">Get Started →</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-tag">Most Popular</div>
+        <div class="pricing-name">Growth</div>
+        <div class="pricing-price">£149<span class="pricing-period" style="color:rgba(255,255,255,0.45)">one-time</span></div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check">✓</span>Up to 5 pages with full schema</li>
+          <li><span class="pricing-check">✓</span>Service schema for each offering</li>
+          <li><span class="pricing-check">✓</span>FAQ schema for AI snippet capture</li>
+          <li><span class="pricing-check">✓</span>Review / AggregateRating schema</li>
+          <li><span class="pricing-check">✓</span>Knowledge Graph optimisation</li>
+          <li><span class="pricing-check">✓</span>30-day follow-up check included</li>
+        </ul>
+        <a href="#" class="btn-white" style="width:100%;justify-content:center;" onclick="navigate('contact')">Get Started →</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-price">Bespoke</div>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="pricing-check">✓</span>Full-site schema audit & rebuild</li>
+          <li><span class="pricing-check">✓</span>GEO strategy consultation</li>
+          <li><span class="pricing-check">✓</span>Competitor AI visibility analysis</li>
+          <li><span class="pricing-check">✓</span>Ongoing monthly monitoring</li>
+          <li><span class="pricing-check">✓</span>Priority support & quick edits</li>
+        </ul>
+        <a href="#" class="btn-primary" style="width:100%;justify-content:center;" onclick="navigate('contact')">Enquire →</a>
+      </div>
+    </div>
+  </section>
+  <section style="padding-top:0;">
+    <div class="section-label">What is Schema Markup?</div>
+    <h2 class="section-title">The invisible code that<br>makes AI <em>trust you</em></h2>
+    <p class="section-desc">Schema markup (JSON-LD structured data) is a standardised vocabulary that tells AI systems and search engines exactly what your business offers — explicitly, not by inference.</p>
+    <div class="steps-grid" style="margin-top:48px;">
+      <div class="step-card">
+        <div class="step-icon">📋</div>
+        <div class="step-number">01</div>
+        <div class="step-title">Machine-Readable Identity</div>
+        <div class="step-desc">AI systems stop guessing and start citing. Your name, address, services, and credentials are unambiguous.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">🤖</div>
+        <div class="step-number">02</div>
+        <div class="step-title">Citation Authority</div>
+        <div class="step-desc">ChatGPT, Perplexity and Google SGE prefer sources with structured data — it's verifiable and trustworthy.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-icon">📈</div>
+        <div class="step-number">03</div>
+        <div class="step-title">Compound Visibility</div>
+        <div class="step-desc">Schema compounds over time — each new AI model trained on the web learns your entity and reinforces your authority.</div>
+      </div>
+    </div>
+  </section>
+  <div style="padding:0 24px 100px;">
+    <div class="cta-banner fade-up">
+      <h2>Not sure which package<br>is right for you?</h2>
+      <p>Start with the free audit. We'll tell you exactly what your business needs.</p>
+      <a href="#" class="btn-white" onclick="navigate('contact')">Get Free Audit →</a>
+    </div>
+  </div>
+</div>
+
+<!-- LOCAL -->
+<div class="page" id="page-local">
+  <div style="height:120px;"></div>
+  <section>
+    <div class="section-label">Local Business</div>
+    <h1 class="section-title">AI visibility for<br><em>local businesses</em></h1>
+    <p class="section-desc">Whether you run a cleaning company, plumbing service, law firm, or restaurant — local businesses have unique schema needs. We specialise in getting you found.</p>
+    <div class="local-grid">
+      <div class="local-card"><div class="local-icon">🧹</div><div class="local-title">Cleaning Companies</div><div class="local-desc">Make your DBS checks, insurance details, and service contracts machine-readable. AI assistants will trust and recommend you.</div></div>
+      <div class="local-card"><div class="local-icon">🔧</div><div class="local-title">Trades & Contractors</div><div class="local-desc">Showcase your accreditations, service areas, and qualifications in a format AI can verify and cite with confidence.</div></div>
+      <div class="local-card"><div class="local-icon">⚖️</div><div class="local-title">Professional Services</div><div class="local-desc">Law firms, accountants, consultancies — establish entity authority so AI search positions you as the trusted local expert.</div></div>
+      <div class="local-card"><div class="local-icon">🏥</div><div class="local-title">Health & Wellness</div><div class="local-desc">Clinics, therapists, dentists — structured data that surfaces your services, team credentials, and opening hours in AI responses.</div></div>
+      <div class="local-card"><div class="local-icon">🍽️</div><div class="local-title">Hospitality</div><div class="local-desc">Restaurants, hotels, venues — rich schema that makes AI include you in recommendations, menus, and booking queries.</div></div>
+      <div class="local-card"><div class="local-icon">🏪</div><div class="local-title">Retail & Ecommerce</div><div class="local-desc">Product, offer, and review schema that puts your inventory in front of AI shopping assistants and comparison queries.</div></div>
+    </div>
+  </section>
+  <section style="padding-top:0;">
+    <div class="about-layout">
+      <div>
+        <div class="section-label">Why Local?</div>
+        <h2 class="section-title">Local searches are<br><em>AI-first</em> now</h2>
+        <p class="section-desc">When someone asks ChatGPT "best plumber near me" — AI pulls structured data, not just website text. Without schema, you're invisible to those queries.</p>
+        <div class="about-stats">
+          <div class="about-stat"><div class="about-stat-num">78%</div><div class="about-stat-label">of local queries now trigger AI-generated answers</div></div>
+          <div class="about-stat"><div class="about-stat-num">£49</div><div class="about-stat-label">starting price for local business schema</div></div>
+          <div class="about-stat"><div class="about-stat-num">24h</div><div class="about-stat-label">free audit turnaround, no obligation</div></div>
+          <div class="about-stat"><div class="about-stat-num">5★</div><div class="about-stat-label">rating from UK local businesses</div></div>
+        </div>
+      </div>
+      <div class="about-visual">🗺</div>
+    </div>
+  </section>
+  <div style="padding:0 24px 100px;">
+    <div class="cta-banner fade-up">
+      <h2>Is your local business<br>AI-visible?</h2>
+      <p>Find out in 24 hours with our free snapshot audit — tailored to your industry and location.</p>
+      <a href="#" class="btn-white" onclick="navigate('contact')">Get My Free Local Audit →</a>
+    </div>
+  </div>
+</div>
+
+<!-- BLOG -->
+<div class="page" id="page-blog">
+  <div style="height:120px;"></div>
+  <section>
+    <div class="section-label">Insights</div>
+    <h1 class="section-title">AI search — what you<br><em>need to know</em></h1>
+    <p class="section-desc">Practical guides and insights on schema markup, generative engine optimisation, and making your business visible to AI search engines.</p>
+    <div class="blog-grid">
+      <div class="blog-card"><div class="blog-thumb">👻</div><div class="blog-body"><div class="blog-tag">AI Search</div><div class="blog-title">Why Is My Business Invisible in AI Search Results?</div><div class="blog-excerpt">Traditional SEO got you visible on Google. But AI search engines don't just crawl — they interpret. Here's why most businesses are missing the shift.</div></div></div>
+      <div class="blog-card"><div class="blog-thumb">📊</div><div class="blog-body"><div class="blog-tag">Schema Markup</div><div class="blog-title">What Is Schema Markup and Why Does AI Need It?</div><div class="blog-excerpt">Think of schema as a digital index card for your business. Without it, AI has to guess your purpose. With it, AI cites you with confidence.</div></div></div>
+      <div class="blog-card"><div class="blog-thumb">🤖</div><div class="blog-body"><div class="blog-tag">GEO Strategy</div><div class="blog-title">Generative Engine Optimisation: The Complete Guide</div><div class="blog-excerpt">GEO is the practice of optimising your content and structured data so AI-generated responses include and recommend your business.</div></div></div>
+      <div class="blog-card"><div class="blog-thumb">🧹</div><div class="blog-body"><div class="blog-tag">Local Business</div><div class="blog-title">How Cleaning Companies Appear in AI Search Results</div><div class="blog-excerpt">Your DBS checks, insurance credentials, and service areas need to be machine-readable. Here's the exact schema configuration that works.</div></div></div>
+      <div class="blog-card"><div class="blog-thumb">📈</div><div class="blog-body"><div class="blog-tag">Case Study</div><div class="blog-title">From Zero to AI Citations: A Real-World Case Study</div><div class="blog-excerpt">How a small UK plumbing firm went from invisible to cited in ChatGPT, Perplexity, and Google SGE responses within 30 days.</div></div></div>
+      <div class="blog-card"><div class="blog-thumb">🔮</div><div class="blog-body"><div class="blog-tag">Trends</div><div class="blog-title">The Future of Search: What 2026 Looks Like for Small Businesses</div><div class="blog-excerpt">AI search will account for the majority of discovery interactions by 2027. Here's how to position your business now.</div></div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="page-about">
+  <div style="height:120px;"></div>
+  <section>
+    <div class="about-layout">
+      <div>
+        <div class="section-label">About AI Visible</div>
+        <h1 class="section-title">Built to close the<br><em>AI visibility gap</em></h1>
+        <p class="section-desc">Most UK businesses don't have schema markup. That's the gap AI Visible was built to close — one business at a time, at a price that makes sense.</p>
+        <p class="section-desc" style="margin-top:20px;">Founded by Lee Hartley — schema markup specialist, Digital Marketing Pro (DMI, 2026) — AI Visible brings enterprise-grade AI optimisation to businesses of all sizes.</p>
+        <div class="about-stats">
+          <div class="about-stat"><div class="about-stat-num">1998</div><div class="about-stat-label">Web entrepreneurship began</div></div>
+          <div class="about-stat"><div class="about-stat-num">DMI</div><div class="about-stat-label">Digital Marketing Institute certified</div></div>
+          <div class="about-stat"><div class="about-stat-num">£49</div><div class="about-stat-label">Introductory price — real value</div></div>
+          <div class="about-stat"><div class="about-stat-num">24h</div><div class="about-stat-label">Free audit turnaround</div></div>
+        </div>
+      </div>
+      <div class="about-visual">LH</div>
+    </div>
+  </section>
+  <section style="padding-top:0;">
+    <div class="section-label">Expertise</div>
+    <h2 class="section-title">Deep knowledge,<br><em>practical results</em></h2>
+    <div class="steps-grid" style="margin-top:48px;">
+      <div class="step-card"><div class="step-icon">🔬</div><div class="step-number"></div><div class="step-title">Schema Markup (JSON-LD)</div><div class="step-desc">Specialised in structured data implementation across LocalBusiness, Service, FAQ, Review, and Organisation schemas.</div></div>
+      <div class="step-card"><div class="step-icon">🧠</div><div class="step-number"></div><div class="step-title">AI Search Optimisation</div><div class="step-desc">Deep understanding of how ChatGPT, Perplexity, Google SGE, and Bing Copilot parse and rank business information.</div></div>
+      <div class="step-card"><div class="step-icon">📡</div><div class="step-number"></div><div class="step-title">Knowledge Graph Strategy</div><div class="step-desc">Entity building for Google's Knowledge Graph — ensuring your business is unambiguously understood across all AI systems.</div></div>
+    </div>
+  </section>
+  <div style="padding:0 24px 100px;">
+    <div class="cta-banner fade-up">
+      <h2>Let's make your business<br>AI-visible together</h2>
+      <p>Start with a free, no-obligation audit delivered within 24 hours.</p>
+      <a href="#" class="btn-white" onclick="navigate('contact')">Work With Lee →</a>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="page" id="page-contact">
+  <div style="height:120px;"></div>
+  <section>
+    <div class="contact-layout">
+      <div>
+        <div class="section-label">Get In Touch</div>
+        <h1 class="section-title">Start with a<br><em>free audit</em></h1>
+        <p class="section-desc" style="margin-bottom:40px;">Tell us about your business and we'll deliver your AI Visibility Snapshot within 24 hours — completely free, no obligation.</p>
+        <form class="contact-form" onsubmit="handleForm(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" placeholder="Your name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" placeholder="you@company.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Website URL</label>
+            <input type="url" class="form-input" placeholder="https://yourwebsite.co.uk">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business Type</label>
+            <select class="form-input" style="cursor:pointer;">
+              <option value="">Select your industry</option>
+              <option>Cleaning / Facilities</option>
+              <option>Trades & Contractors</option>
+              <option>Professional Services</option>
+              <option>Health & Wellness</option>
+              <option>Hospitality</option>
+              <option>Retail / Ecommerce</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tell us more ​</label>
+            <textarea class="form-input" placeholder="Any specific goals or questions?"></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">Send My Request →</button>
+        </form>
+        <div id="formSuccess" style="display:none; margin-top:20px; background:var(--blush); border:1px solid var(--coral); border-radius:12px; padding:20px 24px; color:var(--coral); font-weight:600; font-size:15px;">
+          ✓ Thanks! Your AI Visibility Snapshot will be delivered within 24 hours.
+        </div>
+      </div>
+      <div class="contact-info" style="padding-top:80px;">
+        <div class="contact-info-item">
+          <div class="contact-info-icon">🌐</div>
+          <div><div class="contact-info-label">Website</div><div class="contact-info-value">aivisible.co.uk</div></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-info-icon">📧</div>
+          <div><div class="contact-info-label">Email</div><div class="contact-info-value">hello@aivisible.co.uk</div></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-info-icon">⏱️</div>
+          <div><div class="contact-info-label">Audit Turnaround</div><div class="contact-info-value">Within 24 hours</div></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-info-icon">📍</div>
+          <div><div class="contact-info-label">Location</div><div class="contact-info-value">United Kingdom</div></div>
+        </div>
+        <div style="background:var(--blush); border-radius:16px; padding:32px; margin-top:16px;">
+          <div style="font-size:13px; font-weight:700; color:var(--coral); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Introductory Offer</div>
+          <div style="font-family:'DM Serif Display',serif; font-size:48px; color:var(--dark); letter-spacing:-1.5px; line-height:1;">£49</div>
+          <div style="font-size:14px; color:var(--muted); margin-top:8px; line-height:1.5;">Homepage schema setup — normally £99. Limited availability while we build our case studies.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <h3>AI Visible</h3>
+        <p>Making UK businesses visible to ChatGPT, Google SGE, and Perplexity through professional schema markup and generative engine optimisation.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <ul>
+          <li><a href="#" onclick="navigate('services')">AI Visibility Audit</a></li>
+          <li><a href="#" onclick="navigate('services')">Homepage Schema</a></li>
+          <li><a href="#" onclick="navigate('services')">Multi-Page Package</a></li>
+          <li><a href="#" onclick="navigate('services')">GEO Consultation</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#" onclick="navigate('about')">About Lee</a></li>
+          <li><a href="#" onclick="navigate('blog')">Insights</a></li>
+          <li><a href="#" onclick="navigate('local')">Local Business</a></li>
+          <li><a href="#" onclick="navigate('contact')">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Free Audit</a></li>
+          <li><a href="#">Schema Guide</a></li>
+          <li><a href="#">GEO vs SEO</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 AI Visible. All rights reserved.</div>
+      <div class="footer-badge"><span style="color:var(--coral)">●</span> Built for the AI search era</div>
+    </div>
+  </div>
+</footer>
+
+<a class="sticky-cta" id="stickyCta" href="#" onclick="navigate('contact')">
+  <span class="sticky-cta-dot"></span>
+  Free AI Audit →
+</a>
+
+<script>
+  let currentPage = 'home';
+
+  function navigate(page) {
+    currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(observeAnimated, 100);
+    updateStickyCta();
+  }
+
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.add('open');
+  });
+  document.getElementById('mobileClose').addEventListener('click', closeMobile);
+  function closeMobile() { document.getElementById('mobileMenu').classList.remove('open'); }
+
+  function observeAnimated() {
+    const targets = document.querySelectorAll(
+      '.problem-item, .step-card, .pricing-card, .testimonial-card, .blog-card, .local-card, .service-item, .fade-up'
+    );
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+        }
+      });
+    }, { threshold: 0.1 });
+    targets.forEach(t => io.observe(t));
+  }
+
+  observeAnimated();
+
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('mainNav');
+    const cta = document.getElementById('stickyCta');
+    if (window.scrollY > 40) {
+      nav.style.background = 'rgba(255,255,255,0.97)';
+      nav.style.boxShadow = '0 4px 32px rgba(0,0,0,0.06)';
+    } else {
+      nav.style.background = 'rgba(255,255,255,0.85)';
+      nav.style.boxShadow = 'none';
+    }
+    updateStickyCta();
+  });
+
+  function updateStickyCta() {
+    const cta = document.getElementById('stickyCta');
+    if (currentPage === 'contact') {
+      cta.classList.remove('visible');
+    } else if (window.scrollY > 300) {
+      cta.classList.add('visible');
+    } else {
+      cta.classList.remove('visible');
+    }
+  }
+
+  function handleForm(e) {
+    e.preventDefault();
+    document.getElementById('formSuccess').style.display = 'block';
+    e.target.style.opacity = '0.4';
+    e.target.style.pointerEvents = 'none';
+  }
+</script>
+</body>
+</html>

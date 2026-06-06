@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom — Excellence & Transformation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --white: #ffffff;
+      --off-white: #f7f7f5;
+      --black: #6a0effff;
+      --gray: #888888;
+      --light-gray: #e8e8e8;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background: var(--white);
+      cursor: none;
+    }
+
+    /* Custom Cursor */
+    .cursor {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: var(--black);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease, background 0.3s ease;
+      mix-blend-mode: multiply;
+    }
+
+    .cursor-follower {
+      position: fixed;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(0,0,0,0.25);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease, width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Navigation */
+    nav {
+      display: none !important;
+    }
+    nav.hidden {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--black);
+      letter-spacing: -0.02em;
+      opacity: 0;
+      animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0s forwards;
+    }
+
+    .nav-logo sup {
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      font-size: 9px;
+      color: var(--gray);
+      vertical-align: super;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+      opacity: 0;
+      animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+    }
+
+    .nav-links a {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--gray);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--black);
+    }
+
+    .nav-cta {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--white);
+      background: var(--black);
+      padding: 10px 22px;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+      letter-spacing: 0.01em;
+      opacity: 0;
+      animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+    }
+
+    .nav-cta:hover {
+      background: #333;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 64px;
+      overflow: hidden;
+    }
+
+    #canvas-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+    }
+
+    .hero-eyebrow::before {
+      content: '✦';
+      font-size: 10px;
+      color: var(--blue);
+    }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(52px, 8vw, 110px);
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      color: var(--black);
+      margin-bottom: 40px;
+    }
+
+    .hero-title .line {
+      display: block;
+      overflow: hidden;
+    }
+
+    .hero-title .line span {
+      display: block;
+      transform: translateY(110%);
+      animation: revealLine 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .hero-title .line:nth-child(1) span { animation-delay: 0.1s; }
+    .hero-title .line:nth-child(2) span { animation-delay: 0.22s; }
+    .hero-title .line:nth-child(3) span { animation-delay: 0.34s; }
+    .hero-title .line:nth-child(4) span { animation-delay: 0.46s; }
+
+    @keyframes revealLine {
+      to { transform: translateY(0); }
+    }
+
+    .hero-title .tm {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.3em;
+      font-weight: 400;
+      vertical-align: super;
+      color: var(--gray);
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--violet);
+      transition: color 0.3s;
+    }
+
+    .hero-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .hero-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 300;
+      color: #666;
+      line-height: 1.7;
+      max-width: 320px;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.62s forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-scroll {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.75s forwards;
+    }
+
+    .scroll-line {
+      width: 40px;
+      height: 1px;
+      background: var(--gray);
+      display: inline-block;
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { width: 40px; opacity: 1; }
+      50% { width: 20px; opacity: 0.4; }
+    }
+
+    /* Info Bar */
+    .info-bar {
+      background: var(--off-white);
+      border-top: 1px solid var(--light-gray);
+      padding: 24px 48px;
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      overflow: hidden;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .info-item .label {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+    }
+
+    .info-item .value {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.03em;
+    }
+
+    .info-item {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .info-item.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .info-divider {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .info-divider.revealed {
+      opacity: 1;
+    }
+
+    .info-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--light-gray);
+      flex-shrink: 0;
+    }
+
+    /* Marquee */
+    .marquee-bar {
+      background: var(--black);
+      padding: 14px 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 20s linear infinite;
+    }
+
+    .marquee-item {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      white-space: nowrap;
+    }
+
+    .marquee-item::after {
+      content: '✦';
+      color: rgba(255,255,255,0.2);
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* Scroll Reveal */
+    .service-item {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), padding-left 0.3s ease;
+    }
+
+    .service-item.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .services-left h2,
+    .services-left p {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .services-left h2.revealed,
+    .services-left p.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Services Section */
+    .services {
+      padding: 120px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .services-left h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--black);
+      margin-bottom: 24px;
+    }
+
+    .services-left p {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.8;
+      max-width: 360px;
+      font-weight: 300;
+    }
+
+    .services-right {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .service-item {
+      border-top: 1px solid var(--light-gray);
+      padding: 28px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      cursor: none;
+      position: relative;
+    }
+
+    .service-item::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--off-white);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: -1;
+      border-radius: 4px;
+    }
+
+    .service-item:hover::before {
+      transform: scaleX(1);
+    }
+
+    .service-item:last-child {
+      border-bottom: 1px solid var(--light-gray);
+    }
+
+    .service-item:hover {
+      padding-left: 12px;
+    }
+
+    .service-num {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--gray);
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+      min-width: 32px;
+    }
+
+    .service-info {
+      flex: 1;
+    }
+
+    .service-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .service-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .service-arrow {
+      font-size: 18px;
+      color: var(--gray);
+      transition: transform 0.3s, color 0.3s;
+      margin-top: 2px;
+    }
+
+    .service-item:hover .service-arrow {
+      transform: translate(4px, -4px);
+      color: var(--black);
+    }
+
+    /* About Section */
+    .about-section {
+      padding: 120px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .about-section .about-left h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--black);
+      margin-bottom: 24px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .about-section .about-left h2.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .about-section .about-left p {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.9;
+      font-weight: 300;
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .about-section .about-left p.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .about-right {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .about-card {
+      background: var(--off-white);
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 28px 24px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .about-card.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .about-card .card-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--black);
+      letter-spacing: -0.04em;
+      margin-bottom: 6px;
+    }
+
+    .about-card .card-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+
+    /* Process Section */
+    .process-section {
+      padding: 120px 48px;
+      background: var(--off-white);
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .process-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 72px;
+      gap: 40px;
+    }
+
+    .process-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--black);
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .process-header h2.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .process-header p {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--gray);
+      font-weight: 300;
+      max-width: 340px;
+      line-height: 1.8;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+    }
+
+    .process-header p.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .process-step {
+      padding: 40px 32px;
+      border-right: 1px solid var(--light-gray);
+      position: relative;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .process-step:last-child {
+      border-right: none;
+    }
+
+    .process-step.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .process-step .step-num {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--gray);
+      margin-bottom: 32px;
+      text-transform: uppercase;
+    }
+
+    .process-step .step-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .process-step .step-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Testimonials */
+    .testimonials-section {
+      padding: 120px 48px;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .testimonials-header {
+      margin-bottom: 64px;
+    }
+
+    .testimonials-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--black);
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .testimonials-header h2.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 36px 32px;
+      background: var(--white);
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .testimonial-card.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .testimonial-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 300;
+      color: #444;
+      line-height: 1.8;
+      margin-bottom: 28px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .testimonial-author .author-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.01em;
+    }
+
+    .testimonial-author .author-role {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--gray);
+      font-weight: 400;
+    }
+
+    /* Sectors Section */
+    .sectors-section {
+      padding: 120px 48px;
+      background: var(--off-white);
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .sectors-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--black);
+      margin-bottom: 56px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .sectors-section h2.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sectors-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+
+    .sector-item {
+      background: white;
+      padding: 36px 32px;
+      border: 1px solid var(--light-gray);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      cursor: none;
+      transition: background 0.3s ease, padding-left 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease, padding-left 0.3s ease;
+    }
+
+    .sector-item:hover {
+      background: var(--black);
+      padding-left: 40px;
+    }
+
+    .sector-item.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sector-item:hover .sector-name,
+    .sector-item:hover .sector-desc {
+      color: white;
+    }
+
+    .sector-item:hover .sector-arrow {
+      color: rgba(255,255,255,0.6);
+      transform: translate(4px, -4px);
+    }
+
+    .sector-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      transition: color 0.3s;
+    }
+
+    .sector-desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 300;
+      line-height: 1.6;
+      transition: color 0.3s;
+    }
+
+    .sector-arrow {
+      font-size: 16px;
+      color: var(--gray);
+      transition: transform 0.3s, color 0.3s;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Insights Section */
+    .insights-section {
+      padding: 120px 48px;
+      border-top: 1px solid var(--light-gray);
+    }
+
+    .insights-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 56px;
+      gap: 40px;
+    }
+
+    .insights-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--black);
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .insights-header h2.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 24px;
+    }
+
+    .insight-card {
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 280px;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: none;
+    }
+
+    .insight-card:hover {
+      background: var(--off-white);
+    }
+
+    .insight-card.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .insight-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 24px;
+    }
+
+    .insight-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--black);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .insight-card.featured .insight-title {
+      font-size: 28px;
+    }
+
+    .insight-excerpt {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--gray);
+      font-weight: 300;
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 24px;
+    }
+
+    .insight-meta {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: var(--gray);
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .insight-read-more {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--black);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: gap 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .insight-read-more:hover {
+      gap: 10px;
+    }
+
+    /* Footer CTA */
+    .footer-cta {
+      background: var(--black);
+      padding: 120px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 60px;
+    }
+
+    .footer-cta h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 5vw, 68px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--white);
+      line-height: 0.95;
+      max-width: 700px;
+    }
+
+    .footer-cta h2 em {
+      font-style: normal;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.4);
+    }
+
+    .cta-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--black);
+      background: var(--white);
+      padding: 16px 32px;
+      border-radius: 100px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.3s;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.06);
+      border-radius: 100px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .cta-btn:hover::after {
+      transform: scaleX(1);
+    }
+
+    .cta-btn:hover {
+      background: var(--off-white);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--black);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 32px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+
+    .footer-copy {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      font-weight: 300;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Footer CTA reveal */
+    .footer-cta h2,
+    .footer-cta .cta-btn {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .footer-cta h2.revealed,
+    .footer-cta .cta-btn.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Marquee pause on hover */
+    .marquee-bar:hover .marquee-track {
+      animation-play-state: paused;
+    }
+
+    /* Page load fade-in */
+    body {
+      animation: bodyReveal 0.4s ease forwards;
+    }
+
+    @keyframes bodyReveal {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Scroll Progress Bar */
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(to right, var(--blue), var(--violet));
+      z-index: 9999;
+      transition: width 0.05s linear;
+      transform-origin: left center;
+    }
+
+    /* Edge blur on canvas */
+    .canvas-edge-blur {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 0% 0%, rgba(255,255,255,0.7) 0%, transparent 40%),
+        radial-gradient(ellipse at 100% 0%, rgba(255,255,255,0.7) 0%, transparent 40%),
+        radial-gradient(ellipse at 0% 100%, rgba(255,255,255,0.8) 0%, transparent 35%),
+        radial-gradient(ellipse at 100% 100%, rgba(255,255,255,0.8) 0%, transparent 35%),
+        linear-gradient(to bottom, rgba(255,255,255,0) 60%, rgba(255,255,255,0.95) 100%);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-progress" id="scrollProgress"></div>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">Axiom<sup>®</sup></div>
+    <ul class="nav-links">
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Méthode</a></li>
+      <li><a href="#">Études</a></li>
+      <li><a href="#">Équipe</a></li>
+      <li><a href="#">Insights</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Nous contacter</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <canvas id="canvas-bg"></canvas>
+    <div class="canvas-edge-blur"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">Cabinet de conseil stratégique</div>
+      <h1 class="hero-title">
+        <span class="line"><span>Excellence</span></span>
+        <span class="line"><span>Opéra<em>tionn</em>elle.</span></span>
+        <span class="line"><span>Trans<em>forma</em>tion</span></span>
+        <span class="line"><span>Digitale.<span class="tm">™</span></span></span>
+      </h1>
+      <div class="hero-bottom">
+        <p class="hero-desc">
+          Axiom est un cabinet de conseil mondial qui accompagne les organisations dans leur quête d'excellence et leur transformation numérique.
+        </p>
+        <div class="hero-scroll">
+          <span class="scroll-line"></span>
+          Défiler
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFO BAR -->
+  <div class="info-bar">
+    <div class="info-item">
+      <span class="label">Projets livrés</span>
+      <span class="value">340+</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="label">Clients actifs</span>
+      <span class="value">80+</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="label">Pays</span>
+      <span class="value">24</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="label">Taux de satisfaction</span>
+      <span class="value">98%</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="label">Experts certifiés</span>
+      <span class="value">120+</span>
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div class="marquee-bar">
+    <div class="marquee-track" id="marqueeTrack">
+      <div class="marquee-item">Excellence opérationnelle</div>
+      <div class="marquee-item">Transformation digitale</div>
+      <div class="marquee-item">Stratégie d'entreprise</div>
+      <div class="marquee-item">Innovation continue</div>
+      <div class="marquee-item">Leadership organisationnel</div>
+      <div class="marquee-item">Performance durable</div>
+      <div class="marquee-item">Excellence opérationnelle</div>
+      <div class="marquee-item">Transformation digitale</div>
+      <div class="marquee-item">Stratégie d'entreprise</div>
+      <div class="marquee-item">Innovation continue</div>
+      <div class="marquee-item">Leadership organisationnel</div>
+      <div class="marquee-item">Performance durable</div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section class="services">
+    <div class="services-left">
+      <h2>Comment<br>pouvons-nous<br>vous aider ?</h2>
+      <p>Nous intervenons à chaque étape de votre transformation pour garantir un impact mesurable, durable et aligné avec vos ambitions stratégiques.</p>
+    </div>
+    <div class="services-right">
+      <div class="service-item">
+        <span class="service-num">01</span>
+        <div class="service-info">
+          <div class="service-name">Excellence opérationnelle</div>
+          <div class="service-desc">Optimisation des processus, lean management et amélioration continue des performances.</div>
+        </div>
+        <span class="service-arrow">↗</span>
+      </div>
+      <div class="service-item">
+        <span class="service-num">02</span>
+        <div class="service-info">
+          <div class="service-name">Transformation digitale</div>
+          <div class="service-desc">Stratégie data, IA, automatisation et modernisation des systèmes d'information.</div>
+        </div>
+        <span class="service-arrow">↗</span>
+      </div>
+      <div class="service-item">
+        <span class="service-num">03</span>
+        <div class="service-info">
+          <div class="service-name">Stratégie & Innovation</div>
+          <div class="service-desc">Positionnement concurrentiel, nouveaux modèles d'affaires et feuilles de route stratégiques.</div>
+        </div>
+        <span class="service-arrow">↗</span>
+      </div>
+      <div class="service-item">
+        <span class="service-num">04</span>
+        <div class="service-info">
+          <div class="service-name">Change Management</div>
+          <div class="service-desc">Conduite du changement, leadership transformationnel et culture d'entreprise agile.</div>
+        </div>
+        <span class="service-arrow">↗</span>
+      </div>
+      <div class="service-item">
+        <span class="service-num">05</span>
+        <div class="service-info">
+          <div class="service-name">Gouvernance & Performance</div>
+          <div class="service-desc">Pilotage par la donnée, tableaux de bord et systèmes de gestion de la performance.</div>
+        </div>
+        <span class="service-arrow">↗</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about-section">
+    <div class="about-left">
+      <h2>Qui<br>sommes-<br>nous ?</h2>
+      <p>Axiom est un cabinet de conseil de référence, fondé sur une conviction simple : la performance durable naît de l'alignement entre stratégie, organisation et capital humain.</p>
+      <p>Depuis notre création, nous accompagnons des entreprises de toutes tailles — de la PME ambitieuse aux multinationales — dans leurs phases de croissance, de restructuration et de transformation.</p>
+    </div>
+    <div class="about-right">
+      <div class="about-card">
+        <div class="card-num">14</div>
+        <div class="card-label">Années d'expérience cumulée</div>
+      </div>
+      <div class="about-card">
+        <div class="card-num">340+</div>
+        <div class="card-label">Missions réalisées avec succès</div>
+      </div>
+      <div class="about-card">
+        <div class="card-num">24</div>
+        <div class="card-label">Pays d'intervention</div>
+      </div>
+      <div class="about-card">
+        <div class="card-num">98%</div>
+        <div class="card-label">Taux de satisfaction client</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="process-section">
+    <div class="process-header">
+      <h2>Notre<br>méthode</h2>
+      <p>Une approche rigoureuse en quatre étapes, pensée pour garantir des résultats mesurables et une transformation pérenne.</p>
+    </div>
+    <div class="process-steps">
+      <div class="process-step">
+        <div class="step-num">Étape 01</div>
+        <div class="step-title">Diagnostic</div>
+        <div class="step-desc">Analyse approfondie de votre organisation, de vos processus et de votre positionnement concurrentiel pour identifier les leviers de performance.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">Étape 02</div>
+        <div class="step-title">Stratégie</div>
+        <div class="step-desc">Co-construction d'une feuille de route stratégique claire, alignée sur vos ambitions et adaptée aux réalités du marché.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">Étape 03</div>
+        <div class="step-title">Déploiement</div>
+        <div class="step-desc">Mise en œuvre opérationnelle avec des équipes dédiées, un pilotage rigoureux et une communication transparente à chaque étape.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">Étape 04</div>
+        <div class="step-title">Pérennisation</div>
+        <div class="step-desc">Ancrage des nouvelles pratiques dans la culture de l'entreprise pour garantir un impact durable, bien après la fin de la mission.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testimonials-section">
+    <div class="testimonials-header">
+      <h2>Ce que disent<br>nos clients</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p class="testimonial-text">"Axiom a transformé notre approche opérationnelle en moins de six mois. La rigueur méthodologique et la qualité d'écoute de leurs consultants ont fait toute la différence."</p>
+        <div class="testimonial-author">
+          <span class="author-name">Sophie Marchand</span>
+          <span class="author-role">Directrice Générale, Groupe Altis</span>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">"Une collaboration exceptionnelle. L'équipe Axiom a su s'intégrer parfaitement à nos équipes internes et livrer des résultats au-delà de nos attentes."</p>
+        <div class="testimonial-author">
+          <span class="author-name">Karim Benali</span>
+          <span class="author-role">Chief Strategy Officer, Novaris</span>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">"Grâce à Axiom, nous avons réduit nos coûts opérationnels de 22% tout en améliorant significativement la satisfaction de nos équipes. Un partenaire de confiance."</p>
+        <div class="testimonial-author">
+          <span class="author-name">Amélie Fontaine</span>
+          <span class="author-role">VP Operations, Lumex Industries</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTORS -->
+  <section class="sectors-section">
+    <h2>Secteurs<br>d'expertise</h2>
+    <div class="sectors-grid">
+      <div class="sector-item">
+        <div>
+          <div class="sector-name">Industrie & Manufacturing</div>
+          <div class="sector-desc">Optimisation des chaînes de production, lean manufacturing et performance industrielle.</div>
+        </div>
+        <span class="sector-arrow">↗</span>
+      </div>
+      <div class="sector-item">
+        <div>
+          <div class="sector-name">Services Financiers</div>
+          <div class="sector-desc">Transformation des modèles opérationnels, conformité réglementaire et digitalisation.</div>
+        </div>
+        <span class="sector-arrow">↗</span>
+      </div>
+      <div class="sector-item">
+        <div>
+          <div class="sector-name">Santé & Sciences de la vie</div>
+          <div class="sector-desc">Excellence opérationnelle hospitalière, transformation digitale et performance clinique.</div>
+        </div>
+        <span class="sector-arrow">↗</span>
+      </div>
+      <div class="sector-item">
+        <div>
+          <div class="sector-name">Énergie & Environnement</div>
+          <div class="sector-desc">Transition énergétique, stratégies RSE et pilotage de la performance durable.</div>
+        </div>
+        <span class="sector-arrow">↗</span>
+      </div>
+      <div class="sector-item">
+        <div>
+          <div class="sector-name">Retail & Distribution</div>
+          <div class="sector-desc">Transformation omnicanale, optimisation logistique et expérience client.</div>
+        </div>
+        <span class="sector-arrow">↗</span>
+      </div>
+      <div class="sector-item">
+        <div>
+          <div class="sector-name">Secteur Public</div>
+          <div class="sector-desc">Modernisation des services publics, optimisation des ressources et gouvernance.</div>
+        </div>
+        <span class="sector-arrow">↗</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section class="insights-section">
+    <div class="insights-header">
+      <h2>Derniers<br>insights</h2>
+    </div>
+    <div class="insights-grid">
+      <div class="insight-card featured">
+        <div>
+          <div class="insight-tag">Stratégie — Mars 2026</div>
+          <div class="insight-title">L'excellence opérationnelle à l'ère de l'intelligence artificielle</div>
+          <div class="insight-excerpt">Comment les organisations leaders intègrent l'IA générative dans leurs processus de transformation pour multiplier leur impact et réduire leurs délais d'exécution.</div>
+        </div>
+        <div class="insight-meta">
+          <span>12 min de lecture</span>
+          <a href="#" class="insight-read-more">Lire l'article →</a>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div>
+          <div class="insight-tag">Change Management — Fév. 2026</div>
+          <div class="insight-title">Conduite du changement : les 5 erreurs à éviter</div>
+          <div class="insight-excerpt">Les facteurs humains qui font échouer 70% des transformations organisationnelles et comment les anticiper.</div>
+        </div>
+        <div class="insight-meta">
+          <span>8 min de lecture</span>
+          <a href="#" class="insight-read-more">Lire →</a>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div>
+          <div class="insight-tag">Data & IA — Jan. 2026</div>
+          <div class="insight-title">Tableaux de bord stratégiques : piloter par la donnée</div>
+          <div class="insight-excerpt">Concevoir des systèmes de pilotage qui transforment la donnée brute en décisions à haute valeur ajoutée.</div>
+        </div>
+        <div class="insight-meta">
+          <span>6 min de lecture</span>
+          <a href="#" class="insight-read-more">Lire →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <div class="footer-cta">
+    <h2>Prêt à accélérer votre <em>prochaine étape ?</em></h2>
+  </div>
+
+  <script>
+    // ─── Scroll Progress Bar ─────────────────────────────────────────
+    const scrollProgress = document.getElementById('scrollProgress');
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      scrollProgress.style.width = pct + '%';
+    }, { passive: true });
+
+    // ─── Custom Cursor ───────────────────────────────────────────────
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let fx = mx, fy = my;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX;
+      my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top = my + 'px';
+    });
+
+    (function animateCursor() {
+      fx += (mx - fx) * 0.1;
+      fy += (my - fy) * 0.1;
+      follower.style.left = fx + 'px';
+      follower.style.top = fy + 'px';
+      requestAnimationFrame(animateCursor);
+    })();
+
+    // ─── Info Bar Count-Up ───────────────────────────────────────────
+    function parseValue(str) {
+      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+      const suffix = str.replace(/[0-9.]/g, '');
+      return { num, suffix };
+    }
+
+    function countUp(el, target, suffix, duration = 1200) {
+      const start = performance.now();
+      const isFloat = target % 1 !== 0;
+      function step(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = eased * target;
+        el.textContent = (isFloat ? current.toFixed(1) : Math.floor(current)) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = target + suffix;
+      }
+      requestAnimationFrame(step);
+    }
+
+    const infoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          infoObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    const statObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const valueEl = entry.target.querySelector('.value');
+          if (valueEl && !valueEl.dataset.counted) {
+            valueEl.dataset.counted = 'true';
+            const { num, suffix } = parseValue(valueEl.textContent);
+            valueEl.textContent = '0' + suffix;
+            setTimeout(() => countUp(valueEl, num, suffix, 1400), parseInt(entry.target.dataset.delay || 0));
+          }
+          entry.target.classList.add('revealed');
+          statObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll('.info-item').forEach((item, i) => {
+      item.dataset.delay = i * 100;
+      item.style.transitionDelay = `${i * 80}ms`;
+      statObserver.observe(item);
+    });
+
+    document.querySelectorAll('.info-divider').forEach((div, i) => {
+      div.style.transitionDelay = `${i * 80 + 60}ms`;
+      infoObserver.observe(div);
+    });
+
+    // ─── Scroll Reveal ───────────────────────────────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    // Observe left column
+    const servicesLeft = document.querySelector('.services-left h2');
+    const servicesDesc = document.querySelector('.services-left p');
+    servicesLeft.style.transitionDelay = '0ms';
+    servicesDesc.style.transitionDelay = '120ms';
+    revealObserver.observe(servicesLeft);
+    revealObserver.observe(servicesDesc);
+
+    // Observe each service row with staggered delay
+    document.querySelectorAll('.service-item').forEach((item, i) => {
+      item.style.transitionDelay = `${i * 90}ms`;
+      revealObserver.observe(item);
+    });
+
+    // Footer CTA reveal
+    const footerCtaObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          footerCtaObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    const footerH2 = document.querySelector('.footer-cta h2');
+    if (footerH2) { footerH2.style.transitionDelay = '0ms'; footerCtaObserver.observe(footerH2); }
+
+    // About section reveal
+    const aboutObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          aboutObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.about-section .about-left h2, .about-section .about-left p').forEach((el, i) => {
+      el.style.transitionDelay = `${i * 100}ms`;
+      aboutObserver.observe(el);
+    });
+
+    document.querySelectorAll('.about-card').forEach((card, i) => {
+      card.style.transitionDelay = `${i * 80}ms`;
+      aboutObserver.observe(card);
+    });
+
+    // Process section reveal
+    const processObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          processObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.process-header h2, .process-header p').forEach((el, i) => {
+      el.style.transitionDelay = `${i * 100}ms`;
+      processObserver.observe(el);
+    });
+
+    document.querySelectorAll('.process-step').forEach((step, i) => {
+      step.style.transitionDelay = `${i * 100}ms`;
+      processObserver.observe(step);
+    });
+
+    // Testimonials reveal
+    const testimonialObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          testimonialObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.testimonials-header h2').forEach(el => testimonialObserver.observe(el));
+    document.querySelectorAll('.testimonial-card').forEach((card, i) => {
+      card.style.transitionDelay = `${i * 100}ms`;
+      testimonialObserver.observe(card);
+    });
+
+    // Sectors reveal
+    const sectorObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          sectorObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.sectors-section h2').forEach(el => sectorObserver.observe(el));
+    document.querySelectorAll('.sector-item').forEach((item, i) => {
+      item.style.transitionDelay = `${i * 70}ms`;
+      sectorObserver.observe(item);
+    });
+
+    // Insights reveal
+    const insightObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          insightObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.insights-header h2').forEach(el => insightObserver.observe(el));
+    document.querySelectorAll('.insight-card').forEach((card, i) => {
+      card.style.transitionDelay = `${i * 100}ms`;
+      insightObserver.observe(card);
+    });
+
+    // Nav link individual hover underline
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.style.position = 'relative';
+      link.insertAdjacentHTML('beforeend', '<span style="position:absolute;bottom:-2px;left:0;width:0;height:1px;background:currentColor;transition:width 0.3s cubic-bezier(0.22,1,0.36,1);display:block;"></span>');
+      link.addEventListener('mouseenter', () => { link.querySelector('span').style.width = '100%'; });
+      link.addEventListener('mouseleave', () => { link.querySelector('span').style.width = '0'; });
+    });
+
+    // ─── Wave Lines Canvas ───────────────────────────────────────────
+    const canvas = document.getElementById('canvas-bg');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, mouseX, mouseY, targetX, targetY, currentX, currentY;
+    let animFrame;
+
+    function resize() {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+      mouseX = W / 2;
+      mouseY = H / 2;
+      targetX = W / 2;
+      targetY = H / 2;
+      currentX = W / 2;
+      currentY = H / 2;
+    }
+
+    window.addEventListener('resize', () => { resize(); });
+    resize();
+
+    // Track mouse on hero section
+    canvas.parentElement.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      targetX = e.clientX - rect.left;
+      targetY = e.clientY - rect.top;
+    });
+
+    canvas.parentElement.addEventListener('mouseleave', () => {
+      targetX = W / 2;
+      targetY = H / 2;
+    });
+
+    let t = 0;
+
+    function drawLines() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, W, H);
+
+      // Smooth cursor interpolation
+      currentX += (targetX - currentX) * 0.05;
+      currentY += (targetY - currentY) * 0.05;
+
+      const numLines = 38;
+      const spacing = H / (numLines + 1);
+
+      for (let i = 0; i < numLines; i++) {
+        const baseY = spacing * (i + 1);
+        const normalizedI = i / (numLines - 1); // 0 to 1
+
+        // Color interpolation: blue to violet
+        const r = Math.round(37 + normalizedI * (124 - 37));
+        const g = Math.round(99 + normalizedI * (58 - 99));
+        const b = Math.round(235 + normalizedI * (237 - 235));
+        const alpha = 0.55 + normalizedI * 0.15;
+
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+        ctx.lineWidth = 0.9;
+
+        const steps = 220;
+        let started = false;
+
+        for (let s = 0; s <= steps; s++) {
+          const x = (s / steps) * W;
+
+          // Base wave: combination of frequencies
+          const wave1 = Math.sin((x / W) * Math.PI * 2.5 + t * 0.4 + i * 0.18) * 18;
+          const wave2 = Math.sin((x / W) * Math.PI * 4.5 - t * 0.25 + i * 0.09) * 8;
+          const wave3 = Math.sin((x / W) * Math.PI * 1.2 + t * 0.15 + i * 0.3) * 14;
+
+          let y = baseY + wave1 + wave2 + wave3;
+
+          // Magnetic cursor distortion
+          const dx = x - currentX;
+          const dy = y - currentY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const magnetRadius = 160;
+          const magnetStrength = 55;
+
+          if (dist < magnetRadius) {
+            const force = (1 - dist / magnetRadius);
+            const eased = force * force * force;
+            // Pull lines toward cursor (attraction)
+            y += (currentY - y) * eased * (magnetStrength / (dist + 10)) * 0.8;
+            y -= dy * eased * 0.35;
+          }
+
+          if (!started) {
+            ctx.moveTo(x, y);
+            started = true;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+
+        ctx.stroke();
+      }
+
+      t += 0.008;
+      animFrame = requestAnimationFrame(drawLines);
+    }
+
+    drawLines();
+  </script>
+</body>
+</html>

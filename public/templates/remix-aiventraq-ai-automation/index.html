@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aiventraq — AI Automation Consultancy</title>
+  <meta name="description" content="Aiventraq transforms businesses with intelligent AI automation. From workflow optimization to custom AI agents, we deliver measurable results.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #111118;
+      --bg-tertiary: #1a1a24;
+      --text-primary: #f0eee6;
+      --text-secondary: #a09e97;
+      --text-muted: #6b6963;
+      --accent: #c4a882;
+      --accent-light: #d4be9c;
+      --accent-dark: #a08a6e;
+      --glass-bg: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --glass-bg-hover: rgba(255,255,255,0.07);
+      --mauve: #c9a0b4;
+      --mauve-light: #d4b3c4;
+      --rose: #b8848f;
+      --gradient-hero: radial-gradient(ellipse at 50% 0%, rgba(180,140,160,0.15) 0%, rgba(10,10,15,0) 60%);
+    }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .serif { font-family: 'Playfair Display', Georgia, serif; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-dark); border-radius: 3px; }
+
+    /* Utility */
+    .container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 120px 0; position: relative; }
+    .section-label {
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px; font-weight: 500;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+    }
+    .section-subtitle {
+      font-size: 1.05rem; color: var(--text-secondary);
+      line-height: 1.7; max-width: 560px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; background: var(--accent);
+      color: var(--bg-primary); font-weight: 600; font-size: 0.9rem;
+      border: none; border-radius: 50px; cursor: pointer;
+      transition: all 0.3s ease; letter-spacing: 0.3px;
+      text-decoration: none;
+    }
+    .btn-primary:hover { background: var(--accent-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(196,168,130,0.25); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; background: transparent;
+      color: var(--text-primary); font-weight: 500; font-size: 0.9rem;
+      border: 1px solid var(--glass-border); border-radius: 50px; cursor: pointer;
+      transition: all 0.3s ease; text-decoration: none;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Divider lines */
+    .divider { height: 1px; background: var(--glass-border); }
+
+    /* ============ NAVBAR ============ */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 0 24px; transition: all 0.4s ease;
+    }
+    .navbar.scrolled {
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .navbar-inner {
+      max-width: 1240px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px;
+    }
+    .nav-logo {
+      font-family: 'Inter', sans-serif; font-weight: 700;
+      font-size: 1.25rem; color: var(--text-primary);
+      text-decoration: none; letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-logo-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--mauve));
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-icon svg { width: 18px; height: 18px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 0.85rem; font-weight: 400; transition: color 0.3s;
+      letter-spacing: 0.2px;
+    }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-cta {
+      padding: 10px 24px !important; font-size: 0.82rem !important;
+      background: var(--accent) !important; color: var(--bg-primary) !important;
+      border-radius: 50px !important; font-weight: 600 !important;
+      border: none !important; cursor: pointer;
+      transition: all 0.3s ease !important;
+    }
+    .nav-cta:hover { background: var(--accent-light) !important; }
+    .mobile-toggle {
+      display: none; background: none; border: none;
+      color: var(--text-primary); cursor: pointer; padding: 8px;
+    }
+    .mobile-menu {
+      display: none; position: fixed; top: 72px; left: 0; right: 0;
+      background: rgba(10,10,15,0.97); backdrop-filter: blur(20px);
+      padding: 24px; border-bottom: 1px solid var(--glass-border);
+    }
+    .mobile-menu.open { display: block; }
+    .mobile-menu a {
+      display: block; padding: 14px 0; color: var(--text-secondary);
+      text-decoration: none; font-size: 1rem; border-bottom: 1px solid var(--glass-border);
+    }
+
+    /* ============ HERO ============ */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center;
+      position: relative; overflow: hidden;
+      background: var(--gradient-hero);
+    }
+    .hero-canvas {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0;
+    }
+    .hero-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+      background: linear-gradient(to top, var(--bg-primary), transparent);
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 1240px; margin: 0 auto; padding: 0 24px;
+      text-align: center; padding-top: 100px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 20px; border-radius: 50px;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      font-size: 0.78rem; color: var(--accent); margin-bottom: 32px;
+      letter-spacing: 1px; text-transform: uppercase; font-weight: 500;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 500; line-height: 1.05;
+      margin-bottom: 28px; letter-spacing: -1px;
+    }
+    .hero-title .accent-word { color: var(--accent); }
+    .hero-title .mauve-word { color: var(--mauve); }
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.5vw, 1.15rem);
+      color: var(--text-secondary); line-height: 1.7;
+      max-width: 580px; margin: 0 auto 44px;
+    }
+    .hero-buttons { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .hero-metrics {
+      display: flex; align-items: center; justify-content: center; gap: 48px;
+      margin-top: 72px; flex-wrap: wrap;
+    }
+    .hero-metric { text-align: center; }
+    .hero-metric-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem; font-weight: 600; color: var(--text-primary);
+    }
+    .hero-metric-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* ============ ABOUT ============ */
+    .about { background: var(--bg-primary); }
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+      align-items: center;
+    }
+    .about-visual {
+      position: relative; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .about-orb {
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--mauve), var(--accent-dark), var(--bg-tertiary));
+      opacity: 0.6; filter: blur(40px);
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+    @keyframes orbFloat {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+    .about-card-float {
+      position: absolute; padding: 20px 28px; border-radius: 16px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px); font-size: 0.85rem;
+    }
+    .about-card-float.top { top: 15%; right: 5%; }
+    .about-card-float.bottom { bottom: 15%; left: 5%; }
+    .about-card-float .num { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 600; color: var(--accent); }
+    .about-card-float .label { color: var(--text-secondary); margin-top: 4px; font-size: 0.8rem; }
+    .about-text p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px; font-size: 1.02rem; }
+    .about-features {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 32px;
+    }
+    .about-feat {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.88rem; color: var(--text-secondary);
+    }
+    .about-feat svg { color: var(--accent); flex-shrink: 0; }
+
+    /* ============ SERVICES ============ */
+    .services { background: var(--bg-secondary); }
+    .services-header { text-align: center; margin-bottom: 64px; }
+    .services-header .section-subtitle { margin: 0 auto; }
+    .services-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    }
+    .service-card {
+      padding: 40px 32px; border-radius: 20px;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      transition: all 0.4s ease; cursor: default; position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .service-card:hover { background: var(--glass-bg-hover); transform: translateY(-4px); border-color: rgba(196,168,130,0.2); }
+    .service-card:hover::before { opacity: 1; }
+    .service-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: rgba(196,168,130,0.1); display: flex;
+      align-items: center; justify-content: center; margin-bottom: 24px;
+      color: var(--accent);
+    }
+    .service-card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
+    .service-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; }
+    .service-card .service-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 20px; font-size: 0.82rem; color: var(--accent);
+      text-decoration: none; font-weight: 500; transition: gap 0.3s;
+    }
+    .service-card:hover .service-link { gap: 10px; }
+
+    /* ============ PROCESS ============ */
+    .process { background: var(--bg-primary); }
+    .process-header { text-align: center; margin-bottom: 72px; }
+    .process-header .section-subtitle { margin: 0 auto; }
+    .process-steps { display: flex; flex-direction: column; gap: 0; position: relative; }
+    .process-line {
+      position: absolute; left: 31px; top: 40px; bottom: 40px;
+      width: 1px; background: linear-gradient(to bottom, var(--accent), var(--glass-border));
+    }
+    .process-step {
+      display: flex; gap: 40px; padding: 40px 0; position: relative;
+      align-items: flex-start;
+    }
+    .process-step + .process-step { border-top: 1px solid var(--glass-border); }
+    .step-number {
+      width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-size: 1.3rem;
+      color: var(--accent); font-weight: 600; position: relative; z-index: 1;
+    }
+    .step-content { flex: 1; }
+    .step-content h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; }
+    .step-content p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7; max-width: 540px; }
+
+    /* ============ INDUSTRIES ============ */
+    .industries { background: var(--bg-secondary); }
+    .industries-header { text-align: center; margin-bottom: 64px; }
+    .industries-header .section-subtitle { margin: 0 auto; }
+    .industries-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .industry-card {
+      padding: 36px 28px; border-radius: 16px; text-align: center;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      transition: all 0.3s ease;
+    }
+    .industry-card:hover { background: var(--glass-bg-hover); transform: translateY(-3px); border-color: rgba(196,168,130,0.15); }
+    .industry-card svg { color: var(--accent); margin-bottom: 16px; }
+    .industry-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+    .industry-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ============ RESULTS ============ */
+    .results { background: var(--bg-primary); }
+    .results-header { text-align: center; margin-bottom: 64px; }
+    .results-header .section-subtitle { margin: 0 auto; }
+    .results-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .result-card {
+      padding: 40px 28px; border-radius: 20px; text-align: center;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      transition: all 0.3s ease;
+    }
+    .result-card:hover { border-color: rgba(196,168,130,0.2); }
+    .result-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem; font-weight: 600; color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .result-label { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; }
+
+    /* ============ TESTIMONIALS ============ */
+    .testimonials { background: var(--bg-secondary); }
+    .testimonials-header { text-align: center; margin-bottom: 64px; }
+    .testimonials-header .section-subtitle { margin: 0 auto; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .testimonial-card {
+      padding: 36px; border-radius: 20px;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      transition: all 0.3s ease;
+    }
+    .testimonial-card:hover { border-color: rgba(196,168,130,0.15); }
+    .testimonial-stars { color: var(--accent); margin-bottom: 16px; display: flex; gap: 2px; }
+    .testimonial-text { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-dark), var(--mauve));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.85rem; color: var(--bg-primary);
+    }
+    .testimonial-name { font-size: 0.88rem; font-weight: 600; }
+    .testimonial-role { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ============ CASE STUDIES ============ */
+    .cases { background: var(--bg-primary); }
+    .cases-header { text-align: center; margin-bottom: 64px; }
+    .cases-header .section-subtitle { margin: 0 auto; }
+    .cases-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
+    .case-card {
+      padding: 44px; border-radius: 20px;
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      transition: all 0.4s ease; overflow: hidden; position: relative;
+    }
+    .case-card:hover { border-color: rgba(196,168,130,0.2); transform: translateY(-3px); }
+    .case-tag {
+      display: inline-block; padding: 5px 14px; border-radius: 50px;
+      background: rgba(196,168,130,0.1); color: var(--accent);
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+    .case-card h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
+    .case-card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px; }
+    .case-stats { display: flex; gap: 32px; }
+    .case-stat-val { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; color: var(--accent); }
+    .case-stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* ============ FAQ ============ */
+    .faq { background: var(--bg-secondary); }
+    .faq-layout { display: grid; grid-template-columns: 1fr 1.5fr; gap: 80px; align-items: start; }
+    .faq-list { display: flex; flex-direction: column; }
+    .faq-item { border-bottom: 1px solid var(--glass-border); }
+    .faq-question {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px 0; cursor: pointer; background: none; border: none;
+      width: 100%; text-align: left; color: var(--text-primary);
+      font-size: 1rem; font-weight: 500; gap: 16px;
+      transition: color 0.3s;
+    }
+    .faq-question:hover { color: var(--accent); }
+    .faq-question svg { flex-shrink: 0; transition: transform 0.3s; color: var(--text-muted); }
+    .faq-question.open svg { transform: rotate(45deg); color: var(--accent); }
+    .faq-answer {
+      max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease;
+    }
+    .faq-answer.open { max-height: 200px; padding-bottom: 24px; }
+    .faq-answer p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ============ CTA ============ */
+    .cta-section {
+      padding: 120px 0; background: var(--bg-primary);
+      position: relative; overflow: hidden;
+    }
+    .cta-glow {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(196,168,130,0.1), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-inner {
+      position: relative; z-index: 1; text-align: center;
+      max-width: 700px; margin: 0 auto;
+    }
+    .cta-inner .section-title { font-size: clamp(2.2rem, 4.5vw, 3.5rem); margin-bottom: 20px; }
+    .cta-inner .section-subtitle { margin: 0 auto 40px; }
+    .cta-buttons { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+
+    /* ============ CONTACT / FOOTER ============ */
+    .footer {
+      background: var(--bg-secondary); border-top: 1px solid var(--glass-border);
+      padding: 80px 0 40px;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+      margin-bottom: 60px;
+    }
+    .footer-brand p { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.7; margin-top: 16px; max-width: 300px; }
+    .footer-col h4 {
+      font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 20px; font-weight: 600;
+    }
+    .footer-col a {
+      display: block; color: var(--text-secondary); text-decoration: none;
+      font-size: 0.88rem; padding: 6px 0; transition: color 0.3s;
+    }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 32px; border-top: 1px solid var(--glass-border);
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+    .footer-socials { display: flex; gap: 16px; }
+    .footer-socials a {
+      color: var(--text-muted); transition: color 0.3s;
+      display: flex; align-items: center;
+    }
+    .footer-socials a:hover { color: var(--accent); }
+
+    /* ============ ANIMATIONS ============ */
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* Count up animation */
+    .count-up { display: inline-block; }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 1024px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .industries-grid { grid-template-columns: repeat(2, 1fr); }
+      .results-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: 1fr 1fr; }
+      .cases-grid { grid-template-columns: 1fr; }
+      .faq-layout { grid-template-columns: 1fr; gap: 40px; }
+      .about-grid { grid-template-columns: 1fr; gap: 48px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .section { padding: 80px 0; }
+      .nav-links { display: none; }
+      .mobile-toggle { display: block; }
+      .services-grid { grid-template-columns: 1fr; }
+      .industries-grid { grid-template-columns: 1fr 1fr; }
+      .results-grid { grid-template-columns: 1fr 1fr; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .hero-metrics { gap: 32px; }
+      .process-step { gap: 24px; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      .hero-title { letter-spacing: -0.5px; }
+      .about-visual { display: none; }
+      .about-features { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .industries-grid { grid-template-columns: 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      .hero-metrics { flex-direction: column; gap: 24px; }
+      .case-stats { flex-direction: column; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <a href="#" class="nav-logo" onclick="return false;">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#0a0a0f"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        Aiventraq
+      </a>
+      <ul class="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#process">Process</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#cases">Case Studies</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#contact" class="nav-cta">Get Started</a></li>
+      </ul>
+      <button class="mobile-toggle" onclick="toggleMobile()" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#about" onclick="closeMobile()">About</a>
+      <a href="#services" onclick="closeMobile()">Services</a>
+      <a href="#process" onclick="closeMobile()">Process</a>
+      <a href="#results" onclick="closeMobile()">Results</a>
+      <a href="#cases" onclick="closeMobile()">Case Studies</a>
+      <a href="#faq" onclick="closeMobile()">FAQ</a>
+      <a href="#contact" onclick="closeMobile()">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge reveal">
+        <span class="dot"></span>
+        Now Accepting Clients
+      </div>
+      <h1 class="hero-title reveal reveal-delay-1">
+        <span class="mauve-word">No Limits</span> on<br>What AI Can <span class="accent-word">Automate</span>
+      </h1>
+      <p class="hero-subtitle reveal reveal-delay-2">
+        We architect intelligent systems that eliminate bottlenecks, scale operations, and unlock revenue — so your team can focus on what actually moves the needle.
+      </p>
+      <div class="hero-buttons reveal reveal-delay-3">
+        <a href="#contact" class="btn-primary">
+          Book a Discovery Call
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#services" class="btn-secondary">
+          Explore Services
+        </a>
+      </div>
+      <div class="hero-metrics reveal reveal-delay-4">
+        <div class="hero-metric">
+          <div class="hero-metric-value"><span class="count-up" data-target="147">0</span>+</div>
+          <div class="hero-metric-label">Automations Deployed</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-value"><span class="count-up" data-target="12">0</span>M+</div>
+          <div class="hero-metric-label">Hours Reclaimed</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-value"><span class="count-up" data-target="98">0</span>%</div>
+          <div class="hero-metric-label">Client Retention</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-value"><span class="count-up" data-target="40">0</span>x</div>
+          <div class="hero-metric-label">Average ROI</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-visual reveal">
+          <div class="about-orb"></div>
+          <div class="about-card-float top glass">
+            <div class="num">147+</div>
+            <div class="label">Automations shipped</div>
+          </div>
+          <div class="about-card-float bottom glass">
+            <div class="num">98%</div>
+            <div class="label">Client satisfaction</div>
+          </div>
+        </div>
+        <div class="reveal reveal-delay-1">
+          <div class="section-label">About Aiventraq</div>
+          <h2 class="section-title">We don't just implement AI.<br>We <em>engineer outcomes.</em></h2>
+          <div class="about-text">
+            <p>Aiventraq is a specialized AI automation consultancy built for companies that are done with pilot projects and ready for production-grade systems. We sit at the intersection of deep technical expertise and sharp business strategy.</p>
+            <p>Our team of AI engineers, solution architects, and automation specialists works exclusively with growth-stage companies and enterprise teams who demand measurable impact — not slide decks.</p>
+          </div>
+          <div class="about-features">
+            <div class="about-feat">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Production-Grade Systems
+            </div>
+            <div class="about-feat">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Measurable ROI Guaranteed
+            </div>
+            <div class="about-feat">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Full-Stack AI Expertise
+            </div>
+            <div class="about-feat">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              End-to-End Ownership
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section services" id="services">
+    <div class="container">
+      <div class="services-header">
+        <div class="section-label reveal">What We Build</div>
+        <h2 class="section-title reveal reveal-delay-1">Six pillars of<br>intelligent automation</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Every engagement is tailored. Here's the core toolkit we deploy to transform how your business operates.</p>
+      </div>
+      <div class="services-grid">
+
+        <div class="service-card reveal">
+          <div class="service-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <h3>AI Workflow Automation</h3>
+          <p>We identify your highest-friction processes and replace them with intelligent, self-optimizing workflows that run 24/7 without supervision.</p>
+          <a href="#contact" class="service-link">Learn more <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>AI Chatbots & Assistants</h3>
+          <p>Custom conversational agents that handle support, qualify leads, and manage complex interactions — trained on your data, speaking your brand's voice.</p>
+          <a href="#contact" class="service-link">Learn more <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>CRM & Sales Automation</h3>
+          <p>Intelligent pipeline management that scores leads, automates follow-ups, and gives your sales team superhuman efficiency at every stage.</p>
+          <a href="#contact" class="service-link">Learn more <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+
+        <div class="service-card reveal reveal-delay-3">
+          <div class="service-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Business Process Automation</h3>
+          <p>End-to-end process redesign powered by AI — from document processing and approvals to inventory management and compliance checks.</p>
+          <a href="#contact" class="service-link">Learn more <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+
+        <div class="service-card reveal reveal-delay-4">
+          <div class="service-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m-7-7h6m6 0h6"/><path d="M18.364 5.636l-4.95 4.95m0-4.95l4.95 4.95M5.636 18.364l4.95-4.95m0 4.95l-4.95-4.95"/></svg>
+          </div>
+          <h3>Custom AI Agents</h3>
+          <p>Autonomous AI agents that reason, plan, and execute multi-step tasks across your tech stack — purpose-built for your unique operational challenges.</p>
+          <a href="#contact" class="service-link">Learn more <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+
+        <div class="service-card reveal reveal-delay-5">
+          <div class="service-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <h3>Tool Integrations</h3>
+          <p>Seamless connections between your existing tools — CRM, ERP, Slack, databases, APIs — unified into intelligent, automated workflows.</p>
+          <a href="#contact" class="service-link">Learn more <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROCESS ============ -->
+  <section class="section process" id="process">
+    <div class="container">
+      <div class="process-header">
+        <div class="section-label reveal">Our Process</div>
+        <h2 class="section-title reveal reveal-delay-1">From discovery to deployment<br>in four decisive phases</h2>
+        <p class="section-subtitle reveal reveal-delay-2">No bloated timelines. No scope creep. Every engagement follows a battle-tested framework designed for speed and precision.</p>
+      </div>
+      <div class="process-steps">
+        <div class="process-step reveal">
+          <div class="step-number">01</div>
+          <div class="step-content">
+            <h3>Diagnose & Map</h3>
+            <p>We audit your current workflows, identify automation opportunities, and build a prioritized roadmap ranked by impact and feasibility. You get a clear picture of where AI delivers the highest ROI — in the first week.</p>
+          </div>
+        </div>
+        <div class="process-step reveal reveal-delay-1">
+          <div class="step-number">02</div>
+          <div class="step-content">
+            <h3>Design & Architect</h3>
+            <p>Our engineers design the system architecture, select the right AI models, and map integration points. Every solution is built to scale — not patched together with duct tape and prayers.</p>
+          </div>
+        </div>
+        <div class="process-step reveal reveal-delay-2">
+          <div class="step-number">03</div>
+          <div class="step-content">
+            <h3>Build & Validate</h3>
+            <p>Rapid development cycles with continuous stakeholder feedback. We build, test, and refine in tight sprints — shipping production-ready automations, not prototypes that collect dust.</p>
+          </div>
+        </div>
+        <div class="process-step reveal reveal-delay-3">
+          <div class="step-number">04</div>
+          <div class="step-content">
+            <h3>Deploy & Optimize</h3>
+            <p>Seamless production deployment with monitoring, alerting, and ongoing optimization. We don't disappear after launch — we tune, improve, and scale as your business evolves.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ INDUSTRIES ============ -->
+  <section class="section industries" id="industries">
+    <div class="container">
+      <div class="industries-header">
+        <div class="section-label reveal">Industries</div>
+        <h2 class="section-title reveal reveal-delay-1">Built for companies<br>that refuse to stand still</h2>
+        <p class="section-subtitle reveal reveal-delay-2">We specialize in high-growth sectors where intelligent automation creates compounding competitive advantages.</p>
+      </div>
+      <div class="industries-grid">
+        <div class="industry-card reveal">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <h4>Financial Services</h4>
+          <p>Compliance automation, fraud detection, and intelligent document processing</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-1">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <h4>Healthcare</h4>
+          <p>Patient intake automation, scheduling optimization, and clinical workflow AI</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-2">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <h4>SaaS & Tech</h4>
+          <p>Onboarding automation, usage-based upselling, and AI-powered support</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-3">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <h4>Logistics & Supply Chain</h4>
+          <p>Demand forecasting, route optimization, and automated vendor management</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <h4>E-Commerce & Retail</h4>
+          <p>Personalization engines, inventory AI, and automated customer journeys</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <h4>Legal & Professional</h4>
+          <p>Contract analysis, research automation, and intelligent case management</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <h4>Real Estate</h4>
+          <p>Lead nurturing AI, property matching, and automated transaction workflows</p>
+        </div>
+        <div class="industry-card reveal reveal-delay-5">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <h4>Manufacturing</h4>
+          <p>Quality control AI, predictive maintenance, and production line optimization</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="section results" id="results">
+    <div class="container">
+      <div class="results-header">
+        <div class="section-label reveal">Results That Speak</div>
+        <h2 class="section-title reveal reveal-delay-1">The numbers behind<br>our automation playbook</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Across industries and use cases, our clients consistently see transformational outcomes within 90 days.</p>
+      </div>
+      <div class="results-grid">
+        <div class="result-card reveal">
+          <div class="result-value"><span class="count-up" data-target="73">0</span>%</div>
+          <div class="result-label">Average reduction in manual task time</div>
+        </div>
+        <div class="result-card reveal reveal-delay-1">
+          <div class="result-value"><span class="count-up" data-target="40">0</span>x</div>
+          <div class="result-label">Return on investment within first year</div>
+        </div>
+        <div class="result-card reveal reveal-delay-2">
+          <div class="result-value"><span class="count-up" data-target="6">0</span>wk</div>
+          <div class="result-label">Average time to first production deployment</div>
+        </div>
+        <div class="result-card reveal reveal-delay-3">
+          <div class="result-value"><span class="count-up" data-target="99">0</span>%</div>
+          <div class="result-label">System uptime across all client deployments</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section class="section testimonials" id="testimonials">
+    <div class="container">
+      <div class="testimonials-header">
+        <div class="section-label reveal">Client Voices</div>
+        <h2 class="section-title reveal reveal-delay-1">Trusted by operators<br>who demand excellence</h2>
+        <p class="section-subtitle reveal reveal-delay-2">Don't take our word for it. Here's what leaders say after working with Aiventraq.</p>
+      </div>
+      <div class="testimonials-grid">
+
+        <div class="testimonial-card reveal">
+          <div class="testimonial-stars">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="testimonial-text">"Aiventraq didn't just automate our workflows — they fundamentally changed how we think about operations. Our team reclaimed 30+ hours a week in the first month alone."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div>
+              <div class="testimonial-name">Marcus Reid</div>
+              <div class="testimonial-role">COO, Brevven Health</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card reveal reveal-delay-1">
+          <div class="testimonial-stars">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="testimonial-text">"The custom AI agents they built for our sales pipeline are absurdly effective. Conversion rates up 42%, and our reps actually enjoy using the system. That never happens."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SK</div>
+            <div>
+              <div class="testimonial-name">Sarah Kim</div>
+              <div class="testimonial-role">VP Sales, Arcturus SaaS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card reveal reveal-delay-2">
+          <div class="testimonial-stars">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <p class="testimonial-text">"We vetted six consultancies. Aiventraq was the only team that understood both the technology and our business model deeply enough to deliver real impact. They're exceptional."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JL</div>
+            <div>
+              <div class="testimonial-name">James Lawton</div>
+              <div class="testimonial-role">CEO, Meridian Logistics</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CASE STUDIES ============ -->
+  <section class="section cases" id="cases">
+    <div class="container">
+      <div class="cases-header">
+        <div class="section-label reveal">Case Studies</div>
+        <h2 class="section-title reveal reveal-delay-1">Proof of performance,<br>not promises</h2>
+        <p class="section-subtitle reveal reveal-delay-2">A snapshot of recent engagements. Each one delivered measurable business transformation.</p>
+      </div>
+      <div class="cases-grid">
+
+        <div class="case-card reveal">
+          <div class="case-tag">Healthcare</div>
+          <h3>Automated Patient Intake for a 200-Bed Hospital Network</h3>
+          <p>Replaced a 14-step manual intake process with an AI-powered system that pre-fills forms, verifies insurance, and routes patients — cutting processing time by 80%.</p>
+          <div class="case-stats">
+            <div>
+              <div class="case-stat-val">80%</div>
+              <div class="case-stat-label">Faster Intake</div>
+            </div>
+            <div>
+              <div class="case-stat-val">$1.2M</div>
+              <div class="case-stat-label">Annual Savings</div>
+            </div>
+            <div>
+              <div class="case-stat-val">3wk</div>
+              <div class="case-stat-label">To Deploy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="case-card reveal reveal-delay-1">
+          <div class="case-tag">SaaS</div>
+          <h3>AI Sales Agent for a B2B Platform with 10K+ Users</h3>
+          <p>Built a custom AI agent that qualifies inbound leads, books demos, and personalizes outreach sequences — resulting in a 42% lift in pipeline conversion.</p>
+          <div class="case-stats">
+            <div>
+              <div class="case-stat-val">42%</div>
+              <div class="case-stat-label">More Conversions</div>
+            </div>
+            <div>
+              <div class="case-stat-val">3x</div>
+              <div class="case-stat-label">Demo Bookings</div>
+            </div>
+            <div>
+              <div class="case-stat-val">5wk</div>
+              <div class="case-stat-label">To Deploy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="case-card reveal reveal-delay-2">
+          <div class="case-tag">E-Commerce</div>
+          <h3>Intelligent Inventory & Demand Forecasting Engine</h3>
+          <p>Deployed an ML-powered forecasting system that reduced stockouts by 65% and overstock by 40%, saving $800K in the first quarter of operation.</p>
+          <div class="case-stats">
+            <div>
+              <div class="case-stat-val">65%</div>
+              <div class="case-stat-label">Fewer Stockouts</div>
+            </div>
+            <div>
+              <div class="case-stat-val">$800K</div>
+              <div class="case-stat-label">Q1 Savings</div>
+            </div>
+            <div>
+              <div class="case-stat-val">8wk</div>
+              <div class="case-stat-label">To Deploy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="case-card reveal reveal-delay-3">
+          <div class="case-tag">Financial Services</div>
+          <h3>Compliance Automation for a Mid-Market Lender</h3>
+          <p>Automated 90% of regulatory document review and reporting workflows, freeing the compliance team to focus on strategic risk management.</p>
+          <div class="case-stats">
+            <div>
+              <div class="case-stat-val">90%</div>
+              <div class="case-stat-label">Tasks Automated</div>
+            </div>
+            <div>
+              <div class="case-stat-val">$600K</div>
+              <div class="case-stat-label">Annual Savings</div>
+            </div>
+            <div>
+              <div class="case-stat-val">6wk</div>
+              <div class="case-stat-label">To Deploy</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section faq" id="faq">
+    <div class="container">
+      <div class="faq-layout">
+        <div>
+          <div class="section-label reveal">FAQ</div>
+          <h2 class="section-title reveal reveal-delay-1">Questions we<br>get asked most</h2>
+          <p class="section-subtitle reveal reveal-delay-2">If you don't see your question here, reach out directly. We respond within 24 hours.</p>
+        </div>
+        <div class="faq-list">
+
+          <div class="faq-item reveal">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              How long does a typical engagement take?
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="faq-answer">
+              <p>Most projects go from kickoff to first production deployment in 4–8 weeks. Complex enterprise engagements may extend to 12 weeks. We prioritize speed without compromising quality — you'll see tangible results fast.</p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-delay-1">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              Do you work with early-stage startups?
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="faq-answer">
+              <p>Absolutely. We work with funded startups (Series A+) and growth-stage companies. If automation can meaningfully impact your unit economics or operational capacity, we're a fit. Pre-revenue companies typically aren't ready for what we do.</p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-delay-2">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              What AI models and tools do you use?
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="faq-answer">
+              <p>We're model-agnostic. We work with OpenAI, Anthropic, open-source models, and custom fine-tuned solutions depending on your requirements. Our stack includes LangChain, vector databases, Make/n8n, and custom code — whatever delivers the best result.</p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-delay-3">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              How do you measure ROI?
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="faq-answer">
+              <p>Every engagement starts with clearly defined KPIs — hours saved, cost reduced, revenue generated, error rates eliminated. We set baselines before we build, and we report against them continuously. If we can't show measurable impact, we haven't done our job.</p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-delay-4">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              What does pricing look like?
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="faq-answer">
+              <p>We offer project-based and retainer models. Most engagements range from $15K–$150K depending on scope and complexity. Every project includes a detailed proposal with transparent pricing — no hidden fees, no surprise invoices.</p>
+            </div>
+          </div>
+
+          <div class="faq-item reveal reveal-delay-5">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              Do you provide ongoing support after launch?
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="faq-answer">
+              <p>Yes. Every project includes a 30-day post-launch support window. For ongoing optimization, monitoring, and scaling, we offer monthly retainer packages. Most clients stay because they keep finding new processes to automate.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta-section" id="contact">
+    <div class="cta-glow"></div>
+    <div class="container">
+      <div class="cta-inner">
+        <div class="section-label reveal">Ready to Start?</div>
+        <h2 class="section-title reveal reveal-delay-1" style="font-size:clamp(2.2rem,4.5vw,3.5rem);">Your competitors are<br>already automating.<br><span style="color:var(--accent)">Are you?</span></h2>
+        <p class="section-subtitle reveal reveal-delay-2">Book a 30-minute discovery call. We'll identify your top three automation opportunities — free, with zero pressure.</p>
+        <div class="cta-buttons reveal reveal-delay-3">
+          <a href="#" class="btn-primary" onclick="return false;">
+            Book Discovery Call
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="#" class="btn-secondary" onclick="return false;">
+            hello@aiventraq.com
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo" onclick="return false;" style="font-size:1.15rem;">
+            <div class="nav-logo-icon" style="width:28px;height:28px;border-radius:7px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#0a0a0f;width:15px;height:15px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            Aiventraq
+          </a>
+          <p>AI automation consultancy for companies that demand production-grade intelligence, measurable outcomes, and zero fluff.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Services</h4>
+          <a href="#">AI Workflow Automation</a>
+          <a href="#">Chatbots & Assistants</a>
+          <a href="#">CRM & Sales AI</a>
+          <a href="#">Custom AI Agents</a>
+          <a href="#">Tool Integrations</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Case Studies</a>
+          <a href="#">Careers</a>
+          <a href="#">Blog</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="#">hello@aiventraq.com</a>
+          <a href="#">LinkedIn</a>
+          <a href="#">Twitter / X</a>
+          <a href="#">Schedule a Call</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Aiventraq. All rights reserved.</span>
+        <div class="footer-socials">
+          <a href="#" aria-label="LinkedIn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" aria-label="Twitter">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+          </a>
+          <a href="#" aria-label="GitHub">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Mobile menu
+    function toggleMobile() {
+      document.getElementById('mobileMenu').classList.toggle('open');
+    }
+    function closeMobile() {
+      document.getElementById('mobileMenu').classList.remove('open');
+    }
+
+    // FAQ
+    function toggleFaq(btn) {
+      const answer = btn.nextElementSibling;
+      const isOpen = btn.classList.contains('open');
+      // Close all
+      document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('open'));
+      document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+      if (!isOpen) {
+        btn.classList.add('open');
+        answer.classList.add('open');
+      }
+    }
+
+    // Scroll reveal
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // Count-up animation
+    const countElements = document.querySelectorAll('.count-up');
+    const countObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.target);
+          const duration = 2000;
+          const start = performance.now();
+          function update(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(target * eased);
+            if (progress < 1) requestAnimationFrame(update);
+          }
+          requestAnimationFrame(update);
+          countObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+    countElements.forEach(el => countObserver.observe(el));
+
+    // ============ 3D HERO CANVAS — Neural Network Particle Field ============
+    (function() {
+      const canvas = document.getElementById('heroCanvas');
+      const ctx = canvas.getContext('2d');
+      let w, h, particles, mouse = { x: 0, y: 0 }, animId;
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = canvas.clientWidth;
+        h = canvas.clientHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.z = Math.random() * 1;
+          this.size = 1 + Math.random() * 2;
+          this.speedX = (Math.random() - 0.5) * 0.3;
+          this.speedY = (Math.random() - 0.5) * 0.3;
+          this.opacity = 0.15 + Math.random() * 0.4;
+          this.baseOpacity = this.opacity;
+          this.pulseOffset = Math.random() * Math.PI * 2;
+          this.pulseSpeed = 0.005 + Math.random() * 0.01;
+        }
+        update(time) {
+          this.x += this.speedX;
+          this.y += this.speedY;
+
+          // Mouse interaction
+          const dx = this.x - mouse.x;
+          const dy = this.y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 200) {
+            const force = (200 - dist) / 200 * 0.015;
+            this.x += dx * force;
+            this.y += dy * force;
+            this.opacity = Math.min(this.baseOpacity + 0.3, 0.8);
+          } else {
+            this.opacity += (this.baseOpacity - this.opacity) * 0.02;
+          }
+
+          this.opacity *= (0.85 + 0.15 * Math.sin(time * this.pulseSpeed + this.pulseOffset));
+
+          // Wrap
+          if (this.x < -20) this.x = w + 20;
+          if (this.x > w + 20) this.x = -20;
+          if (this.y < -20) this.y = h + 20;
+          if (this.y > h + 20) this.y = -20;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * (0.5 + this.z * 0.5), 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(196, 168, 130, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      function init() {
+        resize();
+        const count = Math.min(Math.floor((w * h) / 8000), 180);
+        particles = Array.from({ length: count }, () => new Particle());
+      }
+
+      function drawConnections() {
+        const connectionDist = 140;
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < connectionDist) {
+              const opacity = (1 - dist / connectionDist) * 0.12;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(201, 160, 180, ${opacity})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Mouse connections
+        for (let i = 0; i < particles.length; i++) {
+          const dx = particles[i].x - mouse.x;
+          const dy = particles[i].y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 200) {
+            const opacity = (1 - dist / 200) * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(196, 168, 130, ${opacity})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+
+      let time = 0;
+      function animate() {
+        time++;
+        ctx.clearRect(0, 0, w, h);
+
+        // Central glow
+        const gradient = ctx.createRadialGradient(w / 2, h * 0.4, 0, w / 2, h * 0.4, w * 0.4);
+        gradient.addColorStop(0, 'rgba(180, 140, 160, 0.06)');
+        gradient.addColorStop(0.5, 'rgba(180, 140, 160, 0.02)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+
+        particles.forEach(p => {
+          p.update(time);
+          p.draw();
+        });
+        drawConnections();
+
+        animId = requestAnimationFrame(animate);
+      }
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      });
+
+      canvas.addEventListener('touchmove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.touches[0].clientX - rect.left;
+        mouse.y = e.touches[0].clientY - rect.top;
+      }, { passive: true });
+
+      window.addEventListener('resize', () => {
+        cancelAnimationFrame(animId);
+        init();
+        animate();
+      });
+
+      init();
+      animate();
+    })();
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
