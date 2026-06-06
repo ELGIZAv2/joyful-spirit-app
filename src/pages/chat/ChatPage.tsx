@@ -4327,6 +4327,7 @@ Nothing to set up. Just tell me what you're working on and we'll go from there.`
                           jobId={msg.researchJobId}
                           conversationId={conversationId}
                           turnIndex={i}
+                          onRunningChange={handleResearchRunningChange}
                         />
                       </div>
                     )}
