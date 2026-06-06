@@ -29,9 +29,9 @@ const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0, onRunningChan
 
   useEffect(() => {
     if (!job) return;
-    const running = ["queued", "planning", "searching", "synthesizing"].includes(job.status);
+    const running = job.awaiting_approval || ["queued", "planning", "awaiting_approval", "searching", "synthesizing"].includes(job.status);
     onRunningChange?.(jobId, running);
-    if (!running) return;
+    if (!running || job.awaiting_approval || job.status === "awaiting_approval") return;
     let stopped = false;
     const runTick = () => {
       const lastUpdate = new Date(job.updated_at).getTime();
