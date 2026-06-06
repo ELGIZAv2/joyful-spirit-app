@@ -124,39 +124,16 @@ const ResearchJobBubble = ({ jobId, conversationId, turnIndex = 0 }: Props) => {
             plan={{ goal: job.plan_goal || job.query, steps: planSteps }}
             intro={intro}
             ready={ready}
-            awaitingApproval={job.awaiting_approval && !editing}
+            awaitingApproval={job.awaiting_approval}
             onStart={handleStart}
             onEdit={() => setEditing(true)}
             loading={busy}
+            editing={editing}
+            feedback={feedback}
+            onFeedbackChange={setFeedback}
+            onSubmitEdit={handleSubmitEdit}
+            onCancelEdit={() => { setEditing(false); setFeedback(""); }}
           />
-        )}
-        {editing && (
-          <div className="max-w-[420px] space-y-2 rounded-2xl border border-border/40 bg-card/60 p-4">
-            <textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="How should I adjust the plan?"
-              rows={3}
-              className="w-full rounded-xl border border-border/40 bg-background/60 p-3 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleSubmitEdit}
-                disabled={busy || !feedback.trim()}
-                className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-              >
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update plan"}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEditing(false); setFeedback(""); }}
-                className="text-sm text-foreground/70 hover:text-foreground"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
         )}
       </div>
     );
