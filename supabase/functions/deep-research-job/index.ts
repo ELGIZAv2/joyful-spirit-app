@@ -63,6 +63,10 @@ async function selfInvoke(action: string, payload: Record<string, unknown>) {
   }
 }
 
+async function queueTick(jobId: string, delayMs = 500) {
+  await selfInvoke("tick", { jobId, delayMs });
+}
+
 type JobPatch = Record<string, unknown>;
 
 async function patchJob(jobId: string, patch: JobPatch) {
@@ -368,6 +372,7 @@ Requirements:
 async function writeSectionAndSave(jobId: string, sectionIndex: number) {
   const { data: job } = await admin.from("research_jobs").select("*").eq("id", jobId).maybeSingle();
   if (!job) return;
+  if (["succeeded", "failed", "cancelled"].includes(String((job as any).status))) return;
   const outline: OutlineSection[] = Array.isArray((job as any).outline) ? (job as any).outline : [];
   const sec = outline[sectionIndex];
   if (!sec) return;
