@@ -125,9 +125,6 @@ const ResearchArticleTemplate = ({
   data, cleanReport, isRtl, sources, wordCount, readMins, reportEmpty,
 }: TemplateProps) => {
   const { intro, sections } = splitIntoSections(cleanReport);
-  const dateText = new Date().toLocaleDateString(isRtl ? "ar-EG" : "en-US", {
-    year: "numeric", month: "long", day: "numeric",
-  });
   // Cap to 3 images max for deep research articles
   const limitedImages = (data.images || []).slice(0, 3);
   const cover = limitedImages[0];
