@@ -126,7 +126,7 @@ async function llmText(systemPrompt: string, userPrompt: string, temperature = 0
     const res = await fetch(router.url, {
       method: "POST",
       headers: { Authorization: `Bearer ${router.key}`, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(75_000),
+      signal: AbortSignal.timeout(45_000),
       body: JSON.stringify({
         model: router.mapModel(ROUTER_MODELS.deepResearch),
         messages: [
