@@ -554,7 +554,8 @@ async function runFullPipeline(jobId: string) {
     await patchJob(jobId, { status: "synthesizing", progress: 50, stage: "Building outline" });
 
     // Build the section outline (one LLM call, fast).
-    const outline = await buildOutline(query, language, allSources, excerpts);
+    const jobDepth: "lite" | "medium" | "max" = ((job as any)?.depth || "medium");
+    const outline = await buildOutline(query, language, allSources, excerpts, jobDepth);
     if (outline.length === 0) {
       throw new Error("outline_failed");
     }
