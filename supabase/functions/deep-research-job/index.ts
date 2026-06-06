@@ -12,6 +12,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getLLM, ROUTER_MODELS } from "../_shared/llm-router.ts";
+import { withKeyRotation } from "../_shared/key-pool.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -192,49 +193,79 @@ async function wikipediaSearch(q: string): Promise<{ organic: Source[]; images: 
 }
 
 async function serperSearch(q: string, includeImages: boolean): Promise<{ organic: Source[]; images: string[] }> {
-  if (!SERPER_API_KEY) return wikipediaSearch(q);
-  try {
-    const promises: Promise<any>[] = [
+  const runWith = async (apiKey: string) => {
+    const promises: Promise<Response>[] = [
       fetch("https://google.serper.dev/search", {
         method: "POST",
-        headers: { "X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json" },
+        headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
         body: JSON.stringify({ q, num: 10 }),
-      }).then((r) => r.json()),
+      }),
     ];
     if (includeImages) {
       promises.push(
         fetch("https://google.serper.dev/images", {
           method: "POST",
-          headers: { "X-API-KEY": SERPER_API_KEY, "Content-Type": "application/json" },
+          headers: { "X-API-KEY": apiKey, "Content-Type": "application/json" },
           body: JSON.stringify({ q, num: 6 }),
-        }).then((r) => r.json()).catch(() => ({}))
+        }),
       );
     }
-    const [web, img] = await Promise.all(promises);
+    const responses = await Promise.all(promises);
+    const webRes = responses[0];
+    if (!webRes.ok) {
+      return { ok: false, status: webRes.status, errorText: await webRes.text().catch(() => "") };
+    }
+    const web = await webRes.json().catch(() => ({}));
+    const img = includeImages && responses[1]?.ok ? await responses[1].json().catch(() => ({})) : {};
     const organic: Source[] = (web?.organic || []).slice(0, 8).map((o: any) => ({
       title: o.title, url: o.link, snippet: o.snippet, query: q,
     }));
     const images: string[] = includeImages
       ? (img?.images || []).slice(0, 6).map((i: any) => i.imageUrl).filter(Boolean)
       : [];
-    if (organic.length === 0) return wikipediaSearch(q);
-    return { organic, images };
-  } catch {
-    return wikipediaSearch(q);
+    return { ok: true, status: 200, costUsd: 0.001, data: { organic, images } };
+  };
+
+  // 1) Try rotation pool (Telegram-managed keys).
+  const pooled = await withKeyRotation("serper", runWith);
+  if (pooled.ok && pooled.data) {
+    if (pooled.data.organic.length > 0) return pooled.data;
   }
+  // 2) Fall back to env key if present.
+  if (SERPER_API_KEY) {
+    try {
+      const res = await runWith(SERPER_API_KEY);
+      if (res.ok && res.data && res.data.organic.length > 0) return res.data;
+    } catch { /* ignore */ }
+  }
+  // 3) Wikipedia fallback.
+  return wikipediaSearch(q);
 }
 
 // ---- Page extraction ----
 async function extractPage(url: string): Promise<string> {
+  const callFirecrawl = async (apiKey: string) => {
+    const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
+    });
+    if (!res.ok) {
+      return { ok: false, status: res.status, errorText: await res.text().catch(() => "") };
+    }
+    const json = await res.json().catch(() => ({}));
+    const md = (json?.data?.markdown || "").slice(0, 8000);
+    return { ok: true, status: 200, costUsd: 0.002, data: md };
+  };
+
+  // 1) Pool-managed Firecrawl keys.
+  const pooled = await withKeyRotation<string>("firecrawl", callFirecrawl);
+  if (pooled.ok && pooled.data) return pooled.data;
+  // 2) Env fallback.
   if (FIRECRAWL_API_KEY) {
     try {
-      const res = await fetch("https://api.firecrawl.dev/v1/scrape", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${FIRECRAWL_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ url, formats: ["markdown"], onlyMainContent: true }),
-      });
-      const json = await res.json();
-      return (json?.data?.markdown || "").slice(0, 8000);
+      const res = await callFirecrawl(FIRECRAWL_API_KEY);
+      if (res.ok && res.data) return res.data;
     } catch { /* fall through */ }
   }
   if (HB_API_KEY) {

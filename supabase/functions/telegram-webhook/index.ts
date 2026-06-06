@@ -282,6 +282,55 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
+    // /listkeys — show the current pool with usage + status
+    if (text.startsWith("/listkeys")) {
+      if (!(await isAdmin(chat_id))) {
+        await reply(chat_id, "⛔ Admins only.");
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+      const { data: rows } = await db
+        .from("api_keys")
+        .select("id, service, label, is_active, is_blocked, block_reason, credit_used_usd, credit_limit_usd, usage_count, error_count")
+        .order("service", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (!rows || rows.length === 0) {
+        await reply(chat_id, "ℹ️ مفيش مفاتيح ف الجدول. اضغط /keys علشان تضيف.");
+      } else {
+        const lines = rows.map((r: any) => {
+          const status = r.is_blocked ? "🚫 محظور" : r.is_active ? "✅ شغال" : "⏸️ موقوف";
+          const used = Number(r.credit_used_usd ?? 0).toFixed(3);
+          const cap = Number(r.credit_limit_usd ?? 0).toFixed(2);
+          const reason = r.is_blocked && r.block_reason ? ` (${r.block_reason})` : "";
+          return `<b>${r.service}</b> · ${status}${reason}\n  💵 $${used}/$${cap} · ▶️ ${r.usage_count} · ⚠️ ${r.error_count}\n  <code>${r.id}</code>`;
+        });
+        await tg("sendMessage", {
+          chat_id, parse_mode: "HTML",
+          text: "🔑 <b>مفاتيح الـ API</b>\n\n" + lines.join("\n\n") + "\n\nلحذف مفتاح: <code>/delkey ID</code>",
+        });
+      }
+      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+    }
+
+    // /delkey <id> — block a key manually
+    if (text.startsWith("/delkey")) {
+      if (!(await isAdmin(chat_id))) {
+        await reply(chat_id, "⛔ Admins only.");
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+      const id = text.replace(/^\/delkey\s*/, "").trim();
+      if (!id) {
+        await reply(chat_id, "Usage: <code>/delkey &lt;id&gt;</code>");
+      } else {
+        const { error: delErr } = await db
+          .from("api_keys")
+          .update({ is_active: false, is_blocked: true, block_reason: "manual_delete" })
+          .eq("id", id);
+        if (delErr) await reply(chat_id, `❌ ${delErr.message}`);
+        else await reply(chat_id, `🗑️ Disabled key <code>${id}</code>`);
+      }
+      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+    }
+
     // Pending key input handler — must run BEFORE the admin gate would block a non-admin,
     // and BEFORE media handling so a pasted key isn't treated as a caption.
     {
