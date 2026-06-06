@@ -157,7 +157,7 @@ const ResearchArticleTemplate = ({
 
   return (
     <div className="bg-background text-foreground">
-      <article className="mx-auto max-w-[1200px] px-3 sm:px-8 lg:px-12">
+      <article className="mx-auto max-w-[1200px] px-3 pt-10 sm:px-8 sm:pt-16 lg:px-12 lg:pt-20">
         {/* Header */}
         {/* Title removed */}
 
@@ -230,47 +230,6 @@ const ResearchArticleTemplate = ({
                   );
                 })}
 
-                {/* Sources — footnote style */}
-                {sources.length > 0 && (
-                  <section className="mt-20 border-t border-border pt-10">
-                    <details className="group">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 transition hover:border-primary/40 hover:bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <h2 className="font-display text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-                            {isRtl ? "Sources" : "Sources"}
-                          </h2>
-                          <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground tabular-nums">
-                            {sources.length}
-                          </span>
-                        </div>
-                        <span className="text-xs font-medium text-muted-foreground transition group-open:hidden">
-                          {isRtl ? "View" : "Show"}
-                        </span>
-                        <span className="hidden text-xs font-medium text-muted-foreground group-open:inline">
-                          {isRtl ? "Hide" : "Hide"}
-                        </span>
-                      </summary>
-                      <ol className="mt-6 space-y-3 text-sm">
-                        {sources.map((u, i) => (
-                          <li key={u + i} className="flex gap-3 text-foreground/80">
-                            <span className="w-6 shrink-0 text-muted-foreground tabular-nums">
-                              {String(i + 1).padStart(2, "0")}
-                            </span>
-                            <a
-                              href={u}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group/link inline-flex min-w-0 items-center gap-1.5 break-all underline decoration-border underline-offset-[3px] transition hover:decoration-primary hover:text-primary"
-                            >
-                              <span className="truncate">{hostname(u)}</span>
-                              <ExternalLink className="h-3 w-3 shrink-0 opacity-0 transition group-hover/link:opacity-100" />
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    </details>
-                  </section>
-                )}
               </>
             )}
           </div>
