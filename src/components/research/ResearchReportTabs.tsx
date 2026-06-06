@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { Brain, ExternalLink, FileText, BookOpen } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 
 type Src = { url: string; title?: string };
@@ -19,7 +18,6 @@ interface Props {
 }
 
 const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, reportTitle }: Props) => {
-  const [open, setOpen] = useState<null | "used" | "unused" | "thinking">(null);
   const [unused, setUnused] = useState<Src[]>([]);
   const [thinking, setThinking] = useState<string>("");
 
@@ -42,67 +40,76 @@ const ResearchReportTabs = ({ conversationId, reportSources, isRtl, reportText, 
 
   const used: Src[] = reportSources.map((u) => ({ url: u }));
 
-  const btnCls =
-    "flex items-center gap-2 rounded-full border border-foreground/10 bg-background/60 px-4 py-2 text-sm text-foreground/85 hover:bg-foreground/5 transition";
+  const getHost = (u: string) => {
+    try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; }
+  };
+  const favicon = (u: string) => `https://www.google.com/s2/favicons?domain=${getHost(u)}&sz=64`;
+
+  const SourceList = ({ items }: { items: Src[] }) => (
+    <ul className="space-y-2 pt-2">
+      {items.length === 0 && (
+        <li className="px-2 py-3 text-sm text-foreground/60">{isRtl ? "لا يوجد." : "None."}</li>
+      )}
+      {items.map((s, i) => (
+        <li key={i}>
+          <a
+            href={s.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-3 rounded-2xl border border-foreground/10 bg-background/40 px-3 py-2.5 hover:bg-foreground/5 transition"
+          >
+            <div className="min-w-0 flex-1 truncate text-sm font-medium text-foreground/90">
+              {s.title || getHost(s.url)}
+            </div>
+            <div className="hidden truncate text-xs text-foreground/50 sm:block max-w-[40%]">
+              {s.url}
+            </div>
+            <img
+              src={favicon(s.url)}
+              alt=""
+              className="h-7 w-7 shrink-0 rounded-full bg-foreground/10 object-cover"
+              loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = "hidden"; }}
+            />
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
-    <>
-      <div className="mx-auto max-w-3xl px-4 py-8" dir={isRtl ? "rtl" : "ltr"}>
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <button className={btnCls} onClick={() => setOpen("used")}>
-            <FileText className="h-4 w-4" />
-            {isRtl ? `المصادر المستخدمة (${used.length})` : `Sources used (${used.length})`}
-          </button>
-          <button className={btnCls} onClick={() => setOpen("unused")}>
-            <BookOpen className="h-4 w-4" />
-            {isRtl ? `قُرئت ولم تُستخدم (${unused.length})` : `Read, not used (${unused.length})`}
-          </button>
-          <button className={btnCls} onClick={() => setOpen("thinking")}>
-            <Brain className="h-4 w-4" />
-            {isRtl ? "تفكير الذكاء الاصطناعي" : "AI thinking"}
-          </button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-3xl px-4 py-6" dir={isRtl ? "rtl" : "ltr"}>
+      <Accordion type="multiple" className="space-y-2">
+        <AccordionItem value="used" className="border-b-0">
+          <AccordionTrigger className="rounded-2xl px-3 py-3 text-base font-semibold text-foreground/90 hover:no-underline">
+            {isRtl ? "المراجع المستخدَمة في التقرير" : `Sources used in this report`}
+          </AccordionTrigger>
+          <AccordionContent className="pb-2">
+            <SourceList items={used} />
+          </AccordionContent>
+        </AccordionItem>
 
-      <Dialog open={!!open} onOpenChange={(v) => !v && setOpen(null)}>
-        <DialogContent className="max-w-2xl" dir={isRtl ? "rtl" : "ltr"}>
-          <DialogHeader>
-            <DialogTitle>
-              {open === "used" && (isRtl ? "المصادر المستخدمة" : "Sources used")}
-              {open === "unused" && (isRtl ? "مصادر قُرئت ولم تُستخدم" : "Sources read but not cited")}
-              {open === "thinking" && (isRtl ? "تفكير الذكاء الاصطناعي" : "AI thinking")}
-            </DialogTitle>
-          </DialogHeader>
-          {open === "thinking" ? (
-            <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-sm text-foreground/80 leading-relaxed">
+        <AccordionItem value="unused" className="border-b-0">
+          <AccordionTrigger className="rounded-2xl px-3 py-3 text-base font-semibold text-foreground/90 hover:no-underline">
+            {isRtl ? "المصادر التي تمت قراءتها بدون أن يتم استخدامها" : "Sources read but not cited"}
+          </AccordionTrigger>
+          <AccordionContent className="pb-2">
+            <SourceList items={unused} />
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="thinking" className="border-b-0">
+          <AccordionTrigger className="rounded-2xl px-3 py-3 text-base font-semibold text-foreground/90 hover:no-underline">
+            {isRtl ? "أفكار" : "AI thinking"}
+          </AccordionTrigger>
+          <AccordionContent className="pb-2">
+            <div className="whitespace-pre-wrap rounded-2xl border border-foreground/10 bg-background/40 px-4 py-3 text-sm leading-relaxed text-foreground/80">
               {thinking || (isRtl ? "لا توجد ملاحظات تفكير محفوظة." : "No internal thinking captured.")}
             </div>
-          ) : (
-            <ul className="max-h-[60vh] space-y-2 overflow-y-auto text-sm">
-              {(open === "used" ? used : unused).length === 0 && (
-                <li className="text-foreground/60">{isRtl ? "لا يوجد." : "None."}</li>
-              )}
-              {(open === "used" ? used : unused).map((s, i) => (
-                <li key={i}>
-                  <a
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-start gap-2 rounded-lg border border-foreground/10 p-3 hover:bg-foreground/5 transition"
-                  >
-                    <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-foreground/50 group-hover:text-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium text-foreground/90">{s.title || s.url}</div>
-                      <div className="truncate text-xs text-foreground/50">{s.url}</div>
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 };
 
